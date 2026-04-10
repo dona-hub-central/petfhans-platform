@@ -25,7 +25,7 @@ export default async function AdminDashboard() {
     admin.from('profiles').select('*', { count: 'exact', head: true }).in('role', ['vet_admin', 'veterinarian']),
     admin.from('pets').select('*', { count: 'exact', head: true }),
     admin.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'pet_owner'),
-    admin.from('clinics').select('*, profiles!clinics_owner_id_fkey(full_name, email)').order('created_at', { ascending: false }).limit(20),
+    admin.from('clinics').select('*, profiles(full_name, email)').order('created_at', { ascending: false }).limit(20),
   ])
 
   return (
