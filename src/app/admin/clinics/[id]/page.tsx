@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 
@@ -19,7 +20,9 @@ export default async function ClinicDetailPage({
   const { data: profile } = await supabase.from('profiles').select('role').eq('user_id', user.id).single()
   if (profile?.role !== 'superadmin') redirect('/auth/login')
 
-  const { data: clinic } = await supabase
+  const admin = createAdminClient()
+
+  const { data: clinic } = await admin
     .from('clinics')
     .select('*')
     .eq('id', id)
@@ -32,9 +35,9 @@ export default async function ClinicDetailPage({
     { count: petCount },
     { count: recordCount },
   ] = await Promise.all([
-    supabase.from('profiles').select('*').eq('clinic_id', id).in('role', ['vet_admin', 'veterinarian']),
-    supabase.from('pets').select('*', { count: 'exact', head: true }).eq('clinic_id', id),
-    supabase.from('medical_records').select('*', { count: 'exact', head: true }).eq('clinic_id', id),
+    admin.from('profiles').select('*').eq('clinic_id', id).in('role', ['vet_admin', 'veterinarian']),
+    admin.from('pets').select('*', { count: 'exact', head: true }).eq('clinic_id', id),
+    admin.from('medical_records').select('*', { count: 'exact', head: true }).eq('clinic_id', id),
   ])
 
   return (

@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 
@@ -10,6 +11,9 @@ export default async function AdminDashboard() {
   const { data: profile } = await supabase.from('profiles').select('*').eq('user_id', user.id).single()
   if (profile?.role !== 'superadmin') redirect('/auth/login')
 
+  // Usar service role para consultas admin (bypasa RLS)
+  const admin = createAdminClient()
+
   const [
     { count: totalClinics },
     { count: totalVets },
@@ -17,11 +21,11 @@ export default async function AdminDashboard() {
     { count: totalOwners },
     { data: clinics },
   ] = await Promise.all([
-    supabase.from('clinics').select('*', { count: 'exact', head: true }),
-    supabase.from('profiles').select('*', { count: 'exact', head: true }).in('role', ['vet_admin', 'veterinarian']),
-    supabase.from('pets').select('*', { count: 'exact', head: true }),
-    supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'pet_owner'),
-    supabase.from('clinics').select('*, profiles!clinics_owner_id_fkey(full_name, email)').order('created_at', { ascending: false }).limit(20),
+    admin.from('clinics').select('*', { count: 'exact', head: true }),
+    admin.from('profiles').select('*', { count: 'exact', head: true }).in('role', ['vet_admin', 'veterinarian']),
+    admin.from('pets').select('*', { count: 'exact', head: true }),
+    admin.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'pet_owner'),
+    admin.from('clinics').select('*, profiles!clinics_owner_id_fkey(full_name, email)').order('created_at', { ascending: false }).limit(20),
   ])
 
   return (
