@@ -9,40 +9,45 @@ export async function POST(req: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-    const { invitation_id } = await req.json()
+    const { data: profile } = await supabase.from('profiles')
+      .select('id, clinic_id').eq('user_id', user.id).single()
+
+    const { email, role, pet_id } = await req.json()
     const admin = createAdminClient()
 
-    // Extender expiración 7 días
-    const newExpiry = new Date()
-    newExpiry.setDate(newExpiry.getDate() + 7)
-
+    // Crear invitación
     const { data: inv, error } = await admin.from('invitations')
-      .update({ expires_at: newExpiry.toISOString() })
-      .eq('id', invitation_id)
-      .select('*, pets(name), clinics(name)')
+      .insert({
+        clinic_id:  profile!.clinic_id,
+        email,
+        role,
+        pet_id:     pet_id || null,
+        created_by: profile!.id,
+      })
+      .select('*, pets(name)')
       .single()
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
-    // Obtener subdominio de la clínica
+    // Obtener datos de la clínica
     const { data: clinic } = await admin.from('clinics')
-      .select('slug, name').eq('id', inv.clinic_id).single()
+      .select('slug, name').eq('id', profile!.clinic_id).single()
 
     const inviteLink = `https://${clinic?.slug}.petfhans.com/auth/invite?token=${inv.token}`
 
-    // Enviar email real
+    // Enviar email
     await sendInvitationEmail({
-      to:         inv.email,
+      to:         email,
       clinicName: clinic?.name ?? 'Petfhans',
       petName:    inv.pets?.name,
-      role:       inv.role,
+      role,
       inviteLink,
       expiresAt:  inv.expires_at,
     })
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, invitation_id: inv.id })
   } catch (err: any) {
-    console.error('Resend error:', err)
+    console.error('Invitation error:', err)
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }

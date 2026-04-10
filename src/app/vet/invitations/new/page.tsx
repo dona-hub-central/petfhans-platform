@@ -36,15 +36,13 @@ export default function NewInvitationPage() {
     const { data: profile } = await supabase.from('profiles')
       .select('id, clinic_id').eq('user_id', user.id).single()
 
-    const { error: err } = await supabase.from('invitations').insert({
-      clinic_id:  profile!.clinic_id,
-      email:      form.email,
-      role:       form.role,
-      pet_id:     form.pet_id || null,
-      created_by: profile!.id,
+    const res = await fetch('/api/vet/create-invitation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: form.email, role: form.role, pet_id: form.pet_id }),
     })
-
-    if (err) { setError(err.message); setLoading(false); return }
+    const result = await res.json()
+    if (!res.ok) { setError(result.error ?? 'Error creando invitación'); setLoading(false); return }
     router.push('/vet/invitations?created=true')
   }
 
