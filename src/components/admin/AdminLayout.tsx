@@ -1,13 +1,16 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 
 const nav = [
   { href: '/admin',              icon: '📊', label: 'Dashboard',      exact: true },
   { href: '/admin/clinics',      icon: '🏥', label: 'Clínicas',       exact: false },
   { href: '/admin/subscriptions',icon: '💳', label: 'Suscripciones',  exact: false },
-  { href: '/admin/plans',        icon: '📦', label: 'Planes',         exact: false },
+  { href: '/admin/agent',        icon: '🤖', label: 'Agente IA',      exact: false },
+  { href: '/admin/tiers',        icon: '📊', label: 'Tarifas',        exact: false },
+  { href: '/admin/user-plans',   icon: '👤', label: 'Planes usuario', exact: false },
   { href: '/admin/stripe',       icon: '⚡', label: 'Stripe',         exact: false },
 ]
 
@@ -19,6 +22,13 @@ export default function AdminLayout({
   userName: string
 }) {
   const path = usePathname()
+  const router = useRouter()
+
+  const logout = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/auth/login')
+  }
 
   const isActive = (item: typeof nav[0]) =>
     item.exact ? path === item.href : path.startsWith(item.href)
@@ -59,15 +69,20 @@ export default function AdminLayout({
           })}
         </nav>
 
-        {/* User */}
+        {/* User + Logout */}
         <div className="px-4 py-4 border-t" style={{ borderColor: 'var(--border)' }}>
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+          <div className="flex items-center gap-2.5 mb-2">
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
               style={{ background: 'var(--accent-s)', color: 'var(--accent)' }}>
               {userName?.[0] ?? 'A'}
             </div>
             <span className="text-xs truncate max-w-[110px]" style={{ color: 'var(--text)' }}>{userName}</span>
           </div>
+          <button onClick={logout}
+            className="w-full text-xs py-1.5 rounded-lg border transition text-left px-2"
+            style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}>
+            Cerrar sesión
+          </button>
         </div>
       </aside>
 
