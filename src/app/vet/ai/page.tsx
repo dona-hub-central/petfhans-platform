@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import VetLayout from '@/components/shared/VetLayout'
+import PetSearch from '@/components/shared/PetSearch'
 
 interface Message { role: 'user' | 'assistant'; content: string }
 
@@ -25,8 +26,8 @@ export default function AIPage() {
         .select('*, clinics(name)').eq('user_id', user.id).single()
       setClinicName((profile as any)?.clinics?.name ?? '')
       setUserName(profile?.full_name ?? '')
-      const { data } = await supabase.from('pets').select('id, name, species')
-        .eq('clinic_id', profile?.clinic_id).eq('is_active', true)
+      const { data } = await supabase.from('pets').select('id, name, species, breed')
+        .eq('clinic_id', profile?.clinic_id).eq('is_active', true).order('name')
       setPets(data ?? [])
     }
     load()
@@ -67,14 +68,9 @@ export default function AIPage() {
           <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>Consulta el historial y analiza casos</p>
         </div>
         {pets.length > 0 && (
-          <select value={selectedPet} onChange={e => setSelectedPet(e.target.value)}
-            className="px-4 py-2.5 rounded-xl border text-sm outline-none"
-            style={{ borderColor: 'var(--border)', color: 'var(--text)' }}>
-            <option value="">Sin paciente seleccionado</option>
-            {pets.map(p => (
-              <option key={p.id} value={p.id}>{speciesIcon[p.species]} {p.name}</option>
-            ))}
-          </select>
+          <div style={{ width: 260 }}>
+            <PetSearch pets={pets} value={selectedPet} onChange={setSelectedPet} />
+          </div>
         )}
       </div>
 
