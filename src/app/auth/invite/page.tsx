@@ -19,17 +19,11 @@ function InviteForm() {
     if (!token) { setStep('error'); return }
 
     const validate = async () => {
-      const supabase = createClient()
-      const { data: inv } = await supabase
-        .from('invitations')
-        .select('*, clinics(name, slug), pets(name)')
-        .eq('token', token)
-        .is('used_at', null)
-        .gt('expires_at', new Date().toISOString())
-        .single()
-
-      if (!inv) { setStep('error'); return }
-      setInvitation(inv)
+      const res = await fetch(`/api/auth/validate-invite?token=${token}`)
+      if (!res.ok) { setStep('error'); return }
+      const { invitation } = await res.json()
+      if (!invitation) { setStep('error'); return }
+      setInvitation(invitation)
       setStep('register')
     }
     validate()

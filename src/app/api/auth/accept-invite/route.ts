@@ -28,13 +28,20 @@ export async function POST(req: NextRequest) {
     if (authError) return NextResponse.json({ error: authError.message }, { status: 400 })
 
     // Crear perfil
-    await admin.from('profiles').upsert({
+    const { data: newProfile } = await admin.from('profiles').upsert({
       user_id:   authData.user.id,
       role:      inv.role,
       full_name,
       email,
       clinic_id: inv.clinic_id,
-    }, { onConflict: 'user_id' })
+    }, { onConflict: 'user_id' }).select('id').single()
+
+    // Si la invitación tiene mascota asociada → vincularla al nuevo dueño
+    if (inv.pet_id && newProfile?.id) {
+      await admin.from('pets')
+        .update({ owner_id: newProfile.id })
+        .eq('id', inv.pet_id)
+    }
 
     // Marcar invitación como usada
     await admin.from('invitations')

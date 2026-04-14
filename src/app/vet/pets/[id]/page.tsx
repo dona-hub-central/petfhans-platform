@@ -3,6 +3,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import VetLayout from '@/components/shared/VetLayout'
+import PetFiles from '@/components/shared/PetFiles'
+import PetAvatar from '@/components/shared/PetAvatar'
 
 const speciesIcon: Record<string, string> = { dog: '🐶', cat: '🐱', bird: '🐦', rabbit: '🐰', other: '🐾' }
 const speciesLabel: Record<string, string> = { dog: 'Perro', cat: 'Gato', bird: 'Ave', rabbit: 'Conejo', other: 'Otro' }
@@ -36,6 +38,11 @@ export default async function PetDetailPage({
     .eq('pet_id', id)
     .order('visit_date', { ascending: false })
 
+  const { data: petFiles } = await admin.from('pet_files')
+    .select('id, file_name, file_type, file_size, mime_type, notes, created_at, profiles(full_name)')
+    .eq('pet_id', id)
+    .order('created_at', { ascending: false })
+
   const age = pet.birth_date ? getAge(pet.birth_date) : null
 
   return (
@@ -52,10 +59,7 @@ export default async function PetDetailPage({
 
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl"
-            style={{ background: 'var(--accent-s)' }}>
-            {speciesIcon[pet.species]}
-          </div>
+          <PetAvatar petId={id} species={pet.species} photoUrl={pet.photo_url} size={64} editable={true} />
           <div>
             <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{pet.name}</h1>
             <p className="text-sm mt-0.5" style={{ color: 'var(--muted)' }}>
@@ -121,6 +125,16 @@ export default async function PetDetailPage({
               <p className="text-xs leading-relaxed" style={{ color: 'var(--muted)' }}>{pet.notes}</p>
             </div>
           )}
+        </div>
+
+        {/* Archivos */}
+        <div className="lg:col-span-3">
+          <PetFiles
+            petId={id}
+            initialFiles={(petFiles ?? []).map((f: any) => ({ ...f, uploader: f.profiles?.full_name }))}
+            canUpload={true}
+            canDelete={true}
+          />
         </div>
 
         {/* Historial médico */}

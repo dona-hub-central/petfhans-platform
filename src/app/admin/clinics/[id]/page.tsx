@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import AdminLayout from '@/components/admin/AdminLayout'
 
 export default async function ClinicDetailPage({
   params,
@@ -40,17 +41,17 @@ export default async function ClinicDetailPage({
     admin.from('medical_records').select('*', { count: 'exact', head: true }).eq('clinic_id', id),
   ])
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-4xl mx-auto flex items-center gap-3">
-          <Link href="/admin" className="text-gray-400 hover:text-gray-600 text-sm">← Admin</Link>
-          <span className="text-gray-300">/</span>
-          <span className="text-sm font-medium text-gray-800">{clinic.name}</span>
-        </div>
-      </header>
+  const supabaseUser = await createClient()
+  const { data: { user: authUser } } = await supabaseUser.auth.getUser()
+  const { data: authProfile } = await supabaseUser.from('profiles').select('full_name').eq('user_id', authUser!.id).single()
 
-      <main className="max-w-4xl mx-auto px-6 py-8">
+  return (
+    <AdminLayout userName={authProfile?.full_name ?? 'Admin'}>
+    <div>
+      <div className="px-8 pt-6 pb-2">
+        <Link href="/admin/clinics" className="text-xs" style={{ color: 'var(--muted)' }}>← Clínicas</Link>
+      </div>
+      <main className="px-8 py-4 max-w-4xl">
         {created && (
           <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6 flex items-center gap-3">
             <span className="text-2xl">🎉</span>
@@ -133,5 +134,6 @@ export default async function ClinicDetailPage({
         </div>
       </main>
     </div>
+    </AdminLayout>
   )
 }

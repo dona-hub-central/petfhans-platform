@@ -50,7 +50,7 @@ export async function middleware(request: NextRequest) {
   const path = url.pathname
 
   // Rutas públicas (landing, auth, invitaciones)
-  const publicPaths = ['/auth/login', '/auth/register', '/auth/invite', '/api/invite/validate']
+  const publicPaths = ['/auth/login', '/auth/register', '/auth/invite', '/api/invite/validate', '/api/auth/validate-invite', '/api/auth/accept-invite', '/webhook/']
   if (publicPaths.some(p => path.startsWith(p)) || subdomain === '') {
     return supabaseResponse
   }
