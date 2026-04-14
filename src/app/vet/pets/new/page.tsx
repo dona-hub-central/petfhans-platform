@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import BreedSelect from '@/components/shared/BreedSelect'
 
 export default function NewPetPage() {
   const router = useRouter()
@@ -94,8 +95,7 @@ export default function NewPetPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text)' }}>Raza</label>
-                <input value={form.breed} onChange={e => set('breed', e.target.value)}
-                  className={inputCls} style={inputStyle} {...focus} placeholder="Labrador" />
+                <BreedSelect species={form.species} value={form.breed} onChange={v => set('breed', v)} />
               </div>
             </div>
 
