@@ -1,0 +1,14 @@
+{
+  "name": "Petfhans — Plataforma Veterinaria",
+  "short_name": "Petfhans",
+  "description": "Gestión veterinaria inteligente con IA clínica",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#EE726D",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "categories": ["health", "medical", "productivity"]
+}

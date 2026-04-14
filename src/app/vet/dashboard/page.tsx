@@ -4,6 +4,8 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import VetLayout from '@/components/shared/VetLayout'
 
+export const metadata = { title: 'Dashboard · Petfhans', description: 'Panel de gestión de tu clínica veterinaria.' }
+
 export default async function VetDashboard() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

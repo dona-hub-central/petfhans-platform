@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" rx="22" fill="#EE726D"/>
+  <!-- Pata central -->
+  <ellipse cx="50" cy="62" rx="16" ry="13" fill="white"/>
+  <!-- Dedos -->
+  <ellipse cx="31" cy="48" rx="8" ry="10" fill="white"/>
+  <ellipse cx="44" cy="40" rx="8" ry="10" fill="white"/>
+  <ellipse cx="57" cy="40" rx="8" ry="10" fill="white"/>
+  <ellipse cx="70" cy="48" rx="8" ry="10" fill="white"/>
+</svg>
