@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import VetLayout from '@/components/shared/VetLayout'
+import PetSearch from '@/components/shared/PetSearch'
 
 // ── Tipos ──────────────────────────────────────────────────────────────
 type Medication = { name: string; dose: string; route: string; frequency: string; duration: string }
@@ -184,10 +185,7 @@ function NewRecordForm() {
           <Section title="Identificación" icon="📋">
             <div className="grid grid-cols-3 gap-4 mb-4">
               <Field label="Paciente" required>
-                <select value={form.pet_id} onChange={e => set('pet_id', e.target.value)} required className={inp} style={inpS}>
-                  <option value="">Seleccionar mascota</option>
-                  {pets.map(p => <option key={p.id} value={p.id}>{speciesIcon[p.species]} {p.name}</option>)}
-                </select>
+                <PetSearch pets={pets} value={form.pet_id} onChange={v => set('pet_id', v)} />
               </Field>
               <Field label="Fecha" required>
                 <input type="date" value={form.visit_date} onChange={e => set('visit_date', e.target.value)} required className={inp} style={inpS} {...f} />

@@ -83,6 +83,7 @@ export default function AgentConfig({ agent: initial }: { agent: Agent | null })
       const res = await fetch('/api/agent/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ message: '¿Estás operativo? Responde brevemente.', test: true }),
       })
       const data = await res.json()
@@ -103,6 +104,7 @@ export default function AgentConfig({ agent: initial }: { agent: Agent | null })
       const res = await fetch('/api/agent/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ message: msg, history: chatMessages }),
       })
       const data = await res.json()

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import PetSearch from '@/components/shared/PetSearch'
 
 export default function NewInvitationPage() {
   const router = useRouter()
@@ -95,11 +96,11 @@ export default function NewInvitationPage() {
                 <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text)' }}>
                   Mascota (opcional)
                 </label>
-                <select value={form.pet_id} onChange={e => set('pet_id', e.target.value)}
-                  className={inputCls} style={inputStyle}>
-                  <option value="">Todas las mascotas del dueño</option>
-                  {pets.map(p => <option key={p.id} value={p.id}>🐾 {p.name}</option>)}
-                </select>
+                <PetSearch
+                  pets={pets}
+                  value={form.pet_id}
+                  onChange={v => set('pet_id', v)}
+                />
               </div>
             )}
 
