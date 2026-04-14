@@ -7,6 +7,7 @@ const nav = [
   { href: '/admin',              icon: '📊', label: 'Dashboard',      exact: true },
   { href: '/admin/clinics',      icon: '🏥', label: 'Clínicas',       exact: false },
   { href: '/admin/subscriptions',icon: '💳', label: 'Suscripciones',  exact: false },
+  { href: '/admin/plans',        icon: '📦', label: 'Planes',         exact: false },
   { href: '/admin/stripe',       icon: '⚡', label: 'Stripe',         exact: false },
 ]
 

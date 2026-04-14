@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import PetAvatar from '@/components/shared/PetAvatar'
 import PetGallery from '@/components/owner/PetGallery'
+import { createClient } from '@/lib/supabase/client'
 
 type Tab = 'info' | 'galeria' | 'docs' | 'historial'
 
@@ -14,206 +15,379 @@ export default function OwnerPetView({ pet, records, photos, docs, clinicName }:
   pet: any; records: any[]; photos: any[]; docs: any[]; clinicName: string
 }) {
   const [tab, setTab] = useState<Tab>('info')
-
   const nextVisit = records.find(r => r.next_visit && new Date(r.next_visit) > new Date())
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0,
-      display: 'flex', flexDirection: 'column',
-      background: '#f5f5f7',
-      fontFamily: "'Roboto', sans-serif",
-    }}>
+    <>
+      <style>{`
+        html, body { margin:0; padding:0; background:#f2f2f7; font-family:'Roboto',sans-serif; }
 
-      {/* ── TOP BAR ── */}
-      <div style={{
-        background: 'var(--accent)',
-        padding: 'env(safe-area-inset-top, 12px) 16px 0',
-        flexShrink: 0,
-      }}>
-        {/* nav */}
-        <div style={{ display: 'flex', alignItems: 'center', paddingBottom: 12 }}>
-          <a href="/owner/dashboard" style={{
-            color: 'rgba(255,255,255,.85)', fontSize: 13, textDecoration: 'none',
-            display: 'flex', alignItems: 'center', gap: 4, padding: '4px 0',
-          }}>‹ Inicio</a>
-          <span style={{ flex: 1, textAlign: 'center', fontWeight: 700, fontSize: 16, color: '#fff', marginRight: 40 }}>
-            {pet.name}
-          </span>
-        </div>
+        /* ── MOBILE (default) ── */
+        .pet-shell { min-height:100svh; display:flex; flex-direction:column; }
 
-        {/* Hero pet card */}
-        <div style={{
-          background: 'rgba(255,255,255,.15)',
-          borderRadius: '16px 16px 0 0',
-          padding: '16px 16px 0',
-          display: 'flex', alignItems: 'flex-end', gap: 14,
-        }}>
-          <div style={{ marginBottom: -1 }}>
-            <PetAvatar petId={pet.id} species={pet.species} photoUrl={pet.photo_url}
-              size={72} editable={true} />
-          </div>
-          <div style={{ paddingBottom: 14, flex: 1 }}>
-            <p style={{ color: '#fff', fontWeight: 800, fontSize: 22, margin: 0, lineHeight: 1 }}>{pet.name}</p>
-            <p style={{ color: 'rgba(255,255,255,.8)', fontSize: 12, margin: '4px 0 0' }}>
-              {speciesLabel[pet.species]}{pet.breed ? ` · ${pet.breed}` : ''}
-              {pet.weight ? ` · ${pet.weight} kg` : ''}
-            </p>
-            {nextVisit && (
-              <span style={{
-                display: 'inline-block', marginTop: 6,
-                background: 'rgba(255,255,255,.25)', color: '#fff',
-                fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20,
-              }}>
-                📅 {new Date(nextVisit.next_visit).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
-              </span>
-            )}
-          </div>
-        </div>
+        .hero { background:linear-gradient(170deg,#EE726D 0%,#f9a394 100%); flex-shrink:0; }
+        .hero-nav { padding:44px 18px 0; display:flex; align-items:center; }
+        .back-link { color:rgba(255,255,255,.9); font-size:15px; text-decoration:none; }
+        .hero-body { padding:16px 18px 0; display:flex; align-items:flex-end; gap:14px; }
+        .hero-info { flex:1; padding-bottom:16px; }
+        .pet-name { color:#fff; font-size:28px; font-weight:800; margin:0 0 3px; }
+        .pet-sub  { color:rgba(255,255,255,.8); font-size:13px; margin:0 0 8px; }
+        .next-badge { display:inline-flex; align-items:center; gap:4px; background:rgba(255,255,255,.22); color:#fff; font-size:12px; font-weight:600; padding:4px 12px; border-radius:20px; }
+        .logout-hero-btn { border:1.5px solid rgba(255,255,255,.5); background:transparent; color:#fff; border-radius:20px; padding:5px 14px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; white-space:nowrap; }
 
-        {/* Tabs */}
-        <div style={{
-          display: 'flex',
-          background: 'rgba(0,0,0,.12)',
-          borderRadius: '0',
-        }}>
-          {([
-            ['info',     '🐾', 'Ficha'],
-            ['galeria',  '📷', 'Galería'],
-            ['docs',     '📎', 'Docs'],
-            ['historial','📋', 'Historial'],
-          ] as const).map(([key, icon, label]) => (
-            <button key={key} onClick={() => setTab(key as Tab)}
-              style={{
-                flex: 1, border: 'none', background: 'none',
-                color: tab === key ? '#fff' : 'rgba(255,255,255,.55)',
-                padding: '10px 4px 10px',
-                fontSize: 11, fontWeight: tab === key ? 700 : 500,
-                cursor: 'pointer',
-                borderBottom: tab === key ? '2px solid #fff' : '2px solid transparent',
-                transition: 'all .15s',
-              }}>
-              <span style={{ display: 'block', fontSize: 16, marginBottom: 2 }}>{icon}</span>
-              {label}
+        .mob-tabs { display:flex; background:rgba(0,0,0,.15); }
+        .mob-tab { flex:1; border:none; background:none; cursor:pointer; color:rgba(255,255,255,.55); padding:11px 6px 9px; font-size:11px; font-weight:600; font-family:inherit; border-bottom:2.5px solid transparent; transition:all .15s; display:flex; flex-direction:column; align-items:center; gap:2px; }
+        .mob-tab.active { color:#fff; border-bottom-color:#fff; }
+        .mob-tab-icon { font-size:17px; }
+
+        .scroll-area { flex:1; overflow-y:auto; padding:14px 14px 36px; -webkit-overflow-scrolling:touch; }
+
+        /* Cards */
+        .card { background:#fff; border-radius:18px; overflow:hidden; margin-bottom:10px; }
+        .card-title { font-size:11px; font-weight:700; color:#8e8e93; text-transform:uppercase; letter-spacing:.5px; padding:12px 16px 0; margin:0; }
+        .info-row { display:flex; justify-content:space-between; align-items:center; padding:10px 16px; border-top:1px solid #f2f2f7; font-size:14px; }
+        .info-row:first-of-type { border-top:none; }
+        .lbl { color:#8e8e93; } .val { font-weight:600; color:#1c1c1e; }
+        .empty-box { text-align:center; padding:48px 20px; background:#fff; border-radius:18px; }
+
+        .rec-card { background:#fff; border-radius:18px; padding:14px 16px; margin-bottom:8px; }
+        .rec-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:7px; }
+        .rec-date { background:#fff0ef; color:#EE726D; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; }
+        .rec-vet { font-size:11px; color:#8e8e93; }
+        .rec-reason { font-size:15px; font-weight:700; color:#1c1c1e; margin:0 0 4px; }
+        .rec-detail { font-size:12px; color:#8e8e93; margin:2px 0; }
+        .rec-next { font-size:12px; color:#EE726D; font-weight:600; margin:8px 0 0; }
+
+        /* ── DESKTOP (≥768px) ── */
+        @media (min-width:768px) {
+          html, body { background:#f5f5f7; }
+          .pet-shell { min-height:100vh; flex-direction:column; max-width:1100px; margin:0 auto; padding:0 24px; }
+
+          /* Header desktop */
+          .hero { background:none; border-radius:0; flex-shrink:0; }
+          .hero-nav { padding:28px 0 0; }
+          .back-link { color:#EE726D; font-size:14px; }
+          .hero-body { padding:20px 0 0; align-items:center; gap:20px; }
+          .hero-info { padding-bottom:0; }
+          .pet-name { color:#1c1c1e; font-size:32px; }
+          .pet-sub  { color:#8e8e93; }
+          .next-badge { background:#fff0ef; color:#EE726D; }
+
+          /* Logout en desktop */
+          .logout-hero-btn { border:1.5px solid rgba(238,114,109,.4); color:#EE726D; }
+
+          /* Tabs como pills horizontales */
+          .mob-tabs { background:none; border-bottom:1px solid #e5e5e5; margin-top:24px; gap:0; }
+          .mob-tab { flex:none; padding:10px 20px 10px; color:#8e8e93; border-bottom:2.5px solid transparent; border-radius:0; font-size:13px; flex-direction:row; gap:6px; }
+          .mob-tab.active { color:#EE726D; border-bottom-color:#EE726D; }
+          .mob-tab-icon { font-size:16px; }
+
+          /* Layout 2 columnas en desktop */
+          .scroll-area { padding:24px 0 48px; flex:none; overflow-y:visible; }
+          .desk-grid { display:grid; grid-template-columns:300px 1fr; gap:20px; align-items:start; }
+          .card { border-radius:16px; box-shadow:0 1px 3px rgba(0,0,0,.07); }
+          .card-title { font-size:11px; padding:14px 18px 0; }
+          .info-row { padding:11px 18px; font-size:14px; }
+          .rec-card { border-radius:16px; box-shadow:0 1px 3px rgba(0,0,0,.07); }
+          .empty-box { border-radius:16px; }
+        }
+      `}</style>
+
+      <div className="pet-shell">
+        {/* HERO */}
+        <div className="hero">
+          <div className="hero-nav" style={{ justifyContent:'space-between' }}>
+            <a href="/owner/dashboard" className="back-link">‹ Mis mascotas</a>
+            <button onClick={async () => { const s = createClient(); await s.auth.signOut(); window.location.href='/auth/login' }}
+              className="logout-hero-btn">
+              Cerrar sesión
             </button>
-          ))}
+          </div>
+          <div className="hero-body">
+            <PetAvatar petId={pet.id} species={pet.species} photoUrl={pet.photo_url} size={80} editable={true} />
+            <div className="hero-info">
+              <h1 className="pet-name">{pet.name}</h1>
+              <p className="pet-sub">
+                {speciesLabel[pet.species]}{pet.breed ? ` · ${pet.breed}` : ''}
+                {pet.weight ? ` · ${pet.weight} kg` : ''}
+              </p>
+              {nextVisit && (
+                <span className="next-badge">📅 {new Date(nextVisit.next_visit).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}</span>
+              )}
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div className="mob-tabs">
+            {([['info','🐾','Ficha'],['galeria','📷','Galería'],['docs','📎','Documentos'],['historial','📋','Historial']] as const).map(([key,icon,label]) => (
+              <button key={key} onClick={() => setTab(key as Tab)} className={`mob-tab${tab===key?' active':''}`}>
+                <span className="mob-tab-icon">{icon}</span>{label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* ── SCROLL CONTENT ── */}
-      <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' as any }}>
-        <div style={{ padding: '16px 14px', paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))' }}>
+        {/* CONTENIDO */}
+        <div className="scroll-area">
+          <div className="desk-grid">
 
-          {/* FICHA */}
-          {tab === 'info' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <InfoCard title="Datos básicos" rows={[
-                ['Especie',   speciesLabel[pet.species]],
-                ['Raza',      pet.breed || '—'],
-                ['Sexo',      pet.gender === 'male' ? '♂ Macho' : '♀ Hembra'],
-                ['Edad',      pet.birth_date ? getAge(pet.birth_date) : '—'],
-                ['Peso',      pet.weight ? `${pet.weight} kg` : '—'],
-                ['Castrado/a',pet.neutered ? 'Sí ✓' : 'No'],
-                ['Microchip', pet.microchip || '—'],
-              ]} />
-              {clinicName && (
-                <div style={{ background: '#fff', borderRadius: 16, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{ fontSize: 24 }}>🏥</span>
-                  <div>
-                    <p style={{ fontSize: 11, color: 'var(--muted)', margin: '0 0 1px', fontWeight: 600, textTransform: 'uppercase' }}>Clínica</p>
-                    <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', margin: 0 }}>{clinicName}</p>
-                  </div>
-                </div>
+            {/* Columna izquierda — solo visible en desktop como sidebar */}
+            <div className="desk-sidebar">
+              {tab === 'info' && (
+                <>
+                  <DataCard pet={pet} clinicName={clinicName} nextVisit={nextVisit} />
+                </>
               )}
-              {pet.notes && (
-                <div style={{ background: '#fff', borderRadius: 16, padding: '14px 16px' }}>
-                  <p style={{ fontSize: 11, color: 'var(--muted)', margin: '0 0 6px', fontWeight: 600, textTransform: 'uppercase' }}>Notas</p>
-                  <p style={{ fontSize: 13, color: 'var(--text)', lineHeight: 1.6, margin: 0 }}>{pet.notes}</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* GALERÍA */}
-          {tab === 'galeria' && (
-            <PetGallery petId={pet.id} initialPhotos={photos} />
-          )}
-
-          {/* DOCS */}
-          {tab === 'docs' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {docs.length === 0
-                ? <Empty icon="📎" text="Sin documentos aún" />
-                : docs.map((d: any) => <DocCard key={d.id} doc={d} />)
-              }
-            </div>
-          )}
-
-          {/* HISTORIAL */}
-          {tab === 'historial' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {records.length === 0
-                ? <Empty icon="📋" text="Sin consultas registradas" />
-                : records.map((r: any) => (
-                  <div key={r.id} style={{ background: '#fff', borderRadius: 16, padding: '14px 16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                      <span style={{
-                        background: 'var(--accent-s)', color: 'var(--accent)',
-                        fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20,
-                      }}>
-                        {new Date(r.visit_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
-                      </span>
-                      {r.profiles && (
-                        <span style={{ fontSize: 11, color: 'var(--muted)' }}>
-                          Dr/a. {r.profiles.full_name?.split(' ')[0]}
-                        </span>
-                      )}
+              {tab !== 'info' && (
+                <div className="card" style={{ padding:'14px 18px' }}>
+                  <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+                    <PetAvatar petId={pet.id} species={pet.species} photoUrl={pet.photo_url} size={52} editable={false} />
+                    <div>
+                      <p style={{ fontWeight:700, fontSize:15, color:'#1c1c1e', margin:0 }}>{pet.name}</p>
+                      <p style={{ fontSize:12, color:'#8e8e93', margin:'2px 0 0' }}>{speciesLabel[pet.species]}{pet.breed ? ` · ${pet.breed}` : ''}</p>
                     </div>
-                    <p style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)', margin: '0 0 4px' }}>{r.reason}</p>
-                    {r.diagnosis && <p style={{ fontSize: 12, color: 'var(--muted)', margin: '2px 0' }}>Diagnóstico: {r.diagnosis}</p>}
-                    {r.treatment && <p style={{ fontSize: 12, color: 'var(--muted)', margin: '2px 0' }}>Tratamiento: {r.treatment}</p>}
-                    {r.next_visit && (
-                      <p style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600, marginTop: 8, margin: '8px 0 0' }}>
-                        📅 Próxima: {new Date(r.next_visit).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
-                      </p>
-                    )}
                   </div>
-                ))
-              }
+                  {clinicName && <p style={{ fontSize:12, color:'#8e8e93', margin:'10px 0 0', display:'flex', alignItems:'center', gap:4 }}>🏥 {clinicName}</p>}
+                </div>
+              )}
             </div>
-          )}
 
+            {/* Columna derecha — contenido principal */}
+            <div>
+              {tab === 'info'     && <InfoDesktop pet={pet} clinicName={clinicName} nextVisit={nextVisit} records={records} />}
+              {tab === 'galeria'  && <PetGallery petId={pet.id} initialPhotos={photos} />}
+              {tab === 'docs'     && <DocsTab petId={pet.id} initialDocs={docs} />}
+              {tab === 'historial'&& <HistorialTab petId={pet.id} records={records} />}
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
 
-function InfoCard({ title, rows }: { title: string; rows: [string, string][] }) {
+/* ── Sub-componentes ── */
+
+function DataCard({ pet, clinicName, nextVisit }: any) {
   return (
-    <div style={{ background: '#fff', borderRadius: 16, overflow: 'hidden' }}>
-      <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', padding: '12px 16px 0', margin: 0, letterSpacing: .5 }}>{title}</p>
-      {rows.map(([label, value], i) => (
-        <div key={label} style={{
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          padding: '10px 16px',
-          borderTop: i === 0 ? 'none' : '1px solid #f0f0f0',
-        }}>
-          <span style={{ fontSize: 13, color: '#888' }}>{label}</span>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{value}</span>
+    <>
+      <div className="card">
+        <p className="card-title">Datos</p>
+        {[
+          ['Especie', speciesLabel[pet.species]],
+          ['Raza', pet.breed||'—'],
+          ['Sexo', pet.gender==='male'?'♂ Macho':'♀ Hembra'],
+          ['Edad', pet.birth_date ? getAge(pet.birth_date) : '—'],
+          ['Peso', pet.weight ? `${pet.weight} kg` : '—'],
+          ['Castrado/a', pet.neutered?'Sí ✓':'No'],
+          ['Microchip', pet.microchip||'—'],
+        ].map(([l,v]) => (
+          <div key={l} className="info-row"><span className="lbl">{l}</span><span className="val">{v}</span></div>
+        ))}
+      </div>
+      {clinicName && (
+        <div className="card" style={{ padding:'14px 16px', display:'flex', alignItems:'center', gap:10 }}>
+          <span style={{ fontSize:22 }}>🏥</span>
+          <div>
+            <p style={{ fontSize:10, color:'#8e8e93', margin:'0 0 1px', fontWeight:700, textTransform:'uppercase' }}>Centro</p>
+            <p style={{ fontSize:14, fontWeight:700, color:'#1c1c1e', margin:0 }}>{clinicName}</p>
+          </div>
         </div>
-      ))}
-    </div>
+      )}
+    </>
+  )
+}
+
+function InfoDesktop({ pet, clinicName, nextVisit, records }: any) {
+  return (
+    <>
+      {/* En mobile muestra todo junto, en desktop solo complementa */}
+      <div style={{ display:'none' }} className="mobile-info-extra">
+        <DataCard pet={pet} clinicName={clinicName} nextVisit={nextVisit} />
+      </div>
+      {pet.notes && (
+        <div className="card">
+          <p className="card-title">Notas</p>
+          <p style={{ padding:'10px 16px 14px', fontSize:14, color:'#3c3c43', lineHeight:1.6, margin:0 }}>{pet.notes}</p>
+        </div>
+      )}
+      {nextVisit && (
+        <div className="card" style={{ padding:'16px 18px', display:'flex', alignItems:'center', gap:12, background:'#fff0ef' }}>
+          <span style={{ fontSize:28 }}>📅</span>
+          <div>
+            <p style={{ fontSize:11, color:'#EE726D', fontWeight:700, margin:'0 0 2px', textTransform:'uppercase' }}>Próxima visita</p>
+            <p style={{ fontSize:15, fontWeight:700, color:'#1c1c1e', margin:0 }}>
+              {new Date(nextVisit.next_visit).toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' })}
+            </p>
+          </div>
+        </div>
+      )}
+      {records.length > 0 && (
+        <div className="card">
+          <p className="card-title">Últimas consultas</p>
+          {records.slice(0,3).map((r:any) => (
+            <div key={r.id} style={{ padding:'10px 16px', borderTop:'1px solid #f2f2f7' }}>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                <p style={{ fontSize:13, fontWeight:600, color:'#1c1c1e', margin:0 }}>{r.reason}</p>
+                <span style={{ fontSize:11, color:'#8e8e93' }}>{new Date(r.visit_date).toLocaleDateString('es-ES',{day:'2-digit',month:'short'})}</span>
+              </div>
+              {r.diagnosis && <p style={{ fontSize:12, color:'#8e8e93', margin:'2px 0 0' }}>Dx: {r.diagnosis}</p>}
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  )
+}
+
+function DocsTab({ petId, initialDocs }: { petId: string; initialDocs: any[] }) {
+  const [docs, setDocs] = useState(initialDocs)
+  const [showForm, setShowForm] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [fileType, setFileType] = useState('prescription')
+  const [notes, setNotes] = useState('')
+  const [file, setFile] = useState<File | null>(null)
+  const [error, setError] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const upload = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!file) { setError('Selecciona un archivo'); return }
+    setUploading(true); setError('')
+    const fd = new FormData()
+    fd.append('file', file); fd.append('pet_id', petId)
+    fd.append('file_type', fileType); fd.append('notes', notes)
+    try {
+      const res = await fetch('/api/files/upload', { method: 'POST', body: fd, credentials: 'include' })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error || 'Error'); setUploading(false); return }
+      setDocs(prev => [data.file, ...prev])
+      setShowForm(false); setFile(null); setNotes('')
+    } catch (err: any) { setError(err.message) }
+    setUploading(false)
+  }
+
+  return (
+    <>
+      <button onClick={() => setShowForm(!showForm)} style={{
+        width:'100%', border:'none', borderRadius:18, padding:'14px 16px',
+        background:'#EE726D', color:'#fff', fontFamily:'inherit',
+        fontSize:15, fontWeight:700, cursor:'pointer', marginBottom:12,
+      }}>+ Añadir documento</button>
+
+      {showForm && (
+        <form onSubmit={upload} style={{ background:'#fff', borderRadius:18, padding:18, marginBottom:12 }}>
+          <p style={{ fontWeight:700, fontSize:15, color:'#1c1c1e', margin:'0 0 12px' }}>Nuevo documento</p>
+          <div style={{ display:'flex', gap:8, marginBottom:12 }}>
+            {[['prescription','💊 Receta'],['exam','🔬 Examen'],['other','📎 Otro']].map(([v,l]) => (
+              <button key={v} type="button" onClick={() => setFileType(v)}
+                style={{ flex:1, border:'none', borderRadius:12, padding:'10px 4px', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'inherit',
+                  background: fileType===v ? '#fff0ef' : '#f2f2f7', color: fileType===v ? '#EE726D' : '#8e8e93',
+                  outline: fileType===v ? '2px solid #EE726D' : 'none' }}>{l}</button>
+            ))}
+          </div>
+          <input type="text" placeholder="Descripción (opcional)" value={notes} onChange={e => setNotes(e.target.value)}
+            style={{ width:'100%', border:'none', background:'#f2f2f7', borderRadius:12, padding:'12px 14px', fontSize:14, fontFamily:'inherit', marginBottom:10, boxSizing:'border-box' }} />
+          <div onClick={() => inputRef.current?.click()} style={{
+            border:'2px dashed #d1d1d6', borderRadius:12, padding:'18px', textAlign:'center', cursor:'pointer', marginBottom:12, background:'#f9f9f9',
+          }}>
+            <p style={{ margin:0, fontSize:13, color: file ? '#1c1c1e' : '#8e8e93', fontWeight: file ? 600 : 400 }}>
+              {file ? `✓ ${file.name}` : 'Toca para seleccionar archivo'}
+            </p>
+            <input ref={inputRef} type="file" style={{ display:'none' }} accept=".pdf,.doc,.docx,image/*"
+              onChange={e => { setFile(e.target.files?.[0] || null); setError('') }} />
+          </div>
+          {error && <p style={{ color:'#dc2626', fontSize:13, margin:'0 0 10px' }}>{error}</p>}
+          <div style={{ display:'flex', gap:8 }}>
+            <button type="button" onClick={() => { setShowForm(false); setError('') }}
+              style={{ flex:1, border:'none', borderRadius:12, padding:13, background:'#f2f2f7', color:'#8e8e93', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>Cancelar</button>
+            <button type="submit" disabled={uploading}
+              style={{ flex:2, border:'none', borderRadius:12, padding:13, background:'#EE726D', color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:'inherit', opacity: uploading ? .6 : 1 }}>
+              {uploading ? 'Subiendo…' : 'Subir'}</button>
+          </div>
+        </form>
+      )}
+
+      {docs.length === 0 && !showForm
+        ? <div className="empty-box"><p style={{ fontSize:36, margin:'0 0 8px' }}>📎</p><p style={{ fontSize:14, color:'#8e8e93', margin:0 }}>Sin documentos aún</p></div>
+        : docs.map((d: any) => <DocCard key={d.id} doc={d} />)
+      }
+    </>
+  )
+}
+
+function HistorialTab({ petId, records }: { petId: string; records: any[] }) {
+  const [showNote, setShowNote] = useState(false)
+  const [note, setNote] = useState('')
+  const [file, setFile] = useState<File | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [ok, setOk] = useState(false)
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!note.trim() && !file) return
+    setSaving(true)
+    if (file) {
+      const fd = new FormData()
+      fd.append('file', file); fd.append('pet_id', petId)
+      fd.append('file_type', 'other'); fd.append('notes', note || 'Observación del dueño')
+      await fetch('/api/files/upload', { method: 'POST', body: fd, credentials: 'include' })
+    }
+    setSaving(false); setOk(true); setShowNote(false); setNote(''); setFile(null)
+    setTimeout(() => setOk(false), 3000)
+  }
+
+  return (
+    <>
+      <button onClick={() => setShowNote(!showNote)} style={{
+        width:'100%', border:'2px solid #EE726D', borderRadius:18, padding:'13px 16px',
+        background:'#fff', color:'#EE726D', fontFamily:'inherit', fontSize:14, fontWeight:700, cursor:'pointer', marginBottom:12,
+      }}>+ Añadir observación</button>
+      {ok && <p style={{ color:'#16a34a', fontSize:13, textAlign:'center', margin:'0 0 10px' }}>✓ Guardado</p>}
+      {showNote && (
+        <form onSubmit={submit} style={{ background:'#fff', borderRadius:18, padding:16, marginBottom:12 }}>
+          <textarea placeholder="Escribe una observación sobre tu mascota…" value={note} onChange={e => setNote(e.target.value)} rows={3}
+            style={{ width:'100%', border:'none', background:'#f2f2f7', borderRadius:12, padding:'12px 14px', fontSize:14, fontFamily:'inherit', resize:'none', marginBottom:10, boxSizing:'border-box' as any }} />
+          <label style={{ display:'block', border:'2px dashed #d1d1d6', borderRadius:12, padding:'12px', textAlign:'center', cursor:'pointer', marginBottom:12, background:'#f9f9f9', fontSize:13, color: file ? '#1c1c1e' : '#8e8e93' }}>
+            {file ? `✓ ${file.name}` : 'Adjuntar archivo (opcional)'}
+            <input type="file" style={{ display:'none' }} onChange={e => setFile(e.target.files?.[0] || null)} />
+          </label>
+          <div style={{ display:'flex', gap:8 }}>
+            <button type="button" onClick={() => setShowNote(false)}
+              style={{ flex:1, border:'none', borderRadius:12, padding:13, background:'#f2f2f7', color:'#8e8e93', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>Cancelar</button>
+            <button type="submit" disabled={saving}
+              style={{ flex:2, border:'none', borderRadius:12, padding:13, background:'#EE726D', color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:'inherit', opacity: saving ? .6 : 1 }}>
+              {saving ? 'Guardando…' : 'Guardar'}</button>
+          </div>
+        </form>
+      )}
+
+      {records.length === 0
+        ? <div className="empty-box"><p style={{ fontSize:36, margin:'0 0 8px' }}>📋</p><p style={{ fontSize:14, color:'#8e8e93', margin:0 }}>Sin consultas registradas</p></div>
+        : records.map((r: any) => (
+          <div key={r.id} className="rec-card">
+            <div className="rec-top">
+              <span className="rec-date">{new Date(r.visit_date).toLocaleDateString('es-ES', { day:'numeric', month:'short', year:'numeric' })}</span>
+              {r.profiles && <span className="rec-vet">Dr/a. {r.profiles.full_name?.split(' ')[0]}</span>}
+            </div>
+            <p className="rec-reason">{r.reason}</p>
+            {r.diagnosis && <p className="rec-detail">Diagnóstico: {r.diagnosis}</p>}
+            {r.treatment && <p className="rec-detail">Tratamiento: {r.treatment}</p>}
+            {r.next_visit && <p className="rec-next">📅 Próxima: {new Date(r.next_visit).toLocaleDateString('es-ES', { day:'numeric', month:'long' })}</p>}
+          </div>
+        ))
+      }
+    </>
   )
 }
 
 function DocCard({ doc }: { doc: any }) {
   const [opening, setOpening] = useState(false)
-  const icons: Record<string, string> = { prescription: '💊', exam: '🔬', photo: '📷', video: '🎥', other: '📎' }
-  const labels: Record<string, string> = { prescription: 'Receta', exam: 'Examen', photo: 'Foto', video: 'Vídeo', other: 'Archivo' }
-  const colors: Record<string, string> = { prescription: '#7c3aed', exam: '#2563eb', photo: '#16a34a', video: '#dc2626', other: '#64748b' }
-  const color = colors[doc.file_type] || '#64748b'
-
+  const cfg: Record<string, [string, string, string]> = {
+    prescription:['💊','Receta','#7c3aed'], exam:['🔬','Examen','#2563eb'],
+    photo:['📷','Foto','#16a34a'], video:['🎥','Vídeo','#dc2626'], other:['📎','Archivo','#64748b'],
+  }
+  const [icon, label, color] = cfg[doc.file_type] ?? cfg.other
   const open = async () => {
     setOpening(true)
     const res = await fetch(`/api/files/${doc.id}`)
@@ -221,49 +395,24 @@ function DocCard({ doc }: { doc: any }) {
     if (data.url) window.open(data.url, '_blank')
     setOpening(false)
   }
-
   return (
-    <button onClick={open} disabled={opening}
-      style={{
-        background: '#fff', borderRadius: 16, padding: '14px 16px',
-        display: 'flex', alignItems: 'center', gap: 12,
-        border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer',
-      }}>
-      <div style={{
-        width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-        background: color + '15',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
-      }}>
-        {icons[doc.file_type] || '📎'}
+    <button onClick={open} disabled={opening} style={{
+      background:'#fff', borderRadius:18, padding:'14px 16px', display:'flex', alignItems:'center', gap:12,
+      border:'none', width:'100%', textAlign:'left', cursor:'pointer', marginBottom:8, fontFamily:'inherit',
+    }}>
+      <div style={{ width:44, height:44, borderRadius:12, flexShrink:0, background:color+'15', display:'flex', alignItems:'center', justifyContent:'center', fontSize:22 }}>{icon}</div>
+      <div style={{ flex:1, minWidth:0 }}>
+        <p style={{ fontSize:13, fontWeight:600, color:'#1c1c1e', margin:'0 0 3px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{doc.notes || doc.file_name}</p>
+        <span style={{ fontSize:10, fontWeight:600, color, background:color+'15', padding:'2px 7px', borderRadius:6 }}>{label}</span>
       </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', margin: '0 0 3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {doc.notes || doc.file_name}
-        </p>
-        <span style={{
-          fontSize: 10, fontWeight: 600, color, background: color + '15',
-          padding: '2px 7px', borderRadius: 6,
-        }}>
-          {labels[doc.file_type] || 'Archivo'}
-        </span>
-      </div>
-      <span style={{ color: 'var(--muted)', fontSize: 18, flexShrink: 0 }}>
-        {opening ? '⏳' : '›'}
-      </span>
+      <span style={{ color:'#c7c7cc', fontSize:20, flexShrink:0 }}>{opening ? '⏳' : '›'}</span>
     </button>
   )
 }
 
-function Empty({ icon, text }: { icon: string; text: string }) {
-  return (
-    <div style={{ textAlign: 'center', padding: '48px 20px', background: '#fff', borderRadius: 16 }}>
-      <p style={{ fontSize: 36, margin: '0 0 8px' }}>{icon}</p>
-      <p style={{ fontSize: 14, color: 'var(--muted)', margin: 0 }}>{text}</p>
-    </div>
-  )
+function getAge(d: string) {
+  const m = Math.floor((Date.now() - new Date(d).getTime()) / (1000 * 60 * 60 * 24 * 30))
+  return m < 12 ? `${m} meses` : `${Math.floor(m / 12)} años`
 }
 
-function getAge(birthDate: string) {
-  const months = Math.floor((Date.now() - new Date(birthDate).getTime()) / (1000 * 60 * 60 * 24 * 30))
-  return months < 12 ? `${months} meses` : `${Math.floor(months / 12)} años`
-}
+
