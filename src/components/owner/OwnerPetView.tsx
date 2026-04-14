@@ -4,15 +4,16 @@ import { useState, useRef } from 'react'
 import PetAvatar from '@/components/shared/PetAvatar'
 import PetGallery from '@/components/owner/PetGallery'
 import { createClient } from '@/lib/supabase/client'
+import BookAppointment from '@/components/owner/BookAppointment'
 
-type Tab = 'info' | 'galeria' | 'docs' | 'historial'
+type Tab = 'info' | 'galeria' | 'docs' | 'historial' | 'citas'
 
 const speciesLabel: Record<string, string> = {
   dog: 'Perro', cat: 'Gato', bird: 'Ave', rabbit: 'Conejo', other: 'Otro'
 }
 
-export default function OwnerPetView({ pet, records, photos, docs, clinicName }: {
-  pet: any; records: any[]; photos: any[]; docs: any[]; clinicName: string
+export default function OwnerPetView({ pet, records, photos, docs, clinicName, clinicId }: {
+  pet: any; records: any[]; photos: any[]; docs: any[]; clinicName: string; clinicId?: string
 }) {
   const [tab, setTab] = useState<Tab>('info')
   const nextVisit = records.find(r => r.next_visit && new Date(r.next_visit) > new Date())
@@ -119,7 +120,7 @@ export default function OwnerPetView({ pet, records, photos, docs, clinicName }:
 
           {/* Tabs */}
           <div className="mob-tabs">
-            {([['info','🐾','Ficha'],['galeria','📷','Galería'],['docs','📎','Documentos'],['historial','📋','Historial']] as const).map(([key,icon,label]) => (
+            {([['info','🐾','Ficha'],['citas','📅','Citas'],['galeria','📷','Galería'],['docs','📎','Docs'],['historial','📋','Historial']] as const).map(([key,icon,label]) => (
               <button key={key} onClick={() => setTab(key as Tab)} className={`mob-tab${tab===key?' active':''}`}>
                 <span className="mob-tab-icon">{icon}</span>{label}
               </button>
@@ -156,7 +157,13 @@ export default function OwnerPetView({ pet, records, photos, docs, clinicName }:
             <div>
               {tab === 'info'     && <InfoDesktop pet={pet} clinicName={clinicName} nextVisit={nextVisit} records={records} />}
               {tab === 'galeria'  && <PetGallery petId={pet.id} initialPhotos={photos} />}
-              {tab === 'docs'     && <DocsTab petId={pet.id} initialDocs={docs} />}
+              {tab === 'citas'    && <>
+            {clinicId
+              ? <BookAppointment petId={pet.id} clinicId={clinicId} />
+              : <div className="empty-box"><p style={{fontSize:32,margin:'0 0 8px'}}>📅</p><p style={{fontSize:14,color:'#8e8e93',margin:0}}>Sin clínica asignada</p></div>
+            }
+          </>}
+          {tab === 'docs'     && <DocsTab petId={pet.id} initialDocs={docs} />}
               {tab === 'historial'&& <HistorialTab petId={pet.id} records={records} />}
             </div>
           </div>

@@ -43,6 +43,7 @@ export default async function OwnerPetPage({ params }: { params: Promise<{ id: s
       photos={photosWithUrls}
       docs={docFiles}
       clinicName={clinicName}
+      clinicId={pet.clinic_id}
     />
   )
 }
