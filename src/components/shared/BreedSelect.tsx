@@ -75,6 +75,7 @@ export default function BreedSelect({
   }, [])
 
   // Sincronizar query cuando cambia species
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { setQuery(''); onChange('') }, [species])
 
   const select = (breed: string) => {

@@ -41,7 +41,7 @@ export default function PetGallery({
           const urlData = await urlRes.json()
           setPhotos(prev => [{ ...data.file, publicUrl: urlData.url }, ...prev])
         }
-      } catch (_) {}
+      } catch {}
     }
     setUploading(false)
   }

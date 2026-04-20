@@ -110,7 +110,10 @@ export default function AppointmentsCalendar({
             </div>
             <div className="p-5 space-y-3">
               <div className="flex items-center gap-3">
-                <span className="text-2xl">{SPECIES_ICON[selectedAppt.pets?.species ?? 'other']}</span>
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)' }}>
+                  <PawPrint size={18} strokeWidth={1.75} />
+                </div>
                 <div>
                   <p className="font-bold text-sm" style={{ color: 'var(--pf-ink)' }}>{selectedAppt.pets?.name}</p>
                   <p className="text-xs" style={{ color: 'var(--pf-muted)' }}>{selectedAppt.profiles?.full_name} · {selectedAppt.profiles?.email}</p>
@@ -257,7 +260,7 @@ export default function AppointmentsCalendar({
                   <div key={a.id} className="px-5 py-3 flex items-center gap-4 cursor-pointer hover:bg-gray-50"
                     onClick={() => setSelectedAppt(a)}>
                     <span className="text-sm font-bold w-12 flex-shrink-0" style={{ color: 'var(--pf-ink)' }}>{a.appointment_time.slice(0,5)}</span>
-                    <span className="text-xl">{SPECIES_ICON[a.pets?.species ?? 'other']}</span>
+                    <PawPrint size={16} strokeWidth={1.75} style={{ color: 'var(--pf-coral)', flexShrink: 0 }} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold truncate" style={{ color: 'var(--pf-ink)' }}>{a.pets?.name} · {a.profiles?.full_name}</p>
                       <p className="text-xs truncate" style={{ color: 'var(--pf-muted)' }}>{a.reason}</p>

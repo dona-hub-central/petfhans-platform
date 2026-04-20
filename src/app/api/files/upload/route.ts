@@ -32,7 +32,6 @@ export async function POST(req: NextRequest) {
   }
 
   // Subir a Supabase Storage
-  const ext = file.name.split('.').pop()?.toLowerCase() || 'bin'
   const filePath = `${clinicId}/${petId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
   const buffer = Buffer.from(await file.arrayBuffer())
 
