@@ -59,8 +59,6 @@ export default function AIPage() {
     setLoading(false)
   }
 
-  const speciesIcon: Record<string, string> = { dog: '🐶', cat: '🐱', bird: '🐦', rabbit: '🐰', other: '🐾' }
-
   return (
     <VetLayout clinicName={clinicName} userName={userName}>
       <div className="flex items-center justify-between mb-6">
