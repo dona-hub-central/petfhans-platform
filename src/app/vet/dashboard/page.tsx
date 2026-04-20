@@ -27,10 +27,11 @@ export default async function VetDashboard() {
     .order('visit_date', { ascending: false })
     .limit(5)
 
+  const sevenDaysAgo = new Date(new Date().setDate(new Date().getDate() - 7)).toISOString().split('T')[0]
   const { count: weekRecords } = await admin.from('medical_records')
     .select('*', { count: 'exact', head: true })
     .eq('clinic_id', profile?.clinic_id)
-    .gte('visit_date', new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0])
+    .gte('visit_date', sevenDaysAgo)
 
   const { count: invCount } = await admin.from('invitations')
     .select('*', { count: 'exact', head: true })
