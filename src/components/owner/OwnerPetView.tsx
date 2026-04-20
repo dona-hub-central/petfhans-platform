@@ -5,18 +5,17 @@ import PetAvatar from '@/components/shared/PetAvatar'
 import PetGallery from '@/components/owner/PetGallery'
 import { createClient } from '@/lib/supabase/client'
 import BookAppointment from '@/components/owner/BookAppointment'
+import { PawPrint, Calendar, Camera, FileText, ClipboardList, type LucideIcon } from 'lucide-react'
 
 type Tab = 'info' | 'galeria' | 'docs' | 'historial' | 'citas'
 
-function TabIcon({ name }: { name: string }) {
-  const c = { width: 17, height: 17, viewBox: '0 0 24 24', fill: 'none' as const, stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
-  if (name === 'paw')  return <svg {...c}><circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="20" cy="16" r="2"/><circle cx="4" cy="8" r="2"/><circle cx="6" cy="16" r="2"/><path d="M8 20a4 4 0 0 1 8 0"/></svg>
-  if (name === 'cal')  return <svg {...c}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-  if (name === 'cam')  return <svg {...c}><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-  if (name === 'doc')  return <svg {...c}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
-  if (name === 'hist') return <svg {...c}><rect x="9" y="2" width="6" height="4" rx="1"/><rect x="4" y="6" width="16" height="16" rx="2"/><path d="M9 12h6M9 16h4"/></svg>
-  return null
-}
+const TABS: { key: Tab; Icon: LucideIcon; label: string }[] = [
+  { key: 'info',      Icon: PawPrint,      label: 'Ficha' },
+  { key: 'citas',     Icon: Calendar,      label: 'Citas' },
+  { key: 'galeria',   Icon: Camera,        label: 'Galería' },
+  { key: 'docs',      Icon: FileText,      label: 'Docs' },
+  { key: 'historial', Icon: ClipboardList, label: 'Historial' },
+]
 
 const speciesLabel: Record<string, string> = {
   dog: 'Perro', cat: 'Gato', bird: 'Ave', rabbit: 'Conejo', other: 'Otro'
@@ -131,9 +130,9 @@ export default function OwnerPetView({ pet, records, photos, docs, clinicName, c
 
           {/* Tabs */}
           <div className="mob-tabs">
-            {([['info','paw','Ficha'],['citas','cal','Citas'],['galeria','cam','Galería'],['docs','doc','Docs'],['historial','hist','Historial']] as const).map(([key,icon,label]) => (
-              <button key={key} onClick={() => setTab(key as Tab)} className={`mob-tab${tab===key?' active':''}`}>
-                <TabIcon name={icon} />{label}
+            {TABS.map(({ key, Icon, label }) => (
+              <button key={key} onClick={() => setTab(key)} className={`mob-tab${tab===key?' active':''}`}>
+                <Icon size={17} strokeWidth={2} />{label}
               </button>
             ))}
           </div>
