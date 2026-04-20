@@ -40,13 +40,13 @@ ${clinics?.map(c => `- ${c.name} (${c.slug}) · ${c.subscription_plan}`).join('\
 MASCOTAS (${pets?.length ?? 0}):
 ${pets?.map(p => {
   const age = p.birth_date ? Math.floor((Date.now() - new Date(p.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 365)) : null
-  return `- ${p.name} | ${p.species}${p.breed ? ` ${p.breed}` : ''} | ${age ? age + 'a' : '?'} | Clínica: ${(p as { clinics?: { name: string } }).clinics?.name ?? '?'}`
+  return `- ${p.name} | ${p.species}${p.breed ? ` ${p.breed}` : ''} | ${age ? age + 'a' : '?'} | Clínica: ${(p as unknown as { clinics?: { name: string } }).clinics?.name ?? '?'}`
 }).join('\n') ?? 'Sin mascotas'}
 
 HISTORIAL RECIENTE (${records?.length ?? 0}):
 ${records?.slice(0, 50).map(r => {
-  const pet = r.pets as { name: string; species: string } | null
-  const vet = r.profiles as { full_name: string } | null
+  const pet = r.pets as unknown as { name: string; species: string } | null
+  const vet = r.profiles as unknown as { full_name: string } | null
   return `[${r.visit_date}] ${pet?.name ?? '?'} · ${r.reason}${r.diagnosis ? ` → ${r.diagnosis}` : ''} · Dr: ${vet?.full_name ?? '?'}`
 }).join('\n') ?? 'Sin historial'}
 === FIN ===`
@@ -79,4 +79,4 @@ ${records?.slice(0, 50).map(r => {
   return NextResponse.json({ reply, model: agent.model })
 }
 
-export const POST = withMetrics('/api/agent/chat', handler as (req: Request) => Promise<Response>)
+export const POST = withMetrics('/api/agent/chat', handler)

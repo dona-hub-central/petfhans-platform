@@ -1,4 +1,5 @@
-// src/lib/metrics.ts
+import { NextRequest, NextResponse } from 'next/server'
+
 const SLOW_THRESHOLD_MS = 25_000
 const WARN_THRESHOLD_MS = 10_000
 
@@ -23,9 +24,9 @@ function logMetric(event: MetricEvent) {
 
 export function withMetrics(
   route: string,
-  handler: (req: Request) => Promise<Response>
+  handler: (req: NextRequest) => Promise<NextResponse>
 ) {
-  return async function (req: Request): Promise<Response> {
+  return async function (req: NextRequest): Promise<NextResponse> {
     const start = Date.now()
     const instance_id = process.env.pm_id ?? 'local'
     let status = 200
