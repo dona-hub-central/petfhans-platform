@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import AdminLayout from '@/components/admin/AdminLayout'
 import StripeConfig from './StripeConfig'
+import CopyButton from './CopyButton'
 
 export default async function StripePage() {
   const supabase = await createClient()
@@ -103,13 +104,3 @@ function StatusCard({ icon, label, connected }: { icon: string; label: string; c
   )
 }
 
-function CopyButton({ text }: { text: string }) {
-  return (
-    <button
-      onClick={() => navigator.clipboard?.writeText(text)}
-      className="text-xs px-3 py-1.5 rounded-lg border transition flex-shrink-0"
-      style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}>
-      Copiar
-    </button>
-  )
-}
