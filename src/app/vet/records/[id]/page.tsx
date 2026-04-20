@@ -53,11 +53,13 @@ export default async function RecordDetailPage({ params }: { params: Promise<{ i
       {/* Nav + acciones */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
+          <Link href="/vet/pets" className="text-xs" style={{ color: 'var(--muted)' }}>Mascotas</Link>
+          <span style={{ color: 'var(--border)' }}>/</span>
           <Link href={`/vet/pets/${r.pets?.id}`} className="text-xs" style={{ color: 'var(--muted)' }}>
-            ← {r.pets?.name}
+            {r.pets?.name}
           </Link>
           <span style={{ color: 'var(--border)' }}>/</span>
-          <span className="text-xs" style={{ color: 'var(--muted)' }}>Consulta</span>
+          <span className="text-xs" style={{ color: 'var(--text)' }}>Consulta</span>
         </div>
         <Link href={`/vet/records/new?pet=${r.pets?.id}`} className="btn-pf px-4 py-2 text-sm inline-flex items-center gap-1.5">
           + Nueva consulta

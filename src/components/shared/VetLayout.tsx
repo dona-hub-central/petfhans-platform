@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 const nav = [
   { href: '/vet/dashboard',     icon: '🏠', label: 'Inicio' },
@@ -11,6 +12,7 @@ const nav = [
   { href: '/vet/invitations',   icon: '📨', label: 'Invitaciones' },
   { href: '/vet/ai',            icon: '🤖', label: 'IA Clínica' },
   { href: '/vet/team',          icon: '👥', label: 'Equipo' },
+  { href: '/vet/billing',       icon: '💳', label: 'Facturación' },
 ]
 
 export default function VetLayout({
@@ -23,6 +25,17 @@ export default function VetLayout({
   userName: string
 }) {
   const path = usePathname()
+  const [usage, setUsage] = useState<{ count: number; max: number } | null>(null)
+
+  useEffect(() => {
+    fetch('/api/vet/usage')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setUsage(d) })
+      .catch(() => null)
+  }, [])
+
+  const usagePct   = usage && usage.max > 0 ? Math.min((usage.count / usage.max) * 100, 100) : 0
+  const usageColor = usagePct >= 100 ? '#dc2626' : usagePct >= 80 ? '#d97706' : 'var(--accent)'
 
   return (
     <div className="min-h-screen flex" style={{ background: 'var(--bg)' }}>
@@ -42,7 +55,7 @@ export default function VetLayout({
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-0.5">
+        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
           {nav.map(item => {
             const active = path.startsWith(item.href)
             return (
@@ -59,15 +72,34 @@ export default function VetLayout({
           })}
         </nav>
 
+        {/* Patient usage indicator */}
+        {usage && (
+          <div className="px-4 py-3 border-t" style={{ borderColor: 'var(--border)' }}>
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-xs" style={{ color: 'var(--muted)' }}>Pacientes</span>
+              <span className="text-xs font-semibold" style={{ color: usageColor }}>
+                {usage.count}/{usage.max}
+              </span>
+            </div>
+            <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--bg)' }}>
+              <div className="h-full rounded-full transition-all"
+                style={{ width: `${usagePct}%`, background: usageColor }} />
+            </div>
+          </div>
+        )}
+
         {/* User */}
         <div className="px-4 py-4 border-t" style={{ borderColor: 'var(--border)' }}>
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+          <Link href="/vet/profile" className="flex items-center gap-2.5 group">
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
               style={{ background: 'var(--accent-s)', color: 'var(--accent)' }}>
               {userName[0]}
             </div>
-            <span className="text-xs truncate max-w-[100px]" style={{ color: 'var(--text)' }}>{userName}</span>
-          </div>
+            <span className="text-xs truncate max-w-[100px] group-hover:underline"
+              style={{ color: 'var(--text)' }}>
+              {userName}
+            </span>
+          </Link>
         </div>
       </aside>
 

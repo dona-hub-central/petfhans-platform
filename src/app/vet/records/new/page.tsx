@@ -165,8 +165,19 @@ function NewRecordForm() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <a href={form.pet_id ? `/vet/pets/${form.pet_id}` : '/vet/pets'}
-              className="text-xs mb-1 inline-block" style={{ color: 'var(--muted)' }}>← Volver</a>
+            <div className="flex items-center gap-2 mb-1">
+              <a href="/vet/pets" className="text-xs" style={{ color: 'var(--muted)' }}>Mascotas</a>
+              {form.pet_id && (
+                <>
+                  <span style={{ color: 'var(--border)' }}>/</span>
+                  <a href={`/vet/pets/${form.pet_id}`} className="text-xs" style={{ color: 'var(--muted)' }}>
+                    {selectedPet?.name ?? '…'}
+                  </a>
+                </>
+              )}
+              <span style={{ color: 'var(--border)' }}>/</span>
+              <span className="text-xs" style={{ color: 'var(--text)' }}>Nueva consulta</span>
+            </div>
             <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Nueva consulta</h1>
           </div>
           <button type="submit" disabled={loading}
