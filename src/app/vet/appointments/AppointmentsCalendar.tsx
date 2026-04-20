@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { PawPrint, Calendar, Clock, ClipboardList } from 'lucide-react'
 
 const DAYS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
@@ -10,7 +11,6 @@ const STATUS_CFG = {
   cancelled: { label:'Cancelada',  bg:'#fee2e2', color:'#dc2626', dot:'#ef4444' },
   completed: { label:'Completada', bg:'#f0f4ff', color:'#2563eb', dot:'#3b82f6' },
 }
-const SPECIES_ICON: Record<string,string> = { dog:'🐶', cat:'🐱', bird:'🐦', rabbit:'🐰', other:'🐾' }
 
 type Appt = {
   id: string; appointment_date: string; appointment_time: string
@@ -81,12 +81,12 @@ export default function AppointmentsCalendar({
           </div>
           <div className="divide-y max-h-80 overflow-y-auto" style={{ borderColor: 'var(--pf-border)' }}>
             {pendingList.length === 0 ? (
-              <p className="px-5 py-8 text-sm text-center" style={{ color: 'var(--pf-muted)' }}>Sin citas pendientes 🎉</p>
+              <p className="px-5 py-8 text-sm text-center" style={{ color: 'var(--pf-muted)' }}>Sin citas pendientes</p>
             ) : pendingList.map(a => (
               <div key={a.id} className="px-4 py-3 cursor-pointer hover:bg-gray-50 transition"
                 onClick={() => { setSelectedAppt(a); setSelectedDate(a.appointment_date) }}>
                 <div className="flex items-center gap-2 mb-1">
-                  <span>{SPECIES_ICON[a.pets?.species ?? 'other']}</span>
+                  <PawPrint size={14} strokeWidth={1.75} style={{ color: 'var(--pf-coral)', flexShrink: 0 }} />
                   <span className="text-sm font-semibold" style={{ color: 'var(--pf-ink)' }}>{a.pets?.name}</span>
                   <span className="text-xs ml-auto" style={{ color: 'var(--pf-muted)' }}>
                     {a.appointment_time.slice(0,5)}
@@ -117,9 +117,9 @@ export default function AppointmentsCalendar({
                 </div>
               </div>
               <div className="rounded-xl p-3 space-y-1.5" style={{ background: 'var(--pf-bg)' }}>
-                <p className="text-xs"><strong>📅</strong> {new Date(selectedAppt.appointment_date + 'T12:00').toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' })}</p>
-                <p className="text-xs"><strong>🕐</strong> {selectedAppt.appointment_time.slice(0,5)}</p>
-                <p className="text-xs"><strong>📋</strong> {selectedAppt.reason}</p>
+                <p className="text-xs flex items-center gap-1.5"><Calendar size={12} strokeWidth={2} style={{ color: 'var(--pf-muted)', flexShrink: 0 }} /> {new Date(selectedAppt.appointment_date + 'T12:00').toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' })}</p>
+                <p className="text-xs flex items-center gap-1.5"><Clock size={12} strokeWidth={2} style={{ color: 'var(--pf-muted)', flexShrink: 0 }} /> {selectedAppt.appointment_time.slice(0,5)}</p>
+                <p className="text-xs flex items-center gap-1.5"><ClipboardList size={12} strokeWidth={2} style={{ color: 'var(--pf-muted)', flexShrink: 0 }} /> {selectedAppt.reason}</p>
               </div>
               <div>
                 <span className="text-xs font-semibold px-2.5 py-1 rounded-full"
@@ -245,8 +245,9 @@ export default function AppointmentsCalendar({
         {selectedDate && dayAppts.length > 0 && (
           <div className="bg-white rounded-2xl border mt-4 overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
             <div className="px-5 py-3 border-b" style={{ borderColor: 'var(--pf-border)', background: 'var(--pf-bg)' }}>
-              <h3 className="font-semibold text-sm" style={{ color: 'var(--pf-ink)' }}>
-                📅 {new Date(selectedDate + 'T12:00').toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' })}
+              <h3 className="font-semibold text-sm flex items-center gap-1.5" style={{ color: 'var(--pf-ink)' }}>
+                <Calendar size={13} strokeWidth={2} style={{ color: 'var(--pf-muted)' }} />
+                {new Date(selectedDate + 'T12:00').toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' })}
               </h3>
             </div>
             <div className="divide-y" style={{ borderColor: 'var(--pf-border)' }}>

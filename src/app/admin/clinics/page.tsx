@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import AdminLayout from '@/components/admin/AdminLayout'
+import { Building2 } from 'lucide-react'
 
 export default async function ClinicsPage() {
   const supabase = await createClient()
@@ -36,8 +37,10 @@ export default async function ClinicsPage() {
             {clinics && clinics.length > 0 ? clinics.map((clinic: any) => (
               <div key={clinic.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
-                    style={{ background: 'var(--pf-coral-soft)' }}>🏥</div>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                    style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)' }}>
+                    <Building2 size={18} strokeWidth={1.75} />
+                  </div>
                   <div>
                     <p className="font-medium text-sm" style={{ color: 'var(--pf-ink)' }}>{clinic.name}</p>
                     <p className="text-xs mt-0.5" style={{ color: 'var(--pf-muted)' }}>{clinic.slug}.petfhans.com</p>
@@ -54,7 +57,9 @@ export default async function ClinicsPage() {
               </div>
             )) : (
               <div className="px-6 py-16 text-center">
-                <div className="text-4xl mb-3">🏥</div>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12, color: 'var(--pf-muted)' }}>
+                  <Building2 size={40} strokeWidth={1.5} />
+                </div>
                 <p className="text-sm" style={{ color: 'var(--pf-muted)' }}>No hay clínicas registradas</p>
                 <Link href="/admin/clinics/new"
                   className="text-sm font-medium mt-2 inline-block" style={{ color: 'var(--pf-coral)' }}>

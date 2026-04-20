@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import AdminLayout from '@/components/admin/AdminLayout'
 import AgentConfig from './AgentConfig'
+import { PawPrint, ClipboardList, Building2, Sparkles } from 'lucide-react'
 
 export default async function AgentPage() {
   const supabase = await createClient()
@@ -25,8 +26,10 @@ export default async function AgentPage() {
     <AdminLayout userName={profile?.full_name ?? 'Admin'}>
       <div className="px-8 py-8">
         <div className="flex items-center gap-4 mb-8">
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl"
-            style={{ background: 'var(--pf-coral-soft)' }}>🤖</div>
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
+            style={{ background: 'var(--pf-info)', color: 'var(--pf-info-fg)' }}>
+            <Sparkles size={28} strokeWidth={1.75} />
+          </div>
           <div>
             <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>
               {agent?.name ?? 'Dr. Petfhans'}
@@ -48,14 +51,17 @@ export default async function AgentPage() {
 
         {/* Stats de acceso a BD */}
         <div className="grid grid-cols-3 gap-4 mb-8">
-          {[
-            { icon: '🐾', label: 'Mascotas en BD',  value: totalPets ?? 0 },
-            { icon: '📋', label: 'Consultas en BD', value: totalRecords ?? 0 },
-            { icon: '🏥', label: 'Clínicas',         value: totalClinics ?? 0 },
-          ].map(s => (
+          {([
+            { Icon: PawPrint,      label: 'Mascotas en BD',  value: totalPets ?? 0 },
+            { Icon: ClipboardList, label: 'Consultas en BD', value: totalRecords ?? 0 },
+            { Icon: Building2,     label: 'Clínicas',        value: totalClinics ?? 0 },
+          ] as const).map(s => (
             <div key={s.label} className="bg-white rounded-2xl border p-5 flex items-center gap-4"
               style={{ borderColor: 'var(--pf-border)' }}>
-              <span className="text-2xl">{s.icon}</span>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)' }}>
+                <s.Icon size={18} strokeWidth={1.75} />
+              </div>
               <div>
                 <p className="text-xl font-bold" style={{ color: 'var(--pf-ink)' }}>{s.value}</p>
                 <p className="text-xs" style={{ color: 'var(--pf-muted)' }}>{s.label}</p>

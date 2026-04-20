@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import VetLayout from '@/components/shared/VetLayout'
 import PetSearch from '@/components/shared/PetSearch'
+import { ClipboardList, Stethoscope, FileText, Pill, Syringe, StickyNote, type LucideIcon } from 'lucide-react'
 
 // ── Tipos ──────────────────────────────────────────────────────────────
 type Medication = { name: string; dose: string; route: string; frequency: string; duration: string }
@@ -16,12 +17,12 @@ type PhysicalExam = {
 }
 
 const VISIT_TYPES = [
-  { value: 'consultation', label: '🩺 Consulta',       color: '#2563eb' },
-  { value: 'emergency',    label: '🚨 Urgencia',        color: '#dc2626' },
-  { value: 'surgery',      label: '🔪 Cirugía',         color: '#7c3aed' },
-  { value: 'followup',     label: '🔄 Seguimiento',     color: '#0891b2' },
-  { value: 'vaccination',  label: '💉 Vacunación',      color: '#16a34a' },
-  { value: 'checkup',      label: '✅ Control',          color: '#d97706' },
+  { value: 'consultation', label: 'Consulta',    color: '#2563eb' },
+  { value: 'emergency',    label: 'Urgencia',    color: '#dc2626' },
+  { value: 'surgery',      label: 'Cirugía',     color: '#7c3aed' },
+  { value: 'followup',     label: 'Seguimiento', color: '#0891b2' },
+  { value: 'vaccination',  label: 'Vacunación',  color: '#16a34a' },
+  { value: 'checkup',      label: 'Control',     color: '#d97706' },
 ]
 
 const GENERAL_STATES   = ['Bueno', 'Regular', 'Malo', 'Crítico']
@@ -36,11 +37,11 @@ const emptyExam: PhysicalExam = {
 }
 
 // ── Componentes auxiliares ─────────────────────────────────────────────
-function Section({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) {
+function Section({ title, Icon, children }: { title: string; Icon: LucideIcon; children: React.ReactNode }) {
   return (
     <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
       <div className="px-5 py-3 border-b flex items-center gap-2" style={{ borderColor: 'var(--pf-border)', background: 'var(--pf-bg)' }}>
-        <span>{icon}</span>
+        <Icon size={14} strokeWidth={2} style={{ color: 'var(--pf-muted)', flexShrink: 0 }} />
         <h2 className="font-semibold text-sm" style={{ color: 'var(--pf-ink)' }}>{title}</h2>
       </div>
       <div className="p-5">{children}</div>
@@ -155,8 +156,6 @@ function NewRecordForm() {
   const inp = "w-full px-3 py-2.5 rounded-xl border text-sm outline-none transition"
   const inpS = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)', background: '#fff' }
   const f = { onFocus: (e: any) => e.target.style.borderColor = 'var(--pf-coral)', onBlur: (e: any) => e.target.style.borderColor = 'var(--pf-border)' }
-  const speciesIcon: Record<string, string> = { dog: '🐶', cat: '🐱', bird: '🐦', rabbit: '🐰', other: '🐾' }
-
   const selectedPet = pets.find(p => p.id === form.pet_id)
 
   return (
@@ -193,7 +192,7 @@ function NewRecordForm() {
         <div className="space-y-4">
 
           {/* ── 1. IDENTIFICACIÓN ── */}
-          <Section title="Identificación" icon="📋">
+          <Section title="Identificación" Icon={ClipboardList}>
             <div className="grid grid-cols-3 gap-4 mb-4">
               <Field label="Paciente" required>
                 <PetSearch pets={pets} value={form.pet_id} onChange={v => set('pet_id', v)} />
@@ -225,7 +224,7 @@ function NewRecordForm() {
           </Section>
 
           {/* ── 2. EXPLORACIÓN FÍSICA ── */}
-          <Section title="Exploración física" icon="🩺">
+          <Section title="Exploración física" Icon={Stethoscope}>
             {/* Constantes vitales */}
             <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: 'var(--pf-muted)' }}>Constantes vitales</p>
             <div className="grid grid-cols-4 gap-3 mb-4">
@@ -306,7 +305,7 @@ function NewRecordForm() {
           </Section>
 
           {/* ── 3. ANAMNESIS Y DIAGNÓSTICO ── */}
-          <Section title="Anamnesis y diagnóstico" icon="📝">
+          <Section title="Anamnesis y diagnóstico" Icon={FileText}>
             <div className="space-y-3">
               <Field label="Motivo de consulta" required>
                 <input value={form.reason} onChange={e => set('reason', e.target.value)} required
@@ -334,7 +333,7 @@ function NewRecordForm() {
           </Section>
 
           {/* ── 4. TRATAMIENTO ── */}
-          <Section title="Plan terapéutico" icon="💊">
+          <Section title="Plan terapéutico" Icon={Pill}>
             <Field label="Tratamiento indicado">
               <textarea value={form.treatment} onChange={e => set('treatment', e.target.value)}
                 rows={2} placeholder="Descripción del tratamiento…"
@@ -387,7 +386,7 @@ function NewRecordForm() {
           </Section>
 
           {/* ── 5. VACUNAS ── */}
-          <Section title="Vacunación / Desparasitación" icon="💉">
+          <Section title="Vacunación / Desparasitación" Icon={Syringe}>
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs" style={{ color: 'var(--pf-muted)' }}>Registra las vacunas o desparasitaciones administradas hoy</p>
               <button type="button" onClick={addVaccine}
@@ -421,7 +420,7 @@ function NewRecordForm() {
           </Section>
 
           {/* ── 6. NOTAS ── */}
-          <Section title="Notas y observaciones" icon="📌">
+          <Section title="Notas y observaciones" Icon={StickyNote}>
             <textarea value={form.notes} onChange={e => set('notes', e.target.value)}
               rows={3} placeholder="Observaciones adicionales, instrucciones para el dueño…"
               className="w-full px-3 py-2.5 rounded-xl border text-sm outline-none transition resize-none"

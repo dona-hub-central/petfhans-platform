@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import VetLayout from '@/components/shared/VetLayout'
 import AppointmentsCalendar from './AppointmentsCalendar'
 import Link from 'next/link'
+import { Settings } from 'lucide-react'
 
 export default async function AppointmentsPage() {
   const supabase = await createClient()
@@ -46,7 +47,7 @@ export default async function AppointmentsPage() {
           </p>
         </div>
         <Link href="/vet/appointments/schedule" className="btn-pf px-4 py-2.5 text-sm inline-flex items-center gap-2">
-          ⚙️ Configurar horario
+          <Settings size={14} strokeWidth={2} /> Configurar horario
         </Link>
       </div>
 

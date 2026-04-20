@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import VetLayout from '@/components/shared/VetLayout'
+import { XCircle, AlertTriangle } from 'lucide-react'
 
 export const metadata = { title: 'Facturación · Petfhans' }
 
@@ -57,7 +58,7 @@ export default async function BillingPage() {
         {pct >= 100 && (
           <div className="rounded-xl p-4 mb-4 flex items-center gap-3"
             style={{ background: '#fef2f2', border: '1px solid #fecaca' }}>
-            <span className="text-xl">🚫</span>
+            <XCircle size={20} strokeWidth={2} style={{ color: '#dc2626', flexShrink: 0 }} />
             <div>
               <p className="text-sm font-semibold" style={{ color: '#dc2626' }}>Límite de pacientes alcanzado</p>
               <p className="text-xs mt-0.5" style={{ color: '#dc2626' }}>
@@ -71,7 +72,7 @@ export default async function BillingPage() {
         {pct >= 80 && pct < 100 && (
           <div className="rounded-xl p-4 mb-4 flex items-center gap-3"
             style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
-            <span className="text-xl">⚠️</span>
+            <AlertTriangle size={20} strokeWidth={2} style={{ color: '#d97706', flexShrink: 0 }} />
             <div>
               <p className="text-sm font-semibold" style={{ color: '#d97706' }}>Casi en el límite</p>
               <p className="text-xs mt-0.5" style={{ color: '#d97706' }}>

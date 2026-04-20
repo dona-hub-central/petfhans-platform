@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { BarChart2 } from 'lucide-react'
 
 type Tier = {
   id: string; name: string
@@ -150,7 +151,9 @@ export default function TiersManager({ tiers: initial }: { tiers: Tier[] }) {
       {/* Tabla de tarifas */}
       {tiers.length === 0 ? (
         <div className="bg-white rounded-2xl border p-12 text-center" style={{ borderColor: 'var(--pf-border)' }}>
-          <p className="text-3xl mb-3">📊</p>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12, color: 'var(--pf-muted)' }}>
+            <BarChart2 size={40} strokeWidth={1.5} />
+          </div>
           <p className="text-sm" style={{ color: 'var(--pf-muted)' }}>Sin tarifas definidas. Crea la primera.</p>
         </div>
       ) : (

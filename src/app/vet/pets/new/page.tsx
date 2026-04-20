@@ -173,7 +173,7 @@ export default function NewPetPage() {
                 Cancelar
               </a>
               <button type="submit" disabled={loading} className="btn-pf flex-1 py-3 text-sm">
-                {loading ? 'Guardando...' : '✓ Registrar mascota'}
+                {loading ? 'Guardando...' : 'Registrar mascota'}
               </button>
             </div>
           </form>

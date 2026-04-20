@@ -2,16 +2,16 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { Layers } from 'lucide-react'
 
-// Opciones de la app que se pueden activar/desactivar por plan
 const APP_FEATURES = [
-  { key: 'pets',         label: '🐾 Gestión de mascotas',   desc: 'Ver y crear fichas de mascotas' },
-  { key: 'records',      label: '📋 Consultas',             desc: 'Registrar y ver historial clínico' },
-  { key: 'invitations',  label: '📨 Invitaciones',          desc: 'Invitar dueños y equipo' },
-  { key: 'files',        label: '📎 Archivos',              desc: 'Subir y ver documentos' },
-  { key: 'ai',           label: '🤖 IA Clínica',           desc: 'Análisis con inteligencia artificial' },
-  { key: 'team',         label: '👥 Equipo',               desc: 'Ver y gestionar el equipo' },
-  { key: 'stats',        label: '📊 Estadísticas',         desc: 'Métricas y reportes' },
+  { key: 'pets',         label: 'Gestión de mascotas',  desc: 'Ver y crear fichas de mascotas' },
+  { key: 'records',      label: 'Consultas',            desc: 'Registrar y ver historial clínico' },
+  { key: 'invitations',  label: 'Invitaciones',         desc: 'Invitar dueños y equipo' },
+  { key: 'files',        label: 'Archivos',             desc: 'Subir y ver documentos' },
+  { key: 'ai',           label: 'IA Clínica',           desc: 'Análisis con inteligencia artificial' },
+  { key: 'team',         label: 'Equipo',               desc: 'Ver y gestionar el equipo' },
+  { key: 'stats',        label: 'Estadísticas',         desc: 'Métricas y reportes' },
 ]
 
 type UserPlan = {
@@ -198,7 +198,9 @@ export default function UserPlansManager({ plans: initial }: { plans: UserPlan[]
       {/* Lista de planes */}
       {plans.length === 0 ? (
         <div className="bg-white rounded-2xl border p-12 text-center" style={{ borderColor: 'var(--pf-border)' }}>
-          <p className="text-3xl mb-3">👤</p>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12, color: 'var(--pf-muted)' }}>
+            <Layers size={40} strokeWidth={1.5} />
+          </div>
           <p className="text-sm" style={{ color: 'var(--pf-muted)' }}>Sin planes de usuario. Crea el primero.</p>
         </div>
       ) : (

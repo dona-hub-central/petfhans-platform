@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import AdminLayout from '@/components/admin/AdminLayout'
 import SubscriptionManager from './SubscriptionManager'
+import { Settings } from 'lucide-react'
 
 export default async function SubscriptionsPage() {
   const supabase = await createClient()
@@ -45,9 +46,9 @@ export default async function SubscriptionsPage() {
             <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Suscripciones</h1>
             <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>Planes activos y usuarios por clínica</p>
           </div>
-          <a href="/admin/plans" className="text-sm font-medium px-4 py-2 rounded-xl border"
+          <a href="/admin/plans" className="text-sm font-medium px-4 py-2 rounded-xl border inline-flex items-center gap-1.5"
             style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-coral)' }}>
-            ⚙️ Configurar planes
+            <Settings size={13} strokeWidth={2} /> Configurar planes
           </a>
         </div>
 

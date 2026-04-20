@@ -3,10 +3,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import VetLayout from '@/components/shared/VetLayout'
+import { PawPrint, User, XCircle, AlertTriangle } from 'lucide-react'
 
-const speciesIcon: Record<string, string> = {
-  dog: '🐶', cat: '🐱', bird: '🐦', rabbit: '🐰', other: '🐾'
-}
 const speciesLabel: Record<string, string> = {
   dog: 'Perro', cat: 'Gato', bird: 'Ave', rabbit: 'Conejo', other: 'Otro'
 }
@@ -51,7 +49,7 @@ export default async function PetsPage() {
       {atLimit && (
         <div className="rounded-xl p-4 mb-4 flex items-center gap-3"
           style={{ background: '#fef2f2', border: '1px solid #fecaca' }}>
-          <span className="text-xl">🚫</span>
+          <XCircle size={20} strokeWidth={2} style={{ color: '#dc2626', flexShrink: 0 }} />
           <div>
             <p className="text-sm font-semibold" style={{ color: '#dc2626' }}>Límite de pacientes alcanzado ({count}/{maxPats})</p>
             <p className="text-xs mt-0.5" style={{ color: '#dc2626' }}>
@@ -64,7 +62,7 @@ export default async function PetsPage() {
       {nearLimit && (
         <div className="rounded-xl p-4 mb-4 flex items-center gap-3"
           style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
-          <span className="text-xl">⚠️</span>
+          <AlertTriangle size={20} strokeWidth={2} style={{ color: '#d97706', flexShrink: 0 }} />
           <p className="text-sm" style={{ color: '#d97706' }}>
             Estás usando {count} de {maxPats} pacientes ({Math.round(count / maxPats * 100)}%).
             <a href="/vet/billing" className="underline ml-1">Ver plan →</a>
@@ -99,9 +97,9 @@ export default async function PetsPage() {
               style={{ borderColor: 'var(--pf-border)' }}>
               <div className="flex items-start gap-4">
                 {/* Avatar */}
-                <div className="w-14 h-14 rounded-xl flex items-center justify-center text-3xl flex-shrink-0"
-                  style={{ background: 'var(--pf-coral-soft)' }}>
-                  {speciesIcon[pet.species] ?? '🐾'}
+                <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)' }}>
+                  <PawPrint size={24} strokeWidth={1.75} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-base truncate" style={{ color: 'var(--pf-ink)' }}>{pet.name}</p>
@@ -119,7 +117,7 @@ export default async function PetsPage() {
               <div className="mt-4 pt-4 border-t flex items-center justify-between"
                 style={{ borderColor: 'var(--pf-border)' }}>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs" style={{ color: 'var(--pf-muted)' }}>👤</span>
+                  <User size={12} strokeWidth={2} style={{ color: 'var(--pf-muted)' }} />
                   <span className="text-xs truncate max-w-[140px]" style={{ color: 'var(--pf-muted)' }}>
                     {pet.profiles?.full_name ?? 'Sin dueño asignado'}
                   </span>
@@ -134,7 +132,9 @@ export default async function PetsPage() {
         </div>
       ) : (
         <div className="bg-white rounded-2xl border p-16 text-center" style={{ borderColor: 'var(--pf-border)' }}>
-          <div className="text-5xl mb-4">🐾</div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16, color: 'var(--pf-coral)' }}>
+            <PawPrint size={44} strokeWidth={1.5} />
+          </div>
           <p className="font-semibold" style={{ color: 'var(--pf-ink)' }}>No hay mascotas registradas</p>
           <p className="text-sm mt-1 mb-6" style={{ color: 'var(--pf-muted)' }}>Agrega el primer paciente de la clínica</p>
           <Link href="/vet/pets/new" className="btn-pf px-6 py-2.5 text-sm inline-block">

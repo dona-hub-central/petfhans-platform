@@ -4,11 +4,12 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import VetLayout from '@/components/shared/VetLayout'
 import { InvitationCard } from '@/components/vet/InvitationCard'
+import { Mail } from 'lucide-react'
 
 const roleLabel: Record<string, string> = {
-  veterinarian: '👨‍⚕️ Veterinario',
-  pet_owner:    '👤 Dueño de mascota',
-  vet_admin:    '⚙️ Admin',
+  veterinarian: 'Veterinario',
+  pet_owner:    'Dueño de mascota',
+  vet_admin:    'Admin',
 }
 
 export default async function InvitationsPage() {
@@ -78,7 +79,9 @@ export default async function InvitationsPage() {
 
       {(!invitations || invitations.length === 0) && (
         <div className="bg-white rounded-2xl border p-16 text-center" style={{ borderColor: 'var(--pf-border)' }}>
-          <div className="text-4xl mb-3">📨</div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12, color: 'var(--pf-muted)' }}>
+            <Mail size={40} strokeWidth={1.5} />
+          </div>
           <p className="font-medium text-sm" style={{ color: 'var(--pf-ink)' }}>Sin invitaciones aún</p>
           <p className="text-xs mt-1 mb-6" style={{ color: 'var(--pf-muted)' }}>Invita a veterinarios o dueños de mascotas</p>
           <Link href="/vet/invitations/new" className="btn-pf px-6 py-2.5 text-sm inline-block">

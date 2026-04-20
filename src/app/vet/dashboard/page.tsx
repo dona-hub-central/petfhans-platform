@@ -87,7 +87,7 @@ export default async function VetDashboard() {
         {recentRecords && recentRecords.length > 0 ? recentRecords.map((r: any) => (
           <Link key={r.id} href={`/vet/records/${r.id}`} className="recent-row">
             <div style={{ width: 36, height: 36, borderRadius: 12, background: 'var(--pf-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>
-              {r.pets?.species === 'dog' ? '🐶' : r.pets?.species === 'cat' ? '🐱' : r.pets?.species === 'rabbit' ? '🐰' : '🐾'}
+              <PawPrint size={18} strokeWidth={1.75} style={{ color: 'var(--pf-coral)' }} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ font: 'var(--pf-text-body)', fontWeight: 500, color: 'var(--pf-ink)', margin: 0 }}>{r.pets?.name}</p>
