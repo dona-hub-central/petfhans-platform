@@ -79,7 +79,7 @@ ${records?.map(r => `[${r.visit_date}] ${r.reason} → Dx: ${r.diagnosis ?? 'N/D
   return NextResponse.json({ reply })
 }
 
-export const POST = withMetrics('/api/vet/ai-chat', handler as (req: Request) => Promise<Response>)
+export const POST = withMetrics('/api/vet/ai-chat', handler)
 
 function calcAge(birthDate: string) {
   const months = Math.floor((Date.now() - new Date(birthDate).getTime()) / (1000 * 60 * 60 * 24 * 30))
