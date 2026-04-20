@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import VetLayout from '@/components/shared/VetLayout'
+import { Users } from 'lucide-react'
 
 const roleLabel: Record<string, { label: string; color: string; bg: string }> = {
   vet_admin:    { label: 'Admin',        color: '#6d28d9', bg: '#f3e8ff' },
@@ -50,7 +51,7 @@ export default async function TeamPage() {
                   <p className="font-medium text-sm" style={{ color: 'var(--pf-ink)' }}>{member.full_name}</p>
                   <p className="text-xs mt-0.5" style={{ color: 'var(--pf-muted)' }}>{member.email}</p>
                   {member.phone && (
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--pf-muted)' }}>📞 {member.phone}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--pf-muted)' }}>{member.phone}</p>
                   )}
                 </div>
                 <span className="text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0"
@@ -61,7 +62,9 @@ export default async function TeamPage() {
             )
           }) : (
             <div className="px-6 py-16 text-center">
-              <div className="text-4xl mb-3">👥</div>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12, color: 'var(--pf-muted)' }}>
+                <Users size={40} strokeWidth={1.5} />
+              </div>
               <p className="font-medium text-sm" style={{ color: 'var(--pf-ink)' }}>Sin equipo aún</p>
               <Link href="/vet/invitations/new"
                 className="text-sm font-medium mt-2 inline-block" style={{ color: 'var(--pf-coral)' }}>

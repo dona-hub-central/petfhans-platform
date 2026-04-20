@@ -3,8 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import VetLayout from '@/components/shared/VetLayout'
-
-const speciesIcon: Record<string, string> = { dog: '🐶', cat: '🐱', bird: '🐦', rabbit: '🐰', other: '🐾' }
+import { PawPrint, ClipboardList } from 'lucide-react'
 
 const VISIT_TYPE_LABEL: Record<string, { label: string; color: string }> = {
   consultation: { label: 'Consulta',    color: '#2563eb' },
@@ -60,9 +59,9 @@ export default async function RecordsPage() {
                   </div>
 
                   {/* Icono mascota */}
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-                    style={{ background: 'var(--pf-coral-soft)' }}>
-                    {speciesIcon[r.pets?.species] ?? '🐾'}
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)' }}>
+                    <PawPrint size={18} strokeWidth={1.75} />
                   </div>
 
                   {/* Info */}
@@ -89,7 +88,9 @@ export default async function RecordsPage() {
           </div>
         ) : (
           <div className="px-6 py-16 text-center">
-            <div className="text-4xl mb-3">📋</div>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12, color: 'var(--pf-muted)' }}>
+              <ClipboardList size={40} strokeWidth={1.5} />
+            </div>
             <p className="font-medium text-sm mb-2" style={{ color: 'var(--pf-ink)' }}>Sin consultas registradas</p>
             <Link href="/vet/records/new" className="btn-pf px-5 py-2.5 text-sm inline-flex items-center gap-2">
               + Nueva consulta

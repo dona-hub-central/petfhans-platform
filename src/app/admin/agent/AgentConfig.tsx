@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { Sparkles } from 'lucide-react'
 
 const MODELS = [
   { value: 'gpt-4o',       label: 'GPT-4o',       desc: 'Más potente, ideal para análisis complejos' },
@@ -123,7 +124,7 @@ export default function AgentConfig({ agent: initial }: { agent: Agent | null })
     <div>
       {/* Tabs */}
       <div className="flex gap-1 mb-6 border-b" style={{ borderColor: 'var(--pf-border)' }}>
-        {[['config','⚙️ Configuración'],['chat','💬 Probar agente']].map(([key, label]) => (
+        {[['config','Configuración'],['chat','Probar agente']].map(([key, label]) => (
           <button key={key} onClick={() => setActiveTab(key as any)}
             className="px-5 py-2.5 text-sm font-medium border-b-2 transition"
             style={{
@@ -139,7 +140,7 @@ export default function AgentConfig({ agent: initial }: { agent: Agent | null })
 
           {/* Identidad */}
           <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'var(--pf-border)' }}>
-            <h3 className="font-semibold text-sm mb-4" style={{ color: 'var(--pf-ink)' }}>🤖 Identidad del agente</h3>
+            <h3 className="font-semibold text-sm mb-4" style={{ color: 'var(--pf-ink)' }}>Identidad del agente</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--pf-muted)' }}>Nombre</label>
@@ -219,7 +220,7 @@ export default function AgentConfig({ agent: initial }: { agent: Agent | null })
 
           {/* System Prompt */}
           <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'var(--pf-border)' }}>
-            <h3 className="font-semibold text-sm mb-1" style={{ color: 'var(--pf-ink)' }}>📝 Prompt del sistema</h3>
+            <h3 className="font-semibold text-sm mb-1" style={{ color: 'var(--pf-ink)' }}>Prompt del sistema</h3>
             <p className="text-xs mb-3" style={{ color: 'var(--pf-muted)' }}>Define la personalidad, tono y comportamiento del agente</p>
             <textarea value={form.system_prompt} onChange={e => set('system_prompt', e.target.value)}
               rows={6} placeholder="Eres Dr. Petfhans, veterinario experto…"
@@ -292,7 +293,9 @@ export default function AgentConfig({ agent: initial }: { agent: Agent | null })
           <div className="flex-1 overflow-y-auto p-5 space-y-4">
             {chatMessages.length === 0 && (
               <div className="text-center py-8">
-                <p className="text-3xl mb-3">🤖</p>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12, color: 'var(--pf-info-fg)' }}>
+                  <Sparkles size={32} strokeWidth={1.75} />
+                </div>
                 <p className="text-sm font-medium" style={{ color: 'var(--pf-ink)' }}>Habla con {form.name}</p>
                 <p className="text-xs mt-1" style={{ color: 'var(--pf-muted)' }}>
                   Prueba con: "Analiza el historial de Brounie" o "¿Qué síntomas pueden indicar parvo?"
@@ -308,7 +311,7 @@ export default function AgentConfig({ agent: initial }: { agent: Agent | null })
                     borderRadius: m.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
                   }}>
                   {m.role === 'assistant' && (
-                    <p className="text-xs font-bold mb-1" style={{ color: 'var(--pf-coral)' }}>🤖 {form.name}</p>
+                    <p className="text-xs font-bold mb-1 flex items-center gap-1" style={{ color: 'var(--pf-coral)' }}><Sparkles size={11} strokeWidth={2} /> {form.name}</p>
                   )}
                   <p style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{m.content}</p>
                 </div>

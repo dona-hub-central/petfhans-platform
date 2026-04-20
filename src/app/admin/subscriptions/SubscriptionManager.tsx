@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { Building2 } from 'lucide-react'
 
 const PLANS = [
   { value: 'trial', label: 'Trial', bg: '#f3f4f6', color: '#6b7280', patients: 50  },
@@ -85,8 +86,10 @@ export default function SubscriptionManager({ clinics: initial }: { clinics: Cli
             {/* Cabecera clínica */}
             <div className="px-5 py-4 flex items-center gap-4 cursor-pointer hover:bg-gray-50 transition"
               onClick={() => setExpanded(isOpen ? null : c.id)}>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-                style={{ background: 'var(--pf-coral-soft)' }}>🏥</div>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)' }}>
+                <Building2 size={18} strokeWidth={1.75} />
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-sm" style={{ color: 'var(--pf-ink)' }}>{c.name}</p>
                 <p className="text-xs" style={{ color: 'var(--pf-muted)' }}>{c.slug}.petfhans.com · {c.users.length} usuario{c.users.length !== 1 ? 's' : ''}</p>

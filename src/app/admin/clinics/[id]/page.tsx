@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import AdminLayout from '@/components/admin/AdminLayout'
+import { Building2, CheckCircle } from 'lucide-react'
 
 export default async function ClinicDetailPage({
   params,
@@ -55,11 +56,12 @@ export default async function ClinicDetailPage({
       </div>
       <main className="px-8 py-4 max-w-4xl">
         {created && (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6 flex items-center gap-3">
-            <span className="text-2xl">🎉</span>
+          <div className="rounded-xl p-4 mb-6 flex items-center gap-3"
+            style={{ background: '#edfaf1', border: '1px solid #b2f0c9' }}>
+            <CheckCircle size={20} strokeWidth={2} style={{ color: '#1a7a3c', flexShrink: 0 }} />
             <div>
-              <p className="font-semibold text-emerald-800">¡Clínica creada exitosamente!</p>
-              <p className="text-sm text-emerald-600">
+              <p className="font-semibold" style={{ color: '#1a7a3c' }}>¡Clínica creada exitosamente!</p>
+              <p className="text-sm" style={{ color: '#2d9c5e' }}>
                 El administrador recibirá acceso en{' '}
                 <strong>{clinic.slug}.petfhans.com</strong>
               </p>
@@ -68,69 +70,71 @@ export default async function ClinicDetailPage({
         )}
 
         {/* Info clínica */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+        <div className="bg-white rounded-2xl border p-6 mb-6" style={{ borderColor: 'var(--pf-border)' }}>
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-emerald-100 rounded-xl flex items-center justify-center text-3xl">🏥</div>
+              <div className="w-14 h-14 rounded-xl flex items-center justify-center"
+                style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)' }}>
+                <Building2 size={24} strokeWidth={1.75} />
+              </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-800">{clinic.name}</h2>
-                <a
-                  href={`https://${clinic.slug}.petfhans.com`}
-                  target="_blank"
-                  className="text-sm text-emerald-600 hover:underline"
-                >
+                <h2 className="text-xl font-bold" style={{ color: 'var(--pf-ink)' }}>{clinic.name}</h2>
+                <a href={`https://${clinic.slug}.petfhans.com`} target="_blank"
+                  className="text-sm hover:underline" style={{ color: 'var(--pf-coral)' }}>
                   {clinic.slug}.petfhans.com ↗
                 </a>
               </div>
             </div>
-            <span className={`text-sm px-3 py-1 rounded-full font-medium ${
-              clinic.subscription_status === 'active' ? 'bg-green-100 text-green-700' :
-              clinic.subscription_status === 'trial' ? 'bg-yellow-100 text-yellow-700' :
-              'bg-red-100 text-red-700'
-            }`}>
+            <span className="text-sm px-3 py-1 rounded-full font-medium"
+              style={{
+                background: clinic.subscription_status === 'active' ? '#edfaf1' : clinic.subscription_status === 'trial' ? '#fff8e6' : '#fee2e2',
+                color: clinic.subscription_status === 'active' ? '#1a7a3c' : clinic.subscription_status === 'trial' ? '#b07800' : '#dc2626',
+              }}>
               {clinic.subscription_status}
             </span>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-100">
+          <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t" style={{ borderColor: 'var(--pf-border)' }}>
             <div className="text-center">
-              <p className="text-2xl font-bold text-gray-800">{petCount ?? 0}</p>
-              <p className="text-xs text-gray-500 mt-0.5">Mascotas / {clinic.max_patients} máx</p>
+              <p className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>{petCount ?? 0}</p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--pf-muted)' }}>Mascotas / {clinic.max_patients} máx</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-gray-800">{recordCount ?? 0}</p>
-              <p className="text-xs text-gray-500 mt-0.5">Consultas</p>
+              <p className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>{recordCount ?? 0}</p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--pf-muted)' }}>Consultas</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-gray-800">{team?.length ?? 0}</p>
-              <p className="text-xs text-gray-500 mt-0.5">Veterinarios</p>
+              <p className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>{team?.length ?? 0}</p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--pf-muted)' }}>Veterinarios</p>
             </div>
           </div>
         </div>
 
         {/* Equipo */}
-        <div className="bg-white rounded-xl border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h3 className="font-semibold text-gray-800">Equipo veterinario</h3>
+        <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
+          <div className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--pf-border)' }}>
+            <h3 className="font-semibold text-sm" style={{ color: 'var(--pf-ink)' }}>Equipo veterinario</h3>
           </div>
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y" style={{ borderColor: 'var(--pf-border)' }}>
             {team && team.length > 0 ? team.map((member: any) => (
               <div key={member.id} className="px-6 py-4 flex items-center gap-4">
-                <div className="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-semibold">
+                <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold"
+                  style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)' }}>
                   {member.full_name[0]}
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium text-gray-800">{member.full_name}</p>
-                  <p className="text-sm text-gray-500">{member.email}</p>
+                  <p className="font-medium text-sm" style={{ color: 'var(--pf-ink)' }}>{member.full_name}</p>
+                  <p className="text-xs" style={{ color: 'var(--pf-muted)' }}>{member.email}</p>
                 </div>
-                <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                  member.role === 'vet_admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
-                }`}>
+                <span className="text-xs px-2.5 py-1 rounded-full font-medium"
+                  style={member.role === 'vet_admin'
+                    ? { background: '#faf5ff', color: '#7c3aed' }
+                    : { background: '#eff6ff', color: '#2563eb' }}>
                   {member.role === 'vet_admin' ? 'Admin' : 'Veterinario'}
                 </span>
               </div>
             )) : (
-              <p className="px-6 py-8 text-sm text-gray-400 text-center">Sin equipo registrado</p>
+              <p className="px-6 py-8 text-sm text-center" style={{ color: 'var(--pf-muted)' }}>Sin equipo registrado</p>
             )}
           </div>
         </div>

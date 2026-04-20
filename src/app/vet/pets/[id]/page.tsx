@@ -5,8 +5,8 @@ import Link from 'next/link'
 import VetLayout from '@/components/shared/VetLayout'
 import PetFiles from '@/components/shared/PetFiles'
 import PetAvatar from '@/components/shared/PetAvatar'
+import { CheckCircle } from 'lucide-react'
 
-const speciesIcon: Record<string, string> = { dog: '🐶', cat: '🐱', bird: '🐦', rabbit: '🐰', other: '🐾' }
 const speciesLabel: Record<string, string> = { dog: 'Perro', cat: 'Gato', bird: 'Ave', rabbit: 'Conejo', other: 'Otro' }
 
 export default async function PetDetailPage({
@@ -50,7 +50,7 @@ export default async function PetDetailPage({
       {created && (
         <div className="rounded-xl p-4 mb-6 flex items-center gap-3"
           style={{ background: '#edfaf1', border: '1px solid #b2f0c9' }}>
-          <span className="text-xl">🎉</span>
+          <CheckCircle size={20} strokeWidth={2} style={{ color: '#1a7a3c', flexShrink: 0 }} />
           <p className="text-sm font-medium" style={{ color: '#1a7a3c' }}>
             ¡{pet.name} registrado exitosamente!
           </p>

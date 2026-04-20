@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import AdminLayout from '@/components/admin/AdminLayout'
+import { Building2, Users, PawPrint, User, type LucideIcon } from 'lucide-react'
 
 export default async function AdminDashboard() {
   const supabase = await createClient()
@@ -43,10 +44,10 @@ export default async function AdminDashboard() {
 
         {/* Métricas */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <MetricCard icon="🏥" label="Clínicas"     value={totalClinics ?? 0} />
-          <MetricCard icon="👨‍⚕️" label="Veterinarios" value={totalVets ?? 0} />
-          <MetricCard icon="🐾" label="Mascotas"     value={totalPets ?? 0} />
-          <MetricCard icon="👤" label="Dueños"       value={totalOwners ?? 0} />
+          <MetricCard Icon={Building2} label="Clínicas"     value={totalClinics ?? 0} />
+          <MetricCard Icon={Users}     label="Veterinarios" value={totalVets ?? 0} />
+          <MetricCard Icon={PawPrint}  label="Mascotas"     value={totalPets ?? 0} />
+          <MetricCard Icon={User}      label="Dueños"       value={totalOwners ?? 0} />
         </div>
 
         {/* Tabla clínicas recientes */}
@@ -62,8 +63,10 @@ export default async function AdminDashboard() {
             {clinics && clinics.length > 0 ? clinics.map((clinic: any) => (
               <div key={clinic.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
-                    style={{ background: 'var(--pf-coral-soft)' }}>🏥</div>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                    style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)' }}>
+                    <Building2 size={18} strokeWidth={1.75} />
+                  </div>
                   <div>
                     <p className="font-medium text-sm" style={{ color: 'var(--pf-ink)' }}>{clinic.name}</p>
                     <p className="text-xs mt-0.5" style={{ color: 'var(--pf-muted)' }}>
@@ -82,7 +85,9 @@ export default async function AdminDashboard() {
               </div>
             )) : (
               <div className="px-6 py-16 text-center">
-                <div className="text-4xl mb-3">🏥</div>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12, color: 'var(--pf-muted)' }}>
+                  <Building2 size={40} strokeWidth={1.5} />
+                </div>
                 <p className="text-sm" style={{ color: 'var(--pf-muted)' }}>No hay clínicas registradas aún</p>
                 <Link href="/admin/clinics/new"
                   className="text-sm font-medium mt-2 inline-block" style={{ color: 'var(--pf-coral)' }}>
@@ -97,11 +102,13 @@ export default async function AdminDashboard() {
   )
 }
 
-function MetricCard({ icon, label, value }: { icon: string; label: string; value: number }) {
+function MetricCard({ Icon, label, value }: { Icon: LucideIcon; label: string; value: number }) {
   return (
     <div className="bg-white rounded-2xl border p-5" style={{ borderColor: 'var(--pf-border)' }}>
-      <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg mb-3"
-        style={{ background: 'var(--pf-coral-soft)' }}>{icon}</div>
+      <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3"
+        style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)' }}>
+        <Icon size={18} strokeWidth={1.75} />
+      </div>
       <p className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>{value}</p>
       <p className="text-xs mt-0.5" style={{ color: 'var(--pf-muted)' }}>{label}</p>
     </div>

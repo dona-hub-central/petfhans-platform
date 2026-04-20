@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { Calendar } from 'lucide-react'
 
 const DAYS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']
 const DURATIONS = [15,20,30,45,60]
@@ -106,7 +107,9 @@ export default function ScheduleEditor({ schedules: initial, clinicId }: { sched
       {/* Sin horarios */}
       {schedules.length === 0 && !adding && (
         <div className="bg-white rounded-2xl border p-10 text-center" style={{ borderColor: 'var(--pf-border)' }}>
-          <p className="text-3xl mb-3">📅</p>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12, color: 'var(--pf-muted)' }}>
+            <Calendar size={40} strokeWidth={1.5} />
+          </div>
           <p className="text-sm mb-1 font-medium" style={{ color: 'var(--pf-ink)' }}>Sin horario configurado</p>
           <p className="text-xs" style={{ color: 'var(--pf-muted)' }}>Añade bloques horarios para que los dueños puedan reservar citas</p>
         </div>

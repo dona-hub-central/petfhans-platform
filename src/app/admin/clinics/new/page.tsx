@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { Building2 } from 'lucide-react'
 
 export default function NewClinicPage() {
   const router = useRouter()
@@ -119,7 +120,7 @@ export default function NewClinicPage() {
             {step === 2 && (
               <>
                 <div className="rounded-xl p-4 mb-2" style={{ background: 'var(--pf-coral-soft)' }}>
-                  <p className="text-sm font-medium" style={{ color: 'var(--pf-coral)' }}>🏥 {clinic.name}</p>
+                  <p className="text-sm font-medium flex items-center gap-1.5" style={{ color: 'var(--pf-coral)' }}><Building2 size={14} strokeWidth={2} /> {clinic.name}</p>
                   <p className="text-xs mt-0.5" style={{ color: 'var(--pf-coral-dark)' }}>{clinic.slug}.petfhans.com · Plan {clinic.subscription_plan}</p>
                 </div>
                 {['full_name', 'email', 'password'].map(field => (

@@ -52,9 +52,9 @@ export default function NewInvitationPage() {
   const focus = { onFocus: (e: any) => e.target.style.borderColor = 'var(--pf-coral)', onBlur: (e: any) => e.target.style.borderColor = 'var(--pf-border)' }
 
   const roles = [
-    { value: 'pet_owner',    label: '👤 Dueño de mascota', desc: 'Accede al perfil de su mascota e historial' },
-    { value: 'veterinarian', label: '👨‍⚕️ Veterinario',      desc: 'Gestiona fichas y consultas' },
-    { value: 'vet_admin',    label: '⚙️ Administrador',      desc: 'Acceso completo a la clínica' },
+    { value: 'pet_owner',    label: 'Dueño de mascota', desc: 'Accede al perfil de su mascota e historial' },
+    { value: 'veterinarian', label: 'Veterinario',      desc: 'Gestiona fichas y consultas' },
+    { value: 'vet_admin',    label: 'Administrador',    desc: 'Acceso completo a la clínica' },
   ]
 
   return (

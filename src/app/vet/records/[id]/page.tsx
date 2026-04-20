@@ -3,14 +3,15 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import VetLayout from '@/components/shared/VetLayout'
+import { Stethoscope, FileText, Pill, Syringe, StickyNote } from 'lucide-react'
 
 const VISIT_TYPE: Record<string, { label: string; color: string }> = {
-  consultation: { label: '🩺 Consulta',    color: '#2563eb' },
-  emergency:    { label: '🚨 Urgencia',    color: '#dc2626' },
-  surgery:      { label: '🔪 Cirugía',     color: '#7c3aed' },
-  followup:     { label: '🔄 Seguimiento', color: '#0891b2' },
-  vaccination:  { label: '💉 Vacunación',  color: '#16a34a' },
-  checkup:      { label: '✅ Control',     color: '#d97706' },
+  consultation: { label: 'Consulta',    color: '#2563eb' },
+  emergency:    { label: 'Urgencia',    color: '#dc2626' },
+  surgery:      { label: 'Cirugía',     color: '#7c3aed' },
+  followup:     { label: 'Seguimiento', color: '#0891b2' },
+  vaccination:  { label: 'Vacunación',  color: '#16a34a' },
+  checkup:      { label: 'Control',     color: '#d97706' },
 }
 
 const SYSTEM_COLORS: Record<string, string> = {
@@ -100,7 +101,7 @@ export default async function RecordDetailPage({ params }: { params: Promise<{ i
           {/* Exploración física */}
           {(exam.weight || exam.temperature || exam.heart_rate || exam.respiratory_rate || exam.general_state) && (
             <div className="bg-white rounded-2xl border p-5" style={{ borderColor: 'var(--pf-border)' }}>
-              <h3 className="font-semibold text-sm mb-4" style={{ color: 'var(--pf-ink)' }}>🩺 Exploración física</h3>
+              <h3 className="font-semibold text-sm mb-4 flex items-center gap-1.5" style={{ color: 'var(--pf-ink)' }}><Stethoscope size={14} strokeWidth={2} /> Exploración física</h3>
               <div className="grid grid-cols-2 gap-x-6 gap-y-2.5 mb-4">
                 {[
                   ['Peso', exam.weight ? `${exam.weight} kg` : null],
@@ -142,7 +143,7 @@ export default async function RecordDetailPage({ params }: { params: Promise<{ i
           {/* Diagnóstico y pronóstico */}
           {(r.diagnosis || r.prognosis || r.treatment) && (
             <div className="bg-white rounded-2xl border p-5" style={{ borderColor: 'var(--pf-border)' }}>
-              <h3 className="font-semibold text-sm mb-4" style={{ color: 'var(--pf-ink)' }}>📝 Diagnóstico y tratamiento</h3>
+              <h3 className="font-semibold text-sm mb-4 flex items-center gap-1.5" style={{ color: 'var(--pf-ink)' }}><FileText size={14} strokeWidth={2} /> Diagnóstico y tratamiento</h3>
               {r.diagnosis && (
                 <div className="mb-3">
                   <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--pf-muted)' }}>Diagnóstico</p>
@@ -168,7 +169,7 @@ export default async function RecordDetailPage({ params }: { params: Promise<{ i
         {/* Medicamentos */}
         {meds.length > 0 && (
           <div className="bg-white rounded-2xl border p-5" style={{ borderColor: 'var(--pf-border)' }}>
-            <h3 className="font-semibold text-sm mb-4" style={{ color: 'var(--pf-ink)' }}>💊 Medicamentos</h3>
+            <h3 className="font-semibold text-sm mb-4 flex items-center gap-1.5" style={{ color: 'var(--pf-ink)' }}><Pill size={14} strokeWidth={2} /> Medicamentos</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {meds.map((m: any, i: number) => (
                 <div key={i} className="rounded-xl p-3 border" style={{ borderColor: 'var(--pf-border)', background: 'var(--pf-bg)' }}>
@@ -188,11 +189,11 @@ export default async function RecordDetailPage({ params }: { params: Promise<{ i
         {/* Vacunas */}
         {vaccines.length > 0 && (
           <div className="bg-white rounded-2xl border p-5" style={{ borderColor: 'var(--pf-border)' }}>
-            <h3 className="font-semibold text-sm mb-4" style={{ color: 'var(--pf-ink)' }}>💉 Vacunación</h3>
+            <h3 className="font-semibold text-sm mb-4 flex items-center gap-1.5" style={{ color: 'var(--pf-ink)' }}><Syringe size={14} strokeWidth={2} /> Vacunación</h3>
             <div className="space-y-2">
               {vaccines.map((v: any, i: number) => (
                 <div key={i} className="flex items-center gap-4 p-3 rounded-xl border" style={{ borderColor: 'var(--pf-border)', background: 'var(--pf-bg)' }}>
-                  <span className="text-lg">💉</span>
+                  <Syringe size={18} strokeWidth={1.75} style={{ color: 'var(--pf-muted)', flexShrink: 0 }} />
                   <div className="flex-1">
                     <p className="font-semibold text-sm" style={{ color: 'var(--pf-ink)' }}>{v.name}</p>
                     {v.lot && <p className="text-xs" style={{ color: 'var(--pf-muted)' }}>Lote: {v.lot}</p>}
@@ -214,7 +215,7 @@ export default async function RecordDetailPage({ params }: { params: Promise<{ i
         {/* Notas */}
         {r.notes && (
           <div className="bg-white rounded-2xl border p-5" style={{ borderColor: 'var(--pf-border)' }}>
-            <h3 className="font-semibold text-sm mb-2" style={{ color: 'var(--pf-ink)' }}>📌 Notas</h3>
+            <h3 className="font-semibold text-sm mb-2 flex items-center gap-1.5" style={{ color: 'var(--pf-ink)' }}><StickyNote size={14} strokeWidth={2} /> Notas</h3>
             <p className="text-sm leading-relaxed" style={{ color: 'var(--pf-ink)' }}>{r.notes}</p>
           </div>
         )}
