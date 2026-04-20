@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import VetLayout from '@/components/shared/VetLayout'
 import PetSearch from '@/components/shared/PetSearch'
+import { Sparkles } from 'lucide-react'
 
 interface Message { role: 'user' | 'assistant'; content: string }
 
@@ -64,7 +65,7 @@ export default function AIPage() {
     <VetLayout clinicName={clinicName} userName={userName}>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>IA Clínica</h1>
+          <h1 style={{ fontFamily: 'var(--pf-font-display)', fontWeight: 700, fontSize: 24, color: 'var(--pf-ink)', margin: 0 }}>IA Clínica</h1>
           <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>Consulta el historial y analiza casos</p>
         </div>
         {pets.length > 0 && (
@@ -79,9 +80,11 @@ export default function AIPage() {
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {messages.length === 0 && (
             <div className="h-full flex flex-col items-center justify-center text-center">
-              <div className="text-5xl mb-4">🤖</div>
-              <p className="font-semibold" style={{ color: 'var(--pf-ink)' }}>IA Clínica Petfhans</p>
-              <p className="text-sm mt-2 max-w-sm" style={{ color: 'var(--pf-muted)' }}>
+              <div style={{ width:56, height:56, borderRadius:16, background:'var(--pf-info)', color:'var(--pf-info-fg)', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:16 }}>
+                <Sparkles size={28} strokeWidth={1.75} />
+              </div>
+              <p style={{ fontFamily:'var(--pf-font-display)', fontWeight:700, fontSize:17, color:'var(--pf-ink)', margin:'0 0 8px' }}>IA Clínica Petfhans</p>
+              <p className="text-sm max-w-sm" style={{ color: 'var(--pf-muted)' }}>
                 Consulta historiales médicos, compara síntomas con casos similares o analiza diagnósticos.
                 {selectedPet ? ' Tengo el historial del paciente seleccionado.' : ' Selecciona un paciente para contexto específico.'}
               </p>
@@ -94,7 +97,7 @@ export default function AIPage() {
                 ].map(s => (
                   <button key={s} onClick={() => setInput(s)}
                     className="text-xs px-3 py-2 rounded-xl border transition"
-                    style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-muted)' }}>
+                    style={{ borderColor: 'var(--pf-info-fg)', color: 'var(--pf-info-fg)', background: 'var(--pf-info)' }}>
                     {s}
                   </button>
                 ))}
@@ -107,7 +110,7 @@ export default function AIPage() {
               <div className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm leading-relaxed`}
                 style={m.role === 'user'
                   ? { background: 'var(--pf-coral)', color: '#fff', borderBottomRightRadius: '4px' }
-                  : { background: 'var(--pf-bg)', color: 'var(--pf-ink)', borderBottomLeftRadius: '4px', border: '1px solid var(--pf-border)' }
+                  : { background: 'var(--pf-info)', color: 'var(--pf-ink)', borderBottomLeftRadius: '4px', border: '0.5px solid var(--pf-border)' }
                 }>
                 {m.content}
               </div>
@@ -116,8 +119,12 @@ export default function AIPage() {
 
           {loading && (
             <div className="flex justify-start">
-              <div className="px-4 py-3 rounded-2xl text-sm" style={{ background: 'var(--pf-bg)', border: '1px solid var(--pf-border)' }}>
-                <span className="animate-pulse" style={{ color: 'var(--pf-muted)' }}>Analizando...</span>
+              <div className="px-4 py-3 rounded-2xl text-sm" style={{ background: 'var(--pf-info)', border: '0.5px solid var(--pf-border)' }}>
+                <span style={{ color: 'var(--pf-info-fg)' }}>
+                  <span className="animate-pulse">●</span>{' '}
+                  <span className="animate-pulse" style={{ animationDelay: '0.2s' }}>●</span>{' '}
+                  <span className="animate-pulse" style={{ animationDelay: '0.4s' }}>●</span>
+                </span>
               </div>
             </div>
           )}
