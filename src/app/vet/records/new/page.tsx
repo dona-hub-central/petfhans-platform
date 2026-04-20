@@ -287,8 +287,8 @@ function NewRecordForm() {
                           style={{
                             padding: '4px 10px', borderRadius: 20, border: 'none',
                             fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                            background: active ? colors[opt] : '#f2f2f7',
-                            color: active ? '#fff' : '#8e8e93',
+                            background: active ? colors[opt] : 'var(--pf-surface)',
+                            color: active ? '#fff' : 'var(--pf-muted)',
                             transition: 'all .15s',
                           }}>{opt}</button>
                       )
