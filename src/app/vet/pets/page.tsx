@@ -20,24 +20,75 @@ export default async function PetsPage() {
     .select('*, clinics(name)').eq('user_id', user.id).single()
 
   const admin = createAdminClient()
-  const { data: pets } = await admin.from('pets')
-    .select('*, profiles!pets_owner_id_fkey(full_name, email)')
-    .eq('clinic_id', profile?.clinic_id)
-    .eq('is_active', true)
-    .order('created_at', { ascending: false })
+  const [
+    { data: pets },
+    { data: clinic },
+    { count: petCount },
+  ] = await Promise.all([
+    admin.from('pets')
+      .select('*, profiles!pets_owner_id_fkey(full_name, email)')
+      .eq('clinic_id', profile?.clinic_id)
+      .eq('is_active', true)
+      .order('created_at', { ascending: false }),
+    admin.from('clinics')
+      .select('max_patients')
+      .eq('id', profile?.clinic_id)
+      .single(),
+    admin.from('pets')
+      .select('*', { count: 'exact', head: true })
+      .eq('clinic_id', profile?.clinic_id)
+      .eq('is_active', true),
+  ])
+
+  const maxPats  = (clinic as { max_patients?: number } | null)?.max_patients ?? 0
+  const count    = petCount ?? 0
+  const atLimit  = maxPats > 0 && count >= maxPats
+  const nearLimit = maxPats > 0 && count / maxPats >= 0.8 && !atLimit
 
   return (
-    <VetLayout clinicName={(profile as any)?.clinics?.name ?? ''} userName={profile?.full_name ?? ''}>
+    <VetLayout clinicName={(profile as { clinics?: { name: string } | null } | null)?.clinics?.name ?? ''} userName={profile?.full_name ?? ''}>
+
+      {atLimit && (
+        <div className="rounded-xl p-4 mb-4 flex items-center gap-3"
+          style={{ background: '#fef2f2', border: '1px solid #fecaca' }}>
+          <span className="text-xl">🚫</span>
+          <div>
+            <p className="text-sm font-semibold" style={{ color: '#dc2626' }}>Límite de pacientes alcanzado ({count}/{maxPats})</p>
+            <p className="text-xs mt-0.5" style={{ color: '#dc2626' }}>
+              Mejora tu plan en <a href="/vet/billing" className="underline">Facturación</a> para registrar más pacientes.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {nearLimit && (
+        <div className="rounded-xl p-4 mb-4 flex items-center gap-3"
+          style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
+          <span className="text-xl">⚠️</span>
+          <p className="text-sm" style={{ color: '#d97706' }}>
+            Estás usando {count} de {maxPats} pacientes ({Math.round(count / maxPats * 100)}%).
+            <a href="/vet/billing" className="underline ml-1">Ver plan →</a>
+          </p>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Mascotas</h1>
           <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>
-            {pets?.length ?? 0} pacientes activos
+            {count} pacientes activos{maxPats > 0 ? ` · máx ${maxPats}` : ''}
           </p>
         </div>
-        <Link href="/vet/pets/new" className="btn-pf px-5 py-2.5 text-sm inline-flex items-center gap-2">
-          + Nueva mascota
-        </Link>
+        {atLimit ? (
+          <span className="px-5 py-2.5 text-sm rounded-xl font-medium cursor-not-allowed"
+            style={{ background: 'var(--bg)', color: 'var(--muted)', border: '1px solid var(--border)' }}>
+            + Nueva mascota
+          </span>
+        ) : (
+          <Link href="/vet/pets/new" className="btn-pf px-5 py-2.5 text-sm inline-flex items-center gap-2">
+            + Nueva mascota
+          </Link>
+        )}
       </div>
 
       {pets && pets.length > 0 ? (

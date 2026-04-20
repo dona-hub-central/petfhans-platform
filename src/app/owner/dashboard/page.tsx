@@ -77,7 +77,9 @@ export default async function OwnerDashboard() {
               {clinic && <p className="dash-clinic"><span>🏥</span> {clinic.name}</p>}
             </div>
             <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-              <div className="dash-avatar">{profile?.full_name?.[0]}</div>
+              <Link href="/owner/profile" className="dash-avatar" style={{ textDecoration:'none' }}>
+                {profile?.full_name?.[0]}
+              </Link>
               <LogoutButton />
             </div>
           </div>

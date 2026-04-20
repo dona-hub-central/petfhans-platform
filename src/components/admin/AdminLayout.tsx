@@ -12,6 +12,7 @@ const nav = [
   { href: '/admin/tiers',        icon: '📊', label: 'Tarifas',        exact: false },
   { href: '/admin/user-plans',   icon: '👤', label: 'Planes usuario', exact: false },
   { href: '/admin/stripe',       icon: '⚡', label: 'Stripe',         exact: false },
+  { href: '/admin/profile',      icon: '👤', label: 'Mi perfil',      exact: false },
 ]
 
 export default function AdminLayout({
@@ -71,13 +72,13 @@ export default function AdminLayout({
 
         {/* User + Logout */}
         <div className="px-4 py-4 border-t" style={{ borderColor: 'var(--border)' }}>
-          <div className="flex items-center gap-2.5 mb-2">
+          <Link href="/admin/profile" className="flex items-center gap-2.5 mb-2 group">
             <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
               style={{ background: 'var(--accent-s)', color: 'var(--accent)' }}>
               {userName?.[0] ?? 'A'}
             </div>
-            <span className="text-xs truncate max-w-[110px]" style={{ color: 'var(--text)' }}>{userName}</span>
-          </div>
+            <span className="text-xs truncate max-w-[110px] group-hover:underline" style={{ color: 'var(--text)' }}>{userName}</span>
+          </Link>
           <button onClick={logout}
             className="w-full text-xs py-1.5 rounded-lg border transition text-left px-2"
             style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}>

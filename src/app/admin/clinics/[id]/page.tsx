@@ -48,8 +48,10 @@ export default async function ClinicDetailPage({
   return (
     <AdminLayout userName={authProfile?.full_name ?? 'Admin'}>
     <div>
-      <div className="px-8 pt-6 pb-2">
-        <Link href="/admin/clinics" className="text-xs" style={{ color: 'var(--muted)' }}>← Clínicas</Link>
+      <div className="px-8 pt-6 pb-2 flex items-center gap-2">
+        <Link href="/admin/clinics" className="text-xs" style={{ color: 'var(--muted)' }}>Clínicas</Link>
+        <span className="text-xs" style={{ color: 'var(--border)' }}>/</span>
+        <span className="text-xs font-medium" style={{ color: 'var(--text)' }}>{clinic.name}</span>
       </div>
       <main className="px-8 py-4 max-w-4xl">
         {created && (

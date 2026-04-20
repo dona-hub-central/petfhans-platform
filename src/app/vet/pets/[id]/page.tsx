@@ -57,6 +57,13 @@ export default async function PetDetailPage({
         </div>
       )}
 
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 mb-4">
+        <Link href="/vet/pets" className="text-xs" style={{ color: 'var(--muted)' }}>Mascotas</Link>
+        <span style={{ color: 'var(--border)' }}>/</span>
+        <span className="text-xs font-medium" style={{ color: 'var(--text)' }}>{pet.name}</span>
+      </div>
+
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-center gap-4">
           <PetAvatar petId={id} species={pet.species} photoUrl={pet.photo_url} size={64} editable={true} />
