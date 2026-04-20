@@ -42,11 +42,11 @@ export default async function SubscriptionsPage() {
       <div className="px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Suscripciones</h1>
-            <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>Planes activos y usuarios por clínica</p>
+            <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Suscripciones</h1>
+            <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>Planes activos y usuarios por clínica</p>
           </div>
           <a href="/admin/plans" className="text-sm font-medium px-4 py-2 rounded-xl border"
-            style={{ borderColor: 'var(--border)', color: 'var(--accent)' }}>
+            style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-coral)' }}>
             ⚙️ Configurar planes
           </a>
         </div>
@@ -58,11 +58,11 @@ export default async function SubscriptionsPage() {
             { label: 'Basic', value: clinics?.filter(c => c.subscription_plan === 'basic').length ?? 0, bg: '#eff6ff', color: '#2563eb' },
             { label: 'Pro',   value: clinics?.filter(c => c.subscription_plan === 'pro').length   ?? 0, bg: '#faf5ff', color: '#7c3aed' },
           ].map(s => (
-            <div key={s.label} className="bg-white rounded-2xl border p-5" style={{ borderColor: 'var(--border)' }}>
+            <div key={s.label} className="bg-white rounded-2xl border p-5" style={{ borderColor: 'var(--pf-border)' }}>
               <span className="inline-block text-xs px-2.5 py-1 rounded-full font-medium mb-3"
                 style={{ background: s.bg, color: s.color }}>{s.label}</span>
-              <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{s.value}</p>
-              <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>clínicas</p>
+              <p className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>{s.value}</p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--pf-muted)' }}>clínicas</p>
             </div>
           ))}
         </div>

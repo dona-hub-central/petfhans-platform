@@ -38,10 +38,10 @@ const emptyExam: PhysicalExam = {
 // ── Componentes auxiliares ─────────────────────────────────────────────
 function Section({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
-      <div className="px-5 py-3 border-b flex items-center gap-2" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+    <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
+      <div className="px-5 py-3 border-b flex items-center gap-2" style={{ borderColor: 'var(--pf-border)', background: 'var(--pf-bg)' }}>
         <span>{icon}</span>
-        <h2 className="font-semibold text-sm" style={{ color: 'var(--text)' }}>{title}</h2>
+        <h2 className="font-semibold text-sm" style={{ color: 'var(--pf-ink)' }}>{title}</h2>
       </div>
       <div className="p-5">{children}</div>
     </div>
@@ -51,8 +51,8 @@ function Section({ title, icon, children }: { title: string; icon: string; child
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--muted)' }}>
-        {label}{required && <span style={{ color: 'var(--accent)' }}> *</span>}
+      <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--pf-muted)' }}>
+        {label}{required && <span style={{ color: 'var(--pf-coral)' }}> *</span>}
       </label>
       {children}
     </div>
@@ -153,8 +153,8 @@ function NewRecordForm() {
   }
 
   const inp = "w-full px-3 py-2.5 rounded-xl border text-sm outline-none transition"
-  const inpS = { borderColor: 'var(--border)', color: 'var(--text)', background: '#fff' }
-  const f = { onFocus: (e: any) => e.target.style.borderColor = 'var(--accent)', onBlur: (e: any) => e.target.style.borderColor = 'var(--border)' }
+  const inpS = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)', background: '#fff' }
+  const f = { onFocus: (e: any) => e.target.style.borderColor = 'var(--pf-coral)', onBlur: (e: any) => e.target.style.borderColor = 'var(--pf-border)' }
   const speciesIcon: Record<string, string> = { dog: '🐶', cat: '🐱', bird: '🐦', rabbit: '🐰', other: '🐾' }
 
   const selectedPet = pets.find(p => p.id === form.pet_id)
@@ -166,19 +166,19 @@ function NewRecordForm() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <a href="/vet/pets" className="text-xs" style={{ color: 'var(--muted)' }}>Mascotas</a>
+              <a href="/vet/pets" className="text-xs" style={{ color: 'var(--pf-muted)' }}>Mascotas</a>
               {form.pet_id && (
                 <>
-                  <span style={{ color: 'var(--border)' }}>/</span>
-                  <a href={`/vet/pets/${form.pet_id}`} className="text-xs" style={{ color: 'var(--muted)' }}>
+                  <span style={{ color: 'var(--pf-border)' }}>/</span>
+                  <a href={`/vet/pets/${form.pet_id}`} className="text-xs" style={{ color: 'var(--pf-muted)' }}>
                     {selectedPet?.name ?? '…'}
                   </a>
                 </>
               )}
-              <span style={{ color: 'var(--border)' }}>/</span>
-              <span className="text-xs" style={{ color: 'var(--text)' }}>Nueva consulta</span>
+              <span style={{ color: 'var(--pf-border)' }}>/</span>
+              <span className="text-xs" style={{ color: 'var(--pf-ink)' }}>Nueva consulta</span>
             </div>
-            <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Nueva consulta</h1>
+            <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Nueva consulta</h1>
           </div>
           <button type="submit" disabled={loading}
             className="btn-pf px-6 py-2.5 text-sm font-semibold">
@@ -214,8 +214,8 @@ function NewRecordForm() {
                     className="px-3 py-1.5 rounded-xl text-xs font-semibold border transition"
                     style={{
                       background: form.visit_type === t.value ? t.color + '18' : '#fff',
-                      borderColor: form.visit_type === t.value ? t.color : 'var(--border)',
-                      color: form.visit_type === t.value ? t.color : 'var(--muted)',
+                      borderColor: form.visit_type === t.value ? t.color : 'var(--pf-border)',
+                      color: form.visit_type === t.value ? t.color : 'var(--pf-muted)',
                     }}>
                     {t.label}
                   </button>
@@ -227,7 +227,7 @@ function NewRecordForm() {
           {/* ── 2. EXPLORACIÓN FÍSICA ── */}
           <Section title="Exploración física" icon="🩺">
             {/* Constantes vitales */}
-            <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: 'var(--muted)' }}>Constantes vitales</p>
+            <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: 'var(--pf-muted)' }}>Constantes vitales</p>
             <div className="grid grid-cols-4 gap-3 mb-4">
               {[
                 { k: 'weight',           label: 'Peso (kg)',   ph: selectedPet?.weight ? String(selectedPet.weight) : '0.0' },
@@ -266,7 +266,7 @@ function NewRecordForm() {
             </div>
 
             {/* Exploración por sistemas */}
-            <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: 'var(--muted)' }}>Exploración por sistemas</p>
+            <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: 'var(--pf-muted)' }}>Exploración por sistemas</p>
             <div className="grid grid-cols-2 gap-3">
               {[
                 ['cardiovascular',  'Cardiovascular'],
@@ -277,7 +277,7 @@ function NewRecordForm() {
                 ['lymph_nodes',     'Nódulos linfáticos'],
               ].map(([k, label]) => (
                 <div key={k}>
-                  <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--muted)' }}>{label}</label>
+                  <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--pf-muted)' }}>{label}</label>
                   <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' as const }}>
                     {['Normal', 'Leve', 'Moderado', 'Grave', 'N/E'].map(opt => {
                       const colors: Record<string, string> = { Normal: '#16a34a', Leve: '#d97706', Moderado: '#ea580c', Grave: '#dc2626', 'N/E': '#64748b' }
@@ -318,16 +318,16 @@ function NewRecordForm() {
                     rows={3} placeholder="Diagnóstico principal…"
                     className="w-full px-3 py-2.5 rounded-xl border text-sm outline-none transition resize-none"
                     style={inpS}
-                    onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-                    onBlur={e => e.target.style.borderColor = 'var(--border)'} />
+                    onFocus={e => e.target.style.borderColor = 'var(--pf-coral)'}
+                    onBlur={e => e.target.style.borderColor = 'var(--pf-border)'} />
                 </Field>
                 <Field label="Pronóstico">
                   <textarea value={form.prognosis} onChange={e => set('prognosis', e.target.value)}
                     rows={3} placeholder="Pronóstico…"
                     className="w-full px-3 py-2.5 rounded-xl border text-sm outline-none transition resize-none"
                     style={inpS}
-                    onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-                    onBlur={e => e.target.style.borderColor = 'var(--border)'} />
+                    onFocus={e => e.target.style.borderColor = 'var(--pf-coral)'}
+                    onBlur={e => e.target.style.borderColor = 'var(--pf-border)'} />
                 </Field>
               </div>
             </div>
@@ -340,26 +340,26 @@ function NewRecordForm() {
                 rows={2} placeholder="Descripción del tratamiento…"
                 className="w-full px-3 py-2.5 rounded-xl border text-sm outline-none transition resize-none mb-4"
                 style={inpS}
-                onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-                onBlur={e => e.target.style.borderColor = 'var(--border)'} />
+                onFocus={e => e.target.style.borderColor = 'var(--pf-coral)'}
+                onBlur={e => e.target.style.borderColor = 'var(--pf-border)'} />
             </Field>
 
             {/* Medicamentos */}
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>Medicamentos</p>
+              <p className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--pf-muted)' }}>Medicamentos</p>
               <button type="button" onClick={addMed}
                 className="text-xs font-semibold px-3 py-1 rounded-lg"
-                style={{ background: 'var(--accent-s)', color: 'var(--accent)' }}>
+                style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)' }}>
                 + Añadir
               </button>
             </div>
 
             {meds.length === 0 && (
-              <p className="text-xs text-center py-3" style={{ color: 'var(--muted)' }}>Sin medicamentos añadidos</p>
+              <p className="text-xs text-center py-3" style={{ color: 'var(--pf-muted)' }}>Sin medicamentos añadidos</p>
             )}
 
             {meds.map((med, i) => (
-              <div key={i} className="rounded-xl border p-3 mb-2" style={{ borderColor: 'var(--border)' }}>
+              <div key={i} className="rounded-xl border p-3 mb-2" style={{ borderColor: 'var(--pf-border)' }}>
                 <div className="grid grid-cols-5 gap-2 mb-2">
                   <div className="col-span-2">
                     <input value={med.name} onChange={e => updateMed(i, 'name', e.target.value)}
@@ -389,16 +389,16 @@ function NewRecordForm() {
           {/* ── 5. VACUNAS ── */}
           <Section title="Vacunación / Desparasitación" icon="💉">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs" style={{ color: 'var(--muted)' }}>Registra las vacunas o desparasitaciones administradas hoy</p>
+              <p className="text-xs" style={{ color: 'var(--pf-muted)' }}>Registra las vacunas o desparasitaciones administradas hoy</p>
               <button type="button" onClick={addVaccine}
                 className="text-xs font-semibold px-3 py-1 rounded-lg flex-shrink-0"
-                style={{ background: 'var(--accent-s)', color: 'var(--accent)' }}>
+                style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)' }}>
                 + Añadir
               </button>
             </div>
 
             {vaccines.length === 0 && (
-              <p className="text-xs text-center py-3" style={{ color: 'var(--muted)' }}>Ninguna vacuna en esta consulta</p>
+              <p className="text-xs text-center py-3" style={{ color: 'var(--pf-muted)' }}>Ninguna vacuna en esta consulta</p>
             )}
 
             {vaccines.map((v, i) => (
@@ -426,15 +426,15 @@ function NewRecordForm() {
               rows={3} placeholder="Observaciones adicionales, instrucciones para el dueño…"
               className="w-full px-3 py-2.5 rounded-xl border text-sm outline-none transition resize-none"
               style={inpS}
-              onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-              onBlur={e => e.target.style.borderColor = 'var(--border)'} />
+              onFocus={e => e.target.style.borderColor = 'var(--pf-coral)'}
+              onBlur={e => e.target.style.borderColor = 'var(--pf-border)'} />
           </Section>
 
           {/* ── GUARDAR ── */}
           <div className="flex gap-3 pb-8">
             <a href={form.pet_id ? `/vet/pets/${form.pet_id}` : '/vet/pets'}
               className="flex-1 py-3 text-sm font-semibold rounded-xl border text-center"
-              style={{ borderColor: 'var(--border)', color: 'var(--text)' }}>
+              style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }}>
               Cancelar
             </a>
             <button type="submit" disabled={loading} className="btn-pf flex-2 px-8 py-3 text-sm">

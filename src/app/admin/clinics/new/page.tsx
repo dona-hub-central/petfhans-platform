@@ -53,20 +53,20 @@ export default function NewClinicPage() {
   }
 
   const inputClass = "w-full px-4 py-3 rounded-lg border text-sm outline-none transition"
-  const inputStyle = { borderColor: 'var(--border)', color: 'var(--text)', background: '#fff' }
+  const inputStyle = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)', background: '#fff' }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--bg)' }}>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--pf-bg)' }}>
       <div className="w-full max-w-xl">
-        <div className="bg-white rounded-2xl border p-8" style={{ borderColor: 'var(--border)' }}>
-          <a href="/admin" className="text-xs mb-6 inline-block" style={{ color: 'var(--muted)' }}>← Volver</a>
-          <h1 className="text-xl font-bold mb-1" style={{ color: 'var(--text)' }}>Nueva clínica</h1>
-          <p className="text-sm mb-6" style={{ color: 'var(--muted)' }}>Configura el entorno veterinario</p>
+        <div className="bg-white rounded-2xl border p-8" style={{ borderColor: 'var(--pf-border)' }}>
+          <a href="/admin" className="text-xs mb-6 inline-block" style={{ color: 'var(--pf-muted)' }}>← Volver</a>
+          <h1 className="text-xl font-bold mb-1" style={{ color: 'var(--pf-ink)' }}>Nueva clínica</h1>
+          <p className="text-sm mb-6" style={{ color: 'var(--pf-muted)' }}>Configura el entorno veterinario</p>
 
           {/* Steps */}
           <div className="flex items-center gap-2 mb-8">
             <Step n={1} active={step >= 1} done={step > 1} label="Clínica" />
-            <div className="flex-1 h-px" style={{ background: step > 1 ? 'var(--accent)' : 'var(--border)' }} />
+            <div className="flex-1 h-px" style={{ background: step > 1 ? 'var(--pf-coral)' : 'var(--pf-border)' }} />
             <Step n={2} active={step >= 2} done={false} label="Administrador" />
           </div>
 
@@ -74,30 +74,30 @@ export default function NewClinicPage() {
             {step === 1 && (
               <>
                 <div>
-                  <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text)' }}>Nombre de la clínica</label>
+                  <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--pf-ink)' }}>Nombre de la clínica</label>
                   <input name="name" value={clinic.name} onChange={handleClinicChange} required
                     className={inputClass} style={inputStyle}
-                    onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-                    onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                    onFocus={e => e.target.style.borderColor = 'var(--pf-coral)'}
+                    onBlur={e => e.target.style.borderColor = 'var(--pf-border)'}
                     placeholder="Clínica Veterinaria Sol" />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text)' }}>Subdominio</label>
-                  <div className="flex items-center rounded-lg border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
+                  <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--pf-ink)' }}>Subdominio</label>
+                  <div className="flex items-center rounded-lg border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
                     <input name="slug" value={clinic.slug} onChange={handleClinicChange} required
-                      className="flex-1 px-4 py-3 text-sm outline-none" style={{ color: 'var(--text)' }}
+                      className="flex-1 px-4 py-3 text-sm outline-none" style={{ color: 'var(--pf-ink)' }}
                       placeholder="clinica-sol" />
-                    <span className="px-3 py-3 text-xs border-l" style={{ borderColor: 'var(--border)', color: 'var(--muted)', background: 'var(--bg)' }}>
+                    <span className="px-3 py-3 text-xs border-l" style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-muted)', background: 'var(--pf-bg)' }}>
                       .petfhans.com
                     </span>
                   </div>
-                  {clinic.slug && <p className="text-xs mt-1" style={{ color: 'var(--accent)' }}>✓ {clinic.slug}.petfhans.com</p>}
+                  {clinic.slug && <p className="text-xs mt-1" style={{ color: 'var(--pf-coral)' }}>✓ {clinic.slug}.petfhans.com</p>}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text)' }}>Plan</label>
+                    <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--pf-ink)' }}>Plan</label>
                     <select name="subscription_plan" value={clinic.subscription_plan} onChange={handleClinicChange}
                       className={inputClass} style={inputStyle}>
                       <option value="trial">Trial (gratis)</option>
@@ -106,11 +106,11 @@ export default function NewClinicPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text)' }}>Máx. pacientes</label>
+                    <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--pf-ink)' }}>Máx. pacientes</label>
                     <input name="max_patients" type="number" value={clinic.max_patients} onChange={handleClinicChange}
                       className={inputClass} style={inputStyle}
-                      onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-                      onBlur={e => e.target.style.borderColor = 'var(--border)'} />
+                      onFocus={e => e.target.style.borderColor = 'var(--pf-coral)'}
+                      onBlur={e => e.target.style.borderColor = 'var(--pf-border)'} />
                   </div>
                 </div>
               </>
@@ -118,13 +118,13 @@ export default function NewClinicPage() {
 
             {step === 2 && (
               <>
-                <div className="rounded-xl p-4 mb-2" style={{ background: 'var(--accent-s)' }}>
-                  <p className="text-sm font-medium" style={{ color: 'var(--accent)' }}>🏥 {clinic.name}</p>
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--accent-h)' }}>{clinic.slug}.petfhans.com · Plan {clinic.subscription_plan}</p>
+                <div className="rounded-xl p-4 mb-2" style={{ background: 'var(--pf-coral-soft)' }}>
+                  <p className="text-sm font-medium" style={{ color: 'var(--pf-coral)' }}>🏥 {clinic.name}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--pf-coral-dark)' }}>{clinic.slug}.petfhans.com · Plan {clinic.subscription_plan}</p>
                 </div>
                 {['full_name', 'email', 'password'].map(field => (
                   <div key={field}>
-                    <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text)' }}>
+                    <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--pf-ink)' }}>
                       {field === 'full_name' ? 'Nombre del administrador' : field === 'email' ? 'Email' : 'Contraseña temporal'}
                     </label>
                     <input
@@ -133,8 +133,8 @@ export default function NewClinicPage() {
                       onChange={e => setAdmin(p => ({ ...p, [field]: e.target.value }))}
                       required minLength={field === 'password' ? 8 : undefined}
                       className={inputClass} style={inputStyle}
-                      onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-                      onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                      onFocus={e => e.target.style.borderColor = 'var(--pf-coral)'}
+                      onBlur={e => e.target.style.borderColor = 'var(--pf-border)'}
                       placeholder={field === 'full_name' ? 'Dr. Juan García' : field === 'email' ? 'dr@clinica.com' : 'mínimo 8 caracteres'}
                     />
                   </div>
@@ -142,13 +142,13 @@ export default function NewClinicPage() {
               </>
             )}
 
-            {error && <div className="text-sm p-3 rounded-lg" style={{ background: 'var(--accent-s)', color: 'var(--accent-h)' }}>{error}</div>}
+            {error && <div className="text-sm p-3 rounded-lg" style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral-dark)' }}>{error}</div>}
 
             <div className="flex gap-3 pt-2">
               {step === 2 && (
                 <button type="button" onClick={() => setStep(1)}
                   className="flex-1 py-3 text-sm font-semibold rounded-lg border transition"
-                  style={{ borderColor: 'var(--border)', color: 'var(--text)' }}>
+                  style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }}>
                   ← Atrás
                 </button>
               )}
@@ -168,12 +168,12 @@ function Step({ n, active, done, label }: { n: number; active: boolean; done: bo
     <div className="flex flex-col items-center gap-1">
       <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition"
         style={{
-          background: active ? 'var(--accent)' : 'var(--border)',
-          color: active ? '#fff' : 'var(--muted)',
+          background: active ? 'var(--pf-coral)' : 'var(--pf-border)',
+          color: active ? '#fff' : 'var(--pf-muted)',
         }}>
         {done ? '✓' : n}
       </div>
-      <span className="text-xs" style={{ color: active ? 'var(--accent)' : 'var(--muted)' }}>{label}</span>
+      <span className="text-xs" style={{ color: active ? 'var(--pf-coral)' : 'var(--pf-muted)' }}>{label}</span>
     </div>
   )
 }

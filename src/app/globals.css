@@ -1,58 +1,225 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=DM+Sans:wght@400;500;600;700&display=swap');
 
+/* ─────────────────────────────────────────
+   PETFHANS — Design Tokens
+   ───────────────────────────────────────── */
 :root {
-  --bg:        #f7f6f4;
-  --accent:    #EE726D;
-  --accent-h:  #e05e59;
-  --accent-s:  #fff0ef;
-  --text:      #1a1a1a;
-  --muted:     #888888;
-  --border:    #ebebeb;
-  --white:     #ffffff;
+  /* ── Brand / Primary ── */
+  --pf-coral:        #EE726D;
+  --pf-coral-dark:   #C9504B;
+  --pf-coral-soft:   #FFF0EF;
+  --pf-coral-mid:    #FBDAD9;
+
+  /* ── Surfaces ── */
+  --pf-bg:           #F7F6F4;
+  --pf-white:        #FFFFFF;
+  --pf-surface:      #F2F1EF;
+
+  /* ── Text ── */
+  --pf-ink:          #1A1A1A;
+  --pf-muted:        #888888;
+  --pf-hint:         #BBBBBB;
+
+  /* ── Borders ── */
+  --pf-border:       #EBEBEB;
+  --pf-border-md:    #D8D6D3;
+  --pf-border-width: 0.5px;
+
+  /* ── Semantic ── */
+  --pf-success:      #E8F8F3;
+  --pf-success-fg:   #1D9E75;
+  --pf-warning:      #FAEEDA;
+  --pf-warning-fg:   #BA7517;
+  --pf-danger:       #FCEAEA;
+  --pf-danger-fg:    #C9504B;
+  --pf-info:         #EEEDFE;   /* AI features ONLY */
+  --pf-info-fg:      #534AB7;
+
+  /* ── Radii ── */
+  --pf-r-xs:   6px;
+  --pf-r-sm:  10px;
+  --pf-r-md:  14px;
+  --pf-r-lg:  20px;
+  --pf-r-xl:  28px;
+  --pf-r-pill: 100px;
+
+  /* ── Shadows ── */
+  --pf-shadow-card-hover: 0 2px 16px rgba(238, 114, 109, 0.09);
+  --pf-shadow-focus:      0 0 0 3px var(--pf-coral-soft);
+  --pf-shadow-sm:         0 1px 3px rgba(0, 0, 0, 0.05);
+
+  /* ── Fonts ── */
+  --pf-font-display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  --pf-font-body:    'DM Sans', ui-sans-serif, system-ui, sans-serif;
+
+  /* ── Type scale ── */
+  --pf-text-display: 700 32px/1.1 var(--pf-font-display);
+  --pf-text-h1:      700 24px/1.2 var(--pf-font-display);
+  --pf-text-h2:      700 18px/1.25 var(--pf-font-display);
+  --pf-text-h3:      600 15px/1.35 var(--pf-font-display);
+  --pf-text-body:    400 14px/1.5 var(--pf-font-body);
+  --pf-text-sm:      400 12px/1.4 var(--pf-font-body);
+  --pf-text-label:   600 11px/1 var(--pf-font-body);
+  --pf-text-accent:  500 14px/1.4 var(--pf-font-body);
+
+  /* ── Transitions ── */
+  --pf-t-fast: 0.15s ease;
+  --pf-t-med:  0.2s ease;
 }
 
+/* ── Tailwind CSS 4 theme bridge ── */
 @theme inline {
-  --color-bg:       var(--bg);
-  --color-accent:   var(--accent);
-  --color-accent-h: var(--accent-h);
-  --color-accent-s: var(--accent-s);
-  --color-text:     var(--text);
-  --color-muted:    var(--muted);
-  --color-border:   var(--border);
+  --color-pf-coral:      var(--pf-coral);
+  --color-pf-coral-dark: var(--pf-coral-dark);
+  --color-pf-coral-soft: var(--pf-coral-soft);
+  --color-pf-coral-mid:  var(--pf-coral-mid);
+  --color-pf-bg:         var(--pf-bg);
+  --color-pf-white:      var(--pf-white);
+  --color-pf-surface:    var(--pf-surface);
+  --color-pf-ink:        var(--pf-ink);
+  --color-pf-muted:      var(--pf-muted);
+  --color-pf-border:     var(--pf-border);
+  --color-pf-info:       var(--pf-info);
+  --color-pf-info-fg:    var(--pf-info-fg);
+  --color-pf-success:    var(--pf-success);
+  --color-pf-success-fg: var(--pf-success-fg);
+  --color-pf-warning:    var(--pf-warning);
+  --color-pf-warning-fg: var(--pf-warning-fg);
+  --color-pf-danger:     var(--pf-danger);
+  --color-pf-danger-fg:  var(--pf-danger-fg);
 }
 
-* {
-  box-sizing: border-box;
-}
+/* ─── Base reset ─── */
+* { box-sizing: border-box; }
 
 body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Roboto', sans-serif;
+  background: var(--pf-bg);
+  color: var(--pf-ink);
+  font-family: var(--pf-font-body);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
 }
 
-/* Utilidades de color Petfhans */
-.bg-pf-bg       { background: var(--bg); }
-.bg-pf-accent   { background: var(--accent); }
-.bg-pf-accent-s { background: var(--accent-s); }
-.bg-pf-white    { background: var(--white); }
+/* ── Semantic type utilities ── */
+.pf-display { font: var(--pf-text-display); color: var(--pf-ink); letter-spacing: -0.01em; }
+.pf-h1      { font: var(--pf-text-h1);      color: var(--pf-ink); letter-spacing: -0.01em; }
+.pf-h2      { font: var(--pf-text-h2);      color: var(--pf-ink); }
+.pf-h3      { font: var(--pf-text-h3);      color: var(--pf-ink); }
+.pf-body    { font: var(--pf-text-body);    color: var(--pf-ink); }
+.pf-sm      { font: var(--pf-text-sm);      color: var(--pf-muted); }
+.pf-label   { font: var(--pf-text-label);   color: var(--pf-muted); text-transform: uppercase; letter-spacing: 0.07em; }
+.pf-accent  { font: var(--pf-text-accent);  color: var(--pf-coral); }
 
-.text-pf-accent  { color: var(--accent); }
-.text-pf-text    { color: var(--text); }
-.text-pf-muted   { color: var(--muted); }
+/* ── Color utilities ── */
+.pf-ink        { color: var(--pf-ink); }
+.pf-muted-text { color: var(--pf-muted); }
+.pf-coral-text { color: var(--pf-coral); }
 
-.border-pf       { border-color: var(--border); }
+/* ── Card primitives ── */
+.pf-card {
+  background: var(--pf-white);
+  border-radius: var(--pf-r-md);
+  border: var(--pf-border-width) solid var(--pf-border);
+  padding: 20px;
+}
+.pf-card-interactive {
+  cursor: pointer;
+  transition: border-color var(--pf-t-med), box-shadow var(--pf-t-med);
+}
+.pf-card-interactive:hover {
+  border-color: var(--pf-coral-mid);
+  box-shadow: var(--pf-shadow-card-hover);
+}
 
+/* ── Buttons ── */
+.pf-btn {
+  font-family: var(--pf-font-body);
+  font-weight: 500;
+  font-size: 13.5px;
+  padding: 9px 20px;
+  border-radius: var(--pf-r-sm);
+  border: none;
+  cursor: pointer;
+  transition: background var(--pf-t-fast), border-color var(--pf-t-fast), transform 0.1s;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  line-height: 1;
+  text-decoration: none;
+}
+.pf-btn:active   { transform: scale(0.98); }
+.pf-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.pf-btn-primary  { background: var(--pf-coral); color: #fff; }
+.pf-btn-primary:hover { background: var(--pf-coral-dark); }
+.pf-btn-secondary {
+  background: var(--pf-white);
+  color: var(--pf-ink);
+  border: var(--pf-border-width) solid var(--pf-border-md);
+}
+.pf-btn-secondary:hover { background: var(--pf-surface); }
+.pf-btn-ghost {
+  background: transparent;
+  color: var(--pf-coral);
+  border: var(--pf-border-width) solid var(--pf-coral);
+}
+.pf-btn-ghost:hover { background: var(--pf-coral-soft); }
+.pf-btn-sm { font-size: 12px; padding: 6px 14px; }
+.pf-btn-lg { font-size: 15px; padding: 12px 28px; }
+
+/* ── Inputs ── */
+.pf-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--pf-r-sm);
+  border: var(--pf-border-width) solid var(--pf-border-md);
+  font-family: var(--pf-font-body);
+  font-size: 14px;
+  color: var(--pf-ink);
+  background: var(--pf-white);
+  outline: none;
+  transition: border-color var(--pf-t-fast), box-shadow var(--pf-t-fast);
+  box-sizing: border-box;
+}
+.pf-input::placeholder { color: var(--pf-hint); }
+.pf-input:focus {
+  border-color: var(--pf-coral);
+  box-shadow: var(--pf-shadow-focus);
+}
+
+/* ── Badges ── */
+.pf-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--pf-font-body);
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: var(--pf-r-pill);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.pf-badge-coral   { background: var(--pf-coral-soft); color: var(--pf-coral-dark); }
+.pf-badge-success { background: var(--pf-success);    color: var(--pf-success-fg); }
+.pf-badge-warning { background: var(--pf-warning);    color: var(--pf-warning-fg); }
+.pf-badge-danger  { background: var(--pf-danger);     color: var(--pf-danger-fg); }
+.pf-badge-info    { background: var(--pf-info);       color: var(--pf-info-fg); }
+.pf-badge-gray    { background: var(--pf-surface);    color: var(--pf-muted); border: var(--pf-border-width) solid var(--pf-border); }
+
+/* ── Focus ring ── */
+.ring-pf:focus { outline: none; box-shadow: var(--pf-shadow-focus); }
+
+/* ── Legacy alias: btn-pf (migrate to .pf-btn.pf-btn-primary in PR 5+) ── */
 .btn-pf {
-  background: var(--accent);
+  background: var(--pf-coral);
   color: #fff;
+  font-family: var(--pf-font-body);
   font-weight: 600;
-  border-radius: 0.5rem;
-  transition: background 0.15s;
+  border-radius: var(--pf-r-sm);
+  transition: background var(--pf-t-fast);
+  text-decoration: none;
 }
-.btn-pf:hover    { background: var(--accent-h); }
-.btn-pf:disabled { opacity: 0.5; }
-
-.ring-pf:focus { outline: none; box-shadow: 0 0 0 2px var(--accent-s), 0 0 0 4px var(--accent); }
+.btn-pf:hover    { background: var(--pf-coral-dark); }
+.btn-pf:disabled { opacity: 0.5; cursor: not-allowed; }

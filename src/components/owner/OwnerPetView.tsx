@@ -21,7 +21,7 @@ export default function OwnerPetView({ pet, records, photos, docs, clinicName, c
   return (
     <>
       <style>{`
-        html, body { margin:0; padding:0; background:#f2f2f7; font-family:'Roboto',sans-serif; }
+        html, body { margin:0; padding:0; background:#f2f2f7; font-family:var(--pf-font-body); }
 
         /* ── MOBILE (default) ── */
         .pet-shell { min-height:100svh; display:flex; flex-direction:column; }

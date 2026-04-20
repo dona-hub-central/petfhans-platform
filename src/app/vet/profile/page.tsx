@@ -53,12 +53,12 @@ export default async function VetProfilePage({
   const userName   = profile?.full_name ?? ''
 
   const inp = 'w-full rounded-xl border px-3 py-2.5 text-sm outline-none'
-  const inpStyle = { borderColor: 'var(--border)', color: 'var(--text)' }
+  const inpStyle = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }
 
   return (
     <VetLayout clinicName={clinicName} userName={userName}>
       <div className="max-w-xl">
-        <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--text)' }}>Mi perfil</h1>
+        <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--pf-ink)' }}>Mi perfil</h1>
 
         {success === 'profile'  && <Alert ok msg="Perfil actualizado correctamente." />}
         {success === 'password' && <Alert ok msg="Contraseña cambiada correctamente." />}
@@ -69,12 +69,12 @@ export default async function VetProfilePage({
         {error === 'update'  && <Alert msg="No se pudo actualizar la contraseña." />}
 
         {/* Datos personales */}
-        <div className="bg-white rounded-2xl border p-6 mb-4" style={{ borderColor: 'var(--border)' }}>
-          <h2 className="font-semibold mb-4" style={{ color: 'var(--text)' }}>Datos personales</h2>
+        <div className="bg-white rounded-2xl border p-6 mb-4" style={{ borderColor: 'var(--pf-border)' }}>
+          <h2 className="font-semibold mb-4" style={{ color: 'var(--pf-ink)' }}>Datos personales</h2>
           <form action={saveProfile} className="space-y-4">
             <Label text="Correo electrónico (solo lectura)">
               <input value={user.email ?? ''} readOnly disabled className={inp}
-                style={{ ...inpStyle, background: 'var(--bg)', color: 'var(--muted)' }} />
+                style={{ ...inpStyle, background: 'var(--pf-bg)', color: 'var(--pf-muted)' }} />
             </Label>
             <Label text="Nombre completo">
               <input name="full_name" defaultValue={profile?.full_name ?? ''} required className={inp} style={inpStyle} />
@@ -87,8 +87,8 @@ export default async function VetProfilePage({
         </div>
 
         {/* Cambiar contraseña */}
-        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'var(--border)' }}>
-          <h2 className="font-semibold mb-4" style={{ color: 'var(--text)' }}>Cambiar contraseña</h2>
+        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'var(--pf-border)' }}>
+          <h2 className="font-semibold mb-4" style={{ color: 'var(--pf-ink)' }}>Cambiar contraseña</h2>
           <form action={changePassword} className="space-y-4">
             <Label text="Contraseña actual">
               <input name="current_password" type="password" required className={inp} style={inpStyle} />
@@ -110,7 +110,7 @@ export default async function VetProfilePage({
 function Label({ text, children }: { text: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>{text}</label>
+      <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--pf-muted)' }}>{text}</label>
       {children}
     </div>
   )

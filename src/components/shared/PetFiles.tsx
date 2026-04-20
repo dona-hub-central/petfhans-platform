@@ -101,19 +101,19 @@ export default function PetFiles({
   }
 
   return (
-    <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
-      <div className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
-        <h3 className="font-semibold text-sm" style={{ color: 'var(--text)' }}>
+    <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
+      <div className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--pf-border)' }}>
+        <h3 className="font-semibold text-sm" style={{ color: 'var(--pf-ink)' }}>
           📎 Archivos y documentos
         </h3>
         <div className="flex items-center gap-2">
-          <span className="text-xs px-2.5 py-1 rounded-full" style={{ background: 'var(--bg)', color: 'var(--muted)' }}>
+          <span className="text-xs px-2.5 py-1 rounded-full" style={{ background: 'var(--pf-bg)', color: 'var(--pf-muted)' }}>
             {files.length}
           </span>
           {canUpload && (
             <button onClick={() => setShowForm(!showForm)}
               className="text-xs font-semibold px-3 py-1.5 rounded-xl transition"
-              style={{ background: 'var(--accent)', color: '#fff' }}>
+              style={{ background: 'var(--pf-coral)', color: '#fff' }}>
               + Añadir
             </button>
           )}
@@ -122,41 +122,41 @@ export default function PetFiles({
 
       {/* Formulario subida */}
       {showForm && (
-        <form onSubmit={handleUpload} className="px-6 py-5 border-b" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+        <form onSubmit={handleUpload} className="px-6 py-5 border-b" style={{ borderColor: 'var(--pf-border)', background: 'var(--pf-bg)' }}>
           <div className="grid grid-cols-2 gap-3 mb-3">
             <div>
-              <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text)' }}>Tipo</label>
+              <label className="block text-xs font-medium mb-1" style={{ color: 'var(--pf-ink)' }}>Tipo</label>
               <select value={form.file_type} onChange={e => setForm(f => ({ ...f, file_type: e.target.value }))}
                 className="w-full text-sm border rounded-xl px-3 py-2 outline-none"
-                style={{ borderColor: 'var(--border)', background: '#fff' }}>
+                style={{ borderColor: 'var(--pf-border)', background: '#fff' }}>
                 {FILE_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text)' }}>Archivo</label>
+              <label className="block text-xs font-medium mb-1" style={{ color: 'var(--pf-ink)' }}>Archivo</label>
               <input type="file" accept={ACCEPT} required
                 onChange={e => setSelectedFile(e.target.files?.[0] || null)}
                 className="w-full text-xs border rounded-xl px-3 py-2 outline-none"
-                style={{ borderColor: 'var(--border)', background: '#fff' }} />
+                style={{ borderColor: 'var(--pf-border)', background: '#fff' }} />
             </div>
           </div>
           <div className="mb-3">
-            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text)' }}>Notas (opcional)</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--pf-ink)' }}>Notas (opcional)</label>
             <input type="text" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
               placeholder="Ej: Radiografía cadera, control 3 meses..."
               className="w-full text-sm border rounded-xl px-3 py-2 outline-none"
-              style={{ borderColor: 'var(--border)', background: '#fff' }} />
+              style={{ borderColor: 'var(--pf-border)', background: '#fff' }} />
           </div>
           {error && <p className="text-xs mb-2" style={{ color: '#dc2626' }}>{error}</p>}
           <div className="flex gap-2">
             <button type="submit" disabled={uploading}
               className="text-xs font-semibold px-4 py-2 rounded-xl transition disabled:opacity-50"
-              style={{ background: 'var(--accent)', color: '#fff' }}>
+              style={{ background: 'var(--pf-coral)', color: '#fff' }}>
               {uploading ? 'Subiendo...' : 'Subir archivo'}
             </button>
             <button type="button" onClick={() => setShowForm(false)}
               className="text-xs px-4 py-2 rounded-xl border transition"
-              style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}>
+              style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-muted)' }}>
               Cancelar
             </button>
           </div>
@@ -164,14 +164,14 @@ export default function PetFiles({
       )}
 
       {/* Lista de archivos */}
-      <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
+      <div className="divide-y" style={{ borderColor: 'var(--pf-border)' }}>
         {files.length === 0 ? (
           <div className="px-6 py-10 text-center">
             <p className="text-2xl mb-2">📂</p>
-            <p className="text-sm" style={{ color: 'var(--muted)' }}>Sin archivos adjuntos</p>
+            <p className="text-sm" style={{ color: 'var(--pf-muted)' }}>Sin archivos adjuntos</p>
             {canUpload && (
               <button onClick={() => setShowForm(true)}
-                className="text-sm font-medium mt-2 inline-block" style={{ color: 'var(--accent)' }}>
+                className="text-sm font-medium mt-2 inline-block" style={{ color: 'var(--pf-coral)' }}>
                 Añadir el primero →
               </button>
             )}
@@ -183,16 +183,16 @@ export default function PetFiles({
               <span className="text-2xl flex-shrink-0">{fileIcon(f.mime_type)}</span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{f.file_name}</p>
+                  <p className="text-sm font-medium truncate" style={{ color: 'var(--pf-ink)' }}>{f.file_name}</p>
                   <span className="text-xs px-2 py-0.5 rounded-full flex-shrink-0"
                     style={{ background: ft.color + '18', color: ft.color }}>
                     {ft.label}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 mt-0.5">
-                  {f.notes && <p className="text-xs truncate" style={{ color: 'var(--muted)' }}>{f.notes}</p>}
-                  {f.file_size && <span className="text-xs" style={{ color: 'var(--muted)' }}>{formatSize(f.file_size)}</span>}
-                  <span className="text-xs" style={{ color: 'var(--muted)' }}>
+                  {f.notes && <p className="text-xs truncate" style={{ color: 'var(--pf-muted)' }}>{f.notes}</p>}
+                  {f.file_size && <span className="text-xs" style={{ color: 'var(--pf-muted)' }}>{formatSize(f.file_size)}</span>}
+                  <span className="text-xs" style={{ color: 'var(--pf-muted)' }}>
                     {new Date(f.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                   </span>
                 </div>
@@ -200,7 +200,7 @@ export default function PetFiles({
               <div className="flex items-center gap-2 flex-shrink-0">
                 <button onClick={() => openFile(f.id)} disabled={openingId === f.id}
                   className="text-xs font-medium px-3 py-1.5 rounded-xl transition"
-                  style={{ background: 'var(--accent-s)', color: 'var(--accent)' }}>
+                  style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)' }}>
                   {openingId === f.id ? '...' : 'Abrir'}
                 </button>
                 {canDelete && (

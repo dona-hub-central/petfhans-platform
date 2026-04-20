@@ -82,7 +82,7 @@ export default function BreedSelect({
   }
 
   const inpS = {
-    borderColor: 'var(--border)', color: 'var(--text)',
+    borderColor: 'var(--pf-border)', color: 'var(--pf-ink)',
     background: '#fff',
   }
 
@@ -96,14 +96,14 @@ export default function BreedSelect({
         disabled={!breeds.length}
         className="w-full px-4 py-3 rounded-lg border text-sm outline-none transition"
         style={inpS}
-        onBlur={e => (e.target as HTMLInputElement).style.borderColor = 'var(--border)'}
-        onKeyDown={(e: any) => { e.target.style.borderColor = 'var(--accent)' }}
+        onBlur={e => (e.target as HTMLInputElement).style.borderColor = 'var(--pf-border)'}
+        onKeyDown={(e: any) => { e.target.style.borderColor = 'var(--pf-coral)' }}
       />
 
       {open && filtered.length > 0 && (
         <div style={{
           position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50,
-          background: '#fff', border: '1px solid var(--border)', borderRadius: 12,
+          background: '#fff', border: '1px solid var(--pf-border)', borderRadius: 12,
           boxShadow: '0 8px 24px rgba(0,0,0,.12)', marginTop: 4,
           maxHeight: 240, overflowY: 'auto',
         }}>
@@ -112,11 +112,11 @@ export default function BreedSelect({
               onMouseDown={() => select(breed)}
               style={{
                 padding: '10px 16px', fontSize: 14, cursor: 'pointer',
-                color: breed === value ? 'var(--accent)' : 'var(--text)',
-                background: breed === value ? 'var(--accent-s)' : 'transparent',
+                color: breed === value ? 'var(--pf-coral)' : 'var(--pf-ink)',
+                background: breed === value ? 'var(--pf-coral-soft)' : 'transparent',
                 fontWeight: breed === value ? 600 : 400,
               }}
-              onMouseEnter={e => { if (breed !== value) (e.currentTarget as HTMLElement).style.background = 'var(--bg)' }}
+              onMouseEnter={e => { if (breed !== value) (e.currentTarget as HTMLElement).style.background = 'var(--pf-bg)' }}
               onMouseLeave={e => { if (breed !== value) (e.currentTarget as HTMLElement).style.background = 'transparent' }}>
               {breed}
             </div>
@@ -127,9 +127,9 @@ export default function BreedSelect({
       {open && query.length > 0 && filtered.length === 0 && (
         <div style={{
           position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50,
-          background: '#fff', border: '1px solid var(--border)', borderRadius: 12,
+          background: '#fff', border: '1px solid var(--pf-border)', borderRadius: 12,
           boxShadow: '0 8px 24px rgba(0,0,0,.12)', marginTop: 4,
-          padding: '12px 16px', fontSize: 13, color: 'var(--muted)',
+          padding: '12px 16px', fontSize: 13, color: 'var(--pf-muted)',
         }}>
           No se encontró "{query}" — se guardará como texto libre
         </div>

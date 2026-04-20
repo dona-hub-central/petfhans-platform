@@ -36,15 +36,15 @@ export default function StripeConfig({
   }
 
   return (
-    <div className="bg-white rounded-2xl border p-6 mb-2" style={{ borderColor: 'var(--border)' }}>
+    <div className="bg-white rounded-2xl border p-6 mb-2" style={{ borderColor: 'var(--pf-border)' }}>
       <div className="flex items-center justify-between mb-5">
-        <h3 className="font-semibold text-sm" style={{ color: 'var(--text)' }}>
+        <h3 className="font-semibold text-sm" style={{ color: 'var(--pf-ink)' }}>
           🔧 Configurar claves de API
         </h3>
         {mode === 'view' && (
           <button onClick={() => setMode('edit')}
             className="text-xs font-medium px-4 py-2 rounded-xl border transition"
-            style={{ borderColor: 'var(--border)', color: 'var(--accent)' }}>
+            style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-coral)' }}>
             {hasSecretKey && hasPublicKey ? 'Actualizar claves' : 'Añadir claves'}
           </button>
         )}
@@ -58,8 +58,8 @@ export default function StripeConfig({
       ) : (
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text)' }}>
-              Secret Key <span style={{ color: 'var(--muted)' }}>(sk_live_... o sk_test_...)</span>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--pf-ink)' }}>
+              Secret Key <span style={{ color: 'var(--pf-muted)' }}>(sk_live_... o sk_test_...)</span>
             </label>
             <input
               type="password"
@@ -67,14 +67,14 @@ export default function StripeConfig({
               onChange={e => setSecretKey(e.target.value)}
               placeholder="sk_live_..."
               className="w-full px-4 py-2.5 text-sm border rounded-xl outline-none"
-              style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
-              onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-              onBlur={e => e.target.style.borderColor = 'var(--border)'}
+              style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }}
+              onFocus={e => e.target.style.borderColor = 'var(--pf-coral)'}
+              onBlur={e => e.target.style.borderColor = 'var(--pf-border)'}
             />
           </div>
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--text)' }}>
-              Publishable Key <span style={{ color: 'var(--muted)' }}>(pk_live_... o pk_test_...)</span>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--pf-ink)' }}>
+              Publishable Key <span style={{ color: 'var(--pf-muted)' }}>(pk_live_... o pk_test_...)</span>
             </label>
             <input
               type="text"
@@ -82,9 +82,9 @@ export default function StripeConfig({
               onChange={e => setPublicKey(e.target.value)}
               placeholder="pk_live_..."
               className="w-full px-4 py-2.5 text-sm border rounded-xl outline-none"
-              style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
-              onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-              onBlur={e => e.target.style.borderColor = 'var(--border)'}
+              style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }}
+              onFocus={e => e.target.style.borderColor = 'var(--pf-coral)'}
+              onBlur={e => e.target.style.borderColor = 'var(--pf-border)'}
             />
           </div>
 
@@ -102,7 +102,7 @@ export default function StripeConfig({
             </button>
             <button onClick={() => { setMode('view'); setSecretKey(''); setPublicKey(''); setMsg('') }}
               className="text-sm px-4 py-2.5 rounded-xl border transition"
-              style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}>
+              style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-muted)' }}>
               Cancelar
             </button>
           </div>
@@ -114,9 +114,9 @@ export default function StripeConfig({
 
 function InfoRow({ label, value, ok }: { label: string; value: string; ok: boolean }) {
   return (
-    <div className="flex items-center justify-between py-2.5 border-b last:border-0" style={{ borderColor: 'var(--border)' }}>
-      <span className="text-xs font-medium" style={{ color: 'var(--text)' }}>{label}</span>
-      <span className="text-xs font-mono" style={{ color: ok ? 'var(--muted)' : '#dc2626' }}>{value}</span>
+    <div className="flex items-center justify-between py-2.5 border-b last:border-0" style={{ borderColor: 'var(--pf-border)' }}>
+      <span className="text-xs font-medium" style={{ color: 'var(--pf-ink)' }}>{label}</span>
+      <span className="text-xs font-mono" style={{ color: ok ? 'var(--pf-muted)' : '#dc2626' }}>{value}</span>
     </div>
   )
 }

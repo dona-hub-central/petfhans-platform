@@ -39,10 +39,10 @@ export default async function VetDashboard() {
   return (
     <VetLayout clinicName={clinicName} userName={userName}>
       <div className="mb-8">
-        <h2 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>
+        <h2 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>
           Hola, {firstName} 👋
         </h2>
-        <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>Resumen de hoy</p>
+        <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>Resumen de hoy</p>
       </div>
 
       {/* Stats */}
@@ -62,25 +62,25 @@ export default async function VetDashboard() {
         ].map(a => (
           <Link key={a.href} href={a.href}
             className="bg-white rounded-2xl border p-5 flex flex-col gap-2 hover:shadow-sm transition"
-            style={{ borderColor: 'var(--border)' }}>
+            style={{ borderColor: 'var(--pf-border)' }}>
             <span className="text-2xl">{a.icon}</span>
             <div>
-              <p className="font-semibold text-sm" style={{ color: 'var(--text)' }}>{a.title}</p>
-              <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{a.desc}</p>
+              <p className="font-semibold text-sm" style={{ color: 'var(--pf-ink)' }}>{a.title}</p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--pf-muted)' }}>{a.desc}</p>
             </div>
           </Link>
         ))}
       </div>
 
       {/* Consultas recientes */}
-      <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
-        <div className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
-          <h3 className="font-semibold text-sm" style={{ color: 'var(--text)' }}>Consultas recientes</h3>
-          <Link href="/vet/records" className="text-xs font-medium" style={{ color: 'var(--accent)' }}>
+      <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
+        <div className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--pf-border)' }}>
+          <h3 className="font-semibold text-sm" style={{ color: 'var(--pf-ink)' }}>Consultas recientes</h3>
+          <Link href="/vet/records" className="text-xs font-medium" style={{ color: 'var(--pf-coral)' }}>
             Ver todas →
           </Link>
         </div>
-        <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
+        <div className="divide-y" style={{ borderColor: 'var(--pf-border)' }}>
           {recentRecords && recentRecords.length > 0 ? recentRecords.map((r: any) => (
             <Link key={r.id} href={`/vet/records/${r.id}`}
               className="px-6 py-4 flex items-center gap-3 hover:bg-gray-50 transition block">
@@ -88,16 +88,16 @@ export default async function VetDashboard() {
                 {r.pets?.species === 'dog' ? '🐶' : r.pets?.species === 'cat' ? '🐱' : r.pets?.species === 'rabbit' ? '🐰' : '🐾'}
               </span>
               <div className="flex-1">
-                <p className="font-medium text-sm" style={{ color: 'var(--text)' }}>{r.pets?.name}</p>
-                <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{r.reason}</p>
+                <p className="font-medium text-sm" style={{ color: 'var(--pf-ink)' }}>{r.pets?.name}</p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--pf-muted)' }}>{r.reason}</p>
               </div>
-              <span className="text-xs" style={{ color: 'var(--muted)' }}>
+              <span className="text-xs" style={{ color: 'var(--pf-muted)' }}>
                 {new Date(r.visit_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
               </span>
             </Link>
           )) : (
             <div className="px-6 py-10 text-center">
-              <p className="text-sm" style={{ color: 'var(--muted)' }}>No hay consultas aún</p>
+              <p className="text-sm" style={{ color: 'var(--pf-muted)' }}>No hay consultas aún</p>
             </div>
           )}
         </div>
@@ -108,11 +108,11 @@ export default async function VetDashboard() {
 
 function StatCard({ icon, label, value }: { icon: string; label: string; value: number }) {
   return (
-    <div className="bg-white rounded-2xl border p-5" style={{ borderColor: 'var(--border)' }}>
+    <div className="bg-white rounded-2xl border p-5" style={{ borderColor: 'var(--pf-border)' }}>
       <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg mb-3"
-        style={{ background: 'var(--accent-s)' }}>{icon}</div>
-      <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{value}</p>
-      <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{label}</p>
+        style={{ background: 'var(--pf-coral-soft)' }}>{icon}</div>
+      <p className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>{value}</p>
+      <p className="text-xs mt-0.5" style={{ color: 'var(--pf-muted)' }}>{label}</p>
     </div>
   )
 }

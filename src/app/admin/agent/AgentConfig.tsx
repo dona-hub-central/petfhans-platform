@@ -116,19 +116,19 @@ export default function AgentConfig({ agent: initial }: { agent: Agent | null })
   }
 
   const inp = "w-full px-3 py-2.5 text-sm border rounded-xl outline-none transition"
-  const inpS = { borderColor: 'var(--border)', color: 'var(--text)', background: '#fff' }
-  const f = { onFocus: (e:any) => e.target.style.borderColor='var(--accent)', onBlur: (e:any) => e.target.style.borderColor='var(--border)' }
+  const inpS = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)', background: '#fff' }
+  const f = { onFocus: (e:any) => e.target.style.borderColor='var(--pf-coral)', onBlur: (e:any) => e.target.style.borderColor='var(--pf-border)' }
 
   return (
     <div>
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 border-b" style={{ borderColor: 'var(--border)' }}>
+      <div className="flex gap-1 mb-6 border-b" style={{ borderColor: 'var(--pf-border)' }}>
         {[['config','⚙️ Configuración'],['chat','💬 Probar agente']].map(([key, label]) => (
           <button key={key} onClick={() => setActiveTab(key as any)}
             className="px-5 py-2.5 text-sm font-medium border-b-2 transition"
             style={{
-              borderColor: activeTab === key ? 'var(--accent)' : 'transparent',
-              color: activeTab === key ? 'var(--accent)' : 'var(--muted)',
+              borderColor: activeTab === key ? 'var(--pf-coral)' : 'transparent',
+              color: activeTab === key ? 'var(--pf-coral)' : 'var(--pf-muted)',
             }}>{label}</button>
         ))}
       </div>
@@ -138,22 +138,22 @@ export default function AgentConfig({ agent: initial }: { agent: Agent | null })
         <div className="space-y-5">
 
           {/* Identidad */}
-          <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'var(--border)' }}>
-            <h3 className="font-semibold text-sm mb-4" style={{ color: 'var(--text)' }}>🤖 Identidad del agente</h3>
+          <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'var(--pf-border)' }}>
+            <h3 className="font-semibold text-sm mb-4" style={{ color: 'var(--pf-ink)' }}>🤖 Identidad del agente</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--muted)' }}>Nombre</label>
+                <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--pf-muted)' }}>Nombre</label>
                 <input value={form.name} onChange={e => set('name', e.target.value)} className={inp} style={inpS} {...f} placeholder="Dr. Petfhans" />
               </div>
               <div className="flex items-end gap-3">
                 <label className="flex items-center gap-2 cursor-pointer mb-2">
                   <div onClick={() => set('is_active', !form.is_active)}
                     className="relative w-11 h-6 rounded-full transition cursor-pointer"
-                    style={{ background: form.is_active ? 'var(--accent)' : '#d1d5db' }}>
+                    style={{ background: form.is_active ? 'var(--pf-coral)' : '#d1d5db' }}>
                     <div className="absolute top-0.5 transition-all rounded-full bg-white w-5 h-5"
                       style={{ left: form.is_active ? '22px' : '2px' }} />
                   </div>
-                  <span className="text-sm" style={{ color: 'var(--text)' }}>
+                  <span className="text-sm" style={{ color: 'var(--pf-ink)' }}>
                     {form.is_active ? 'Agente activo' : 'Agente inactivo'}
                   </span>
                 </label>
@@ -162,22 +162,22 @@ export default function AgentConfig({ agent: initial }: { agent: Agent | null })
           </div>
 
           {/* API Key + Modelo */}
-          <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'var(--border)' }}>
-            <h3 className="font-semibold text-sm mb-4" style={{ color: 'var(--text)' }}>🔑 OpenAI</h3>
+          <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'var(--pf-border)' }}>
+            <h3 className="font-semibold text-sm mb-4" style={{ color: 'var(--pf-ink)' }}>🔑 OpenAI</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--muted)' }}>API Key</label>
+                <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--pf-muted)' }}>API Key</label>
                 <div className="flex gap-2">
                   <input type={showKey ? 'text' : 'password'} value={form.openai_api_key}
                     onChange={e => set('openai_api_key', e.target.value)}
                     placeholder="sk-..." className={`${inp} flex-1`} style={inpS} {...f} />
                   <button type="button" onClick={() => setShowKey(!showKey)}
-                    className="px-3 text-xs rounded-xl border" style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}>
+                    className="px-3 text-xs rounded-xl border" style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-muted)' }}>
                     {showKey ? 'Ocultar' : 'Ver'}
                   </button>
                   <button type="button" onClick={testAgent} disabled={testing}
                     className="px-4 text-xs font-semibold rounded-xl"
-                    style={{ background: 'var(--accent-s)', color: 'var(--accent)' }}>
+                    style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)' }}>
                     {testing ? '...' : 'Probar'}
                   </button>
                 </div>
@@ -190,55 +190,55 @@ export default function AgentConfig({ agent: initial }: { agent: Agent | null })
               </div>
 
               <div>
-                <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--muted)' }}>Modelo</label>
+                <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--pf-muted)' }}>Modelo</label>
                 <div className="grid grid-cols-2 gap-2">
                   {MODELS.map(m => (
                     <button key={m.value} type="button" onClick={() => set('model', m.value)}
                       className="p-3 rounded-xl border text-left transition"
                       style={{
-                        borderColor: form.model === m.value ? 'var(--accent)' : 'var(--border)',
-                        background: form.model === m.value ? 'var(--accent-s)' : '#fff',
+                        borderColor: form.model === m.value ? 'var(--pf-coral)' : 'var(--pf-border)',
+                        background: form.model === m.value ? 'var(--pf-coral-soft)' : '#fff',
                       }}>
-                      <p className="text-xs font-bold" style={{ color: form.model === m.value ? 'var(--accent)' : 'var(--text)' }}>{m.label}</p>
-                      <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{m.desc}</p>
+                      <p className="text-xs font-bold" style={{ color: form.model === m.value ? 'var(--pf-coral)' : 'var(--pf-ink)' }}>{m.label}</p>
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--pf-muted)' }}>{m.desc}</p>
                     </button>
                   ))}
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--muted)' }}>
+                <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--pf-muted)' }}>
                   Temperatura: {form.temperature} <span style={{ fontWeight: 400 }}>(0 = preciso, 1 = creativo)</span>
                 </label>
                 <input type="range" min="0" max="1" step="0.1" value={form.temperature}
                   onChange={e => set('temperature', parseFloat(e.target.value))}
-                  style={{ width: '100%', accentColor: 'var(--accent)' }} />
+                  style={{ width: '100%', accentColor: 'var(--pf-coral)' }} />
               </div>
             </div>
           </div>
 
           {/* System Prompt */}
-          <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'var(--border)' }}>
-            <h3 className="font-semibold text-sm mb-1" style={{ color: 'var(--text)' }}>📝 Prompt del sistema</h3>
-            <p className="text-xs mb-3" style={{ color: 'var(--muted)' }}>Define la personalidad, tono y comportamiento del agente</p>
+          <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'var(--pf-border)' }}>
+            <h3 className="font-semibold text-sm mb-1" style={{ color: 'var(--pf-ink)' }}>📝 Prompt del sistema</h3>
+            <p className="text-xs mb-3" style={{ color: 'var(--pf-muted)' }}>Define la personalidad, tono y comportamiento del agente</p>
             <textarea value={form.system_prompt} onChange={e => set('system_prompt', e.target.value)}
               rows={6} placeholder="Eres Dr. Petfhans, veterinario experto…"
               className="w-full px-3 py-2.5 text-sm border rounded-xl outline-none transition resize-none"
               style={inpS}
-              onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-              onBlur={e => e.target.style.borderColor = 'var(--border)'} />
+              onFocus={e => e.target.style.borderColor = 'var(--pf-coral)'}
+              onBlur={e => e.target.style.borderColor = 'var(--pf-border)'} />
           </div>
 
           {/* Skills */}
-          <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'var(--border)' }}>
-            <h3 className="font-semibold text-sm mb-1" style={{ color: 'var(--text)' }}>⚡ Habilidades del agente</h3>
-            <p className="text-xs mb-4" style={{ color: 'var(--muted)' }}>Se incluyen en el contexto para guiar el comportamiento</p>
+          <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'var(--pf-border)' }}>
+            <h3 className="font-semibold text-sm mb-1" style={{ color: 'var(--pf-ink)' }}>⚡ Habilidades del agente</h3>
+            <p className="text-xs mb-4" style={{ color: 'var(--pf-muted)' }}>Se incluyen en el contexto para guiar el comportamiento</p>
             <ul className="space-y-2 mb-3">
               {form.skills.map((skill: string, i: number) => (
                 <li key={i} className="flex items-center gap-2">
                   <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0"
-                    style={{ background: 'var(--accent-s)', color: 'var(--accent)' }}>⚡</span>
-                  <span className="flex-1 text-sm" style={{ color: 'var(--text)' }}>{skill}</span>
+                    style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)' }}>⚡</span>
+                  <span className="flex-1 text-sm" style={{ color: 'var(--pf-ink)' }}>{skill}</span>
                   <button onClick={() => removeSkill(i)} className="text-xs" style={{ color: '#dc2626' }}>✕</button>
                 </li>
               ))}
@@ -248,13 +248,13 @@ export default function AgentConfig({ agent: initial }: { agent: Agent | null })
                 onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addSkill())}
                 placeholder="Nueva habilidad…" className={`${inp} flex-1`} style={inpS} {...f} />
               <button onClick={addSkill} className="px-3 text-sm rounded-xl"
-                style={{ background: 'var(--accent-s)', color: 'var(--accent)' }}>+</button>
+                style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)' }}>+</button>
             </div>
           </div>
 
           {/* Acceso a BD */}
-          <div className="bg-white rounded-2xl border p-5" style={{ borderColor: 'var(--border)' }}>
-            <h3 className="font-semibold text-sm mb-3" style={{ color: 'var(--text)' }}>🗄️ Acceso a la base de datos</h3>
+          <div className="bg-white rounded-2xl border p-5" style={{ borderColor: 'var(--pf-border)' }}>
+            <h3 className="font-semibold text-sm mb-3" style={{ color: 'var(--pf-ink)' }}>🗄️ Acceso a la base de datos</h3>
             <div className="grid grid-cols-2 gap-2">
               {[
                 ['✅ Mascotas', 'Nombre, especie, raza, edad, peso'],
@@ -269,7 +269,7 @@ export default function AgentConfig({ agent: initial }: { agent: Agent | null })
                 </div>
               ))}
             </div>
-            <p className="text-xs mt-3" style={{ color: 'var(--muted)' }}>
+            <p className="text-xs mt-3" style={{ color: 'var(--pf-muted)' }}>
               El agente recibe contexto completo de la BD antes de cada respuesta para análisis precisos.
             </p>
           </div>
@@ -287,14 +287,14 @@ export default function AgentConfig({ agent: initial }: { agent: Agent | null })
 
       {/* ── TAB CHAT ── */}
       {activeTab === 'chat' && (
-        <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--border)', height: '60vh', display: 'flex', flexDirection: 'column' }}>
+        <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)', height: '60vh', display: 'flex', flexDirection: 'column' }}>
           {/* Mensajes */}
           <div className="flex-1 overflow-y-auto p-5 space-y-4">
             {chatMessages.length === 0 && (
               <div className="text-center py-8">
                 <p className="text-3xl mb-3">🤖</p>
-                <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>Habla con {form.name}</p>
-                <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>
+                <p className="text-sm font-medium" style={{ color: 'var(--pf-ink)' }}>Habla con {form.name}</p>
+                <p className="text-xs mt-1" style={{ color: 'var(--pf-muted)' }}>
                   Prueba con: "Analiza el historial de Brounie" o "¿Qué síntomas pueden indicar parvo?"
                 </p>
               </div>
@@ -303,12 +303,12 @@ export default function AgentConfig({ agent: initial }: { agent: Agent | null })
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className="max-w-[75%] rounded-2xl px-4 py-3 text-sm"
                   style={{
-                    background: m.role === 'user' ? 'var(--accent)' : 'var(--bg)',
-                    color: m.role === 'user' ? '#fff' : 'var(--text)',
+                    background: m.role === 'user' ? 'var(--pf-coral)' : 'var(--pf-bg)',
+                    color: m.role === 'user' ? '#fff' : 'var(--pf-ink)',
                     borderRadius: m.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
                   }}>
                   {m.role === 'assistant' && (
-                    <p className="text-xs font-bold mb-1" style={{ color: 'var(--accent)' }}>🤖 {form.name}</p>
+                    <p className="text-xs font-bold mb-1" style={{ color: 'var(--pf-coral)' }}>🤖 {form.name}</p>
                   )}
                   <p style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{m.content}</p>
                 </div>
@@ -316,7 +316,7 @@ export default function AgentConfig({ agent: initial }: { agent: Agent | null })
             ))}
             {chatLoading && (
               <div className="flex justify-start">
-                <div className="px-4 py-3 rounded-2xl text-sm" style={{ background: 'var(--bg)', color: 'var(--muted)' }}>
+                <div className="px-4 py-3 rounded-2xl text-sm" style={{ background: 'var(--pf-bg)', color: 'var(--pf-muted)' }}>
                   Analizando… ⏳
                 </div>
               </div>
@@ -324,14 +324,14 @@ export default function AgentConfig({ agent: initial }: { agent: Agent | null })
           </div>
 
           {/* Input */}
-          <div className="border-t p-4 flex gap-3" style={{ borderColor: 'var(--border)' }}>
+          <div className="border-t p-4 flex gap-3" style={{ borderColor: 'var(--pf-border)' }}>
             <input value={chatInput} onChange={e => setChatInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendChat())}
               placeholder="Pregunta algo al agente… (Enter para enviar)"
               className="flex-1 px-4 py-2.5 text-sm border rounded-xl outline-none"
-              style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
-              onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-              onBlur={e => e.target.style.borderColor = 'var(--border)'} />
+              style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }}
+              onFocus={e => e.target.style.borderColor = 'var(--pf-coral)'}
+              onBlur={e => e.target.style.borderColor = 'var(--pf-border)'} />
             <button onClick={sendChat} disabled={chatLoading || !chatInput.trim()}
               className="btn-pf px-5 py-2.5 text-sm disabled:opacity-50">
               Enviar

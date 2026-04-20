@@ -65,8 +65,8 @@ export default function PlansEditor({ plans: initial }: { plans: Plan[] }) {
   }
 
   const inp = "w-full px-3 py-2 text-sm border rounded-xl outline-none"
-  const inpS = { borderColor: 'var(--border)', color: 'var(--text)' }
-  const f = { onFocus: (e: any) => e.target.style.borderColor = 'var(--accent)', onBlur: (e: any) => e.target.style.borderColor = 'var(--border)' }
+  const inpS = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }
+  const f = { onFocus: (e: any) => e.target.style.borderColor = 'var(--pf-coral)', onBlur: (e: any) => e.target.style.borderColor = 'var(--pf-border)' }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -127,23 +127,23 @@ export default function PlansEditor({ plans: initial }: { plans: Plan[] }) {
               {/* Límites */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <p className="text-xs font-semibold mb-1" style={{ color: 'var(--muted)' }}>Máx. pacientes</p>
+                  <p className="text-xs font-semibold mb-1" style={{ color: 'var(--pf-muted)' }}>Máx. pacientes</p>
                   {isEditing ? (
                     <input type="number" value={data.max_patients ?? ''} onChange={e => setForm(f => ({ ...f, max_patients: parseInt(e.target.value) }))}
                       className={inp} style={inpS} {...f} />
                   ) : (
-                    <p className="text-lg font-bold" style={{ color: 'var(--text)' }}>
+                    <p className="text-lg font-bold" style={{ color: 'var(--pf-ink)' }}>
                       {p.max_patients >= 999 ? '∞' : p.max_patients}
                     </p>
                   )}
                 </div>
                 <div>
-                  <p className="text-xs font-semibold mb-1" style={{ color: 'var(--muted)' }}>Máx. usuarios</p>
+                  <p className="text-xs font-semibold mb-1" style={{ color: 'var(--pf-muted)' }}>Máx. usuarios</p>
                   {isEditing ? (
                     <input type="number" value={data.max_users ?? ''} onChange={e => setForm(f => ({ ...f, max_users: parseInt(e.target.value) }))}
                       className={inp} style={inpS} {...f} />
                   ) : (
-                    <p className="text-lg font-bold" style={{ color: 'var(--text)' }}>
+                    <p className="text-lg font-bold" style={{ color: 'var(--pf-ink)' }}>
                       {p.max_users >= 99 ? '∞' : p.max_users}
                     </p>
                   )}
@@ -152,10 +152,10 @@ export default function PlansEditor({ plans: initial }: { plans: Plan[] }) {
 
               {/* Features */}
               <div>
-                <p className="text-xs font-semibold mb-2" style={{ color: 'var(--muted)' }}>Incluye</p>
+                <p className="text-xs font-semibold mb-2" style={{ color: 'var(--pf-muted)' }}>Incluye</p>
                 <ul className="space-y-1.5">
                   {(isEditing ? form.features ?? [] : p.features).map((feat, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm" style={{ color: 'var(--text)' }}>
+                    <li key={i} className="flex items-center gap-2 text-sm" style={{ color: 'var(--pf-ink)' }}>
                       <span style={{ color: c.color }}>✓</span>
                       <span className="flex-1">{feat}</span>
                       {isEditing && (
@@ -183,15 +183,15 @@ export default function PlansEditor({ plans: initial }: { plans: Plan[] }) {
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={form.is_active ?? true}
                     onChange={e => setForm(f => ({ ...f, is_active: e.target.checked }))} />
-                  <span className="text-sm" style={{ color: 'var(--text)' }}>Plan activo (visible para clínicas)</span>
+                  <span className="text-sm" style={{ color: 'var(--pf-ink)' }}>Plan activo (visible para clínicas)</span>
                 </label>
               )}
 
               {/* Acciones edición */}
               {isEditing && (
-                <div className="flex gap-2 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
+                <div className="flex gap-2 pt-2 border-t" style={{ borderColor: 'var(--pf-border)' }}>
                   <button onClick={cancel} className="flex-1 py-2 text-sm rounded-xl border"
-                    style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}>
+                    style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-muted)' }}>
                     Cancelar
                   </button>
                   <button onClick={save} disabled={saving}

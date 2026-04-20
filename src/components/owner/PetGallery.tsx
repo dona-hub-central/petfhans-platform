@@ -50,14 +50,14 @@ export default function PetGallery({
     <div>
       {/* Header galería */}
       <div className="flex items-center justify-between mb-3 px-1">
-        <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+        <p className="text-sm font-semibold" style={{ color: 'var(--pf-ink)' }}>
           Galería · {photos.length} fotos
         </p>
         <button
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
           style={{
-            background: 'var(--accent)', color: '#fff',
+            background: 'var(--pf-coral)', color: '#fff',
             border: 'none', borderRadius: 20, padding: '6px 14px',
             fontSize: 13, fontWeight: 600, cursor: 'pointer',
             display: 'flex', alignItems: 'center', gap: 5,
@@ -72,12 +72,12 @@ export default function PetGallery({
       {photos.length === 0 ? (
         <button onClick={() => inputRef.current?.click()}
           style={{
-            width: '100%', border: '2px dashed var(--border)',
+            width: '100%', border: '2px dashed var(--pf-border)',
             borderRadius: 16, padding: '40px 20px', textAlign: 'center',
-            background: 'var(--bg)', cursor: 'pointer',
+            background: 'var(--pf-bg)', cursor: 'pointer',
           }}>
           <p style={{ fontSize: 32, marginBottom: 8 }}>📷</p>
-          <p style={{ fontSize: 14, color: 'var(--muted)' }}>Añade fotos de {' '}tu mascota</p>
+          <p style={{ fontSize: 14, color: 'var(--pf-muted)' }}>Añade fotos de {' '}tu mascota</p>
         </button>
       ) : (
         <div style={{

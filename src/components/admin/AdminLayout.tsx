@@ -35,19 +35,19 @@ export default function AdminLayout({
     item.exact ? path === item.href : path.startsWith(item.href)
 
   return (
-    <div className="min-h-screen flex" style={{ background: 'var(--bg)' }}>
+    <div className="min-h-screen flex" style={{ background: 'var(--pf-bg)' }}>
       {/* Sidebar */}
       <aside className="w-56 bg-white border-r flex flex-col fixed h-full z-10"
-        style={{ borderColor: 'var(--border)' }}>
+        style={{ borderColor: 'var(--pf-border)' }}>
 
         {/* Logo */}
-        <div className="px-5 py-5 border-b" style={{ borderColor: 'var(--border)' }}>
+        <div className="px-5 py-5 border-b" style={{ borderColor: 'var(--pf-border)' }}>
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center text-base"
-              style={{ background: 'var(--accent-s)' }}>🐾</div>
+              style={{ background: 'var(--pf-coral-soft)' }}>🐾</div>
             <div>
-              <p className="font-bold text-xs leading-tight" style={{ color: 'var(--text)' }}>Petfhans</p>
-              <p className="text-xs leading-tight" style={{ color: 'var(--muted)' }}>Super Admin</p>
+              <p className="font-bold text-xs leading-tight" style={{ color: 'var(--pf-ink)' }}>Petfhans</p>
+              <p className="text-xs leading-tight" style={{ color: 'var(--pf-muted)' }}>Super Admin</p>
             </div>
           </div>
         </div>
@@ -60,8 +60,8 @@ export default function AdminLayout({
               <Link key={item.href} href={item.href}
                 className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm transition font-medium"
                 style={{
-                  background: active ? 'var(--accent-s)' : 'transparent',
-                  color: active ? 'var(--accent)' : 'var(--muted)',
+                  background: active ? 'var(--pf-coral-soft)' : 'transparent',
+                  color: active ? 'var(--pf-coral)' : 'var(--pf-muted)',
                 }}>
                 <span className="text-base">{item.icon}</span>
                 {item.label}
@@ -71,17 +71,17 @@ export default function AdminLayout({
         </nav>
 
         {/* User + Logout */}
-        <div className="px-4 py-4 border-t" style={{ borderColor: 'var(--border)' }}>
+        <div className="px-4 py-4 border-t" style={{ borderColor: 'var(--pf-border)' }}>
           <Link href="/admin/profile" className="flex items-center gap-2.5 mb-2 group">
             <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-              style={{ background: 'var(--accent-s)', color: 'var(--accent)' }}>
+              style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)' }}>
               {userName?.[0] ?? 'A'}
             </div>
-            <span className="text-xs truncate max-w-[110px] group-hover:underline" style={{ color: 'var(--text)' }}>{userName}</span>
+            <span className="text-xs truncate max-w-[110px] group-hover:underline" style={{ color: 'var(--pf-ink)' }}>{userName}</span>
           </Link>
           <button onClick={logout}
             className="w-full text-xs py-1.5 rounded-lg border transition text-left px-2"
-            style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}>
+            style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-muted)' }}>
             Cerrar sesión
           </button>
         </div>

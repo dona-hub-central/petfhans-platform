@@ -64,8 +64,8 @@ export default function AIPage() {
     <VetLayout clinicName={clinicName} userName={userName}>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>IA Clínica</h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>Consulta el historial y analiza casos</p>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>IA Clínica</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>Consulta el historial y analiza casos</p>
         </div>
         {pets.length > 0 && (
           <div style={{ width: 260 }}>
@@ -74,14 +74,14 @@ export default function AIPage() {
         )}
       </div>
 
-      <div className="bg-white rounded-2xl border overflow-hidden flex flex-col" style={{ borderColor: 'var(--border)', height: 'calc(100vh - 220px)' }}>
+      <div className="bg-white rounded-2xl border overflow-hidden flex flex-col" style={{ borderColor: 'var(--pf-border)', height: 'calc(100vh - 220px)' }}>
         {/* Chat */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {messages.length === 0 && (
             <div className="h-full flex flex-col items-center justify-center text-center">
               <div className="text-5xl mb-4">🤖</div>
-              <p className="font-semibold" style={{ color: 'var(--text)' }}>IA Clínica Petfhans</p>
-              <p className="text-sm mt-2 max-w-sm" style={{ color: 'var(--muted)' }}>
+              <p className="font-semibold" style={{ color: 'var(--pf-ink)' }}>IA Clínica Petfhans</p>
+              <p className="text-sm mt-2 max-w-sm" style={{ color: 'var(--pf-muted)' }}>
                 Consulta historiales médicos, compara síntomas con casos similares o analiza diagnósticos.
                 {selectedPet ? ' Tengo el historial del paciente seleccionado.' : ' Selecciona un paciente para contexto específico.'}
               </p>
@@ -94,7 +94,7 @@ export default function AIPage() {
                 ].map(s => (
                   <button key={s} onClick={() => setInput(s)}
                     className="text-xs px-3 py-2 rounded-xl border transition"
-                    style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}>
+                    style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-muted)' }}>
                     {s}
                   </button>
                 ))}
@@ -106,8 +106,8 @@ export default function AIPage() {
             <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm leading-relaxed`}
                 style={m.role === 'user'
-                  ? { background: 'var(--accent)', color: '#fff', borderBottomRightRadius: '4px' }
-                  : { background: 'var(--bg)', color: 'var(--text)', borderBottomLeftRadius: '4px', border: '1px solid var(--border)' }
+                  ? { background: 'var(--pf-coral)', color: '#fff', borderBottomRightRadius: '4px' }
+                  : { background: 'var(--pf-bg)', color: 'var(--pf-ink)', borderBottomLeftRadius: '4px', border: '1px solid var(--pf-border)' }
                 }>
                 {m.content}
               </div>
@@ -116,8 +116,8 @@ export default function AIPage() {
 
           {loading && (
             <div className="flex justify-start">
-              <div className="px-4 py-3 rounded-2xl text-sm" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
-                <span className="animate-pulse" style={{ color: 'var(--muted)' }}>Analizando...</span>
+              <div className="px-4 py-3 rounded-2xl text-sm" style={{ background: 'var(--pf-bg)', border: '1px solid var(--pf-border)' }}>
+                <span className="animate-pulse" style={{ color: 'var(--pf-muted)' }}>Analizando...</span>
               </div>
             </div>
           )}
@@ -125,16 +125,16 @@ export default function AIPage() {
         </div>
 
         {/* Input */}
-        <div className="border-t p-4 flex gap-3" style={{ borderColor: 'var(--border)' }}>
+        <div className="border-t p-4 flex gap-3" style={{ borderColor: 'var(--pf-border)' }}>
           <input
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
             placeholder="Escribe tu consulta clínica..."
             className="flex-1 px-4 py-3 rounded-xl border text-sm outline-none"
-            style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
-            onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-            onBlur={e => e.target.style.borderColor = 'var(--border)'}
+            style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }}
+            onFocus={e => e.target.style.borderColor = 'var(--pf-coral)'}
+            onBlur={e => e.target.style.borderColor = 'var(--pf-border)'}
           />
           <button onClick={sendMessage} disabled={loading || !input.trim()} className="btn-pf px-5 py-3 text-sm">
             Enviar

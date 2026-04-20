@@ -33,17 +33,17 @@ export default async function RecordsPage() {
     <VetLayout clinicName={(profile as any)?.clinics?.name ?? ''} userName={profile?.full_name ?? ''}>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Consultas</h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>{records?.length ?? 0} registros</p>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Consultas</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>{records?.length ?? 0} registros</p>
         </div>
         <Link href="/vet/records/new" className="btn-pf px-5 py-2.5 text-sm inline-flex items-center gap-2">
           + Nueva consulta
         </Link>
       </div>
 
-      <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
+      <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
         {records && records.length > 0 ? (
-          <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
+          <div className="divide-y" style={{ borderColor: 'var(--pf-border)' }}>
             {records.map((r: any) => {
               const vt = VISIT_TYPE_LABEL[r.visit_type] ?? VISIT_TYPE_LABEL.consultation
               return (
@@ -51,17 +51,17 @@ export default async function RecordsPage() {
                   className="px-5 py-4 flex items-center gap-4 hover:bg-gray-50 transition block">
                   {/* Fecha */}
                   <div className="text-center flex-shrink-0 w-12">
-                    <p className="text-lg font-bold leading-tight" style={{ color: 'var(--text)' }}>
+                    <p className="text-lg font-bold leading-tight" style={{ color: 'var(--pf-ink)' }}>
                       {new Date(r.visit_date).toLocaleDateString('es-ES', { day: '2-digit' })}
                     </p>
-                    <p className="text-xs uppercase" style={{ color: 'var(--muted)' }}>
+                    <p className="text-xs uppercase" style={{ color: 'var(--pf-muted)' }}>
                       {new Date(r.visit_date).toLocaleDateString('es-ES', { month: 'short' })}
                     </p>
                   </div>
 
                   {/* Icono mascota */}
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-                    style={{ background: 'var(--accent-s)' }}>
+                    style={{ background: 'var(--pf-coral-soft)' }}>
                     {speciesIcon[r.pets?.species] ?? '🐾'}
                   </div>
 
@@ -72,17 +72,17 @@ export default async function RecordsPage() {
                         style={{ background: vt.color + '15', color: vt.color }}>
                         {vt.label}
                       </span>
-                      <span className="text-xs font-medium" style={{ color: 'var(--text)' }}>
+                      <span className="text-xs font-medium" style={{ color: 'var(--pf-ink)' }}>
                         {r.pets?.name}
                       </span>
                     </div>
-                    <p className="text-sm truncate" style={{ color: 'var(--text)' }}>{r.reason}</p>
+                    <p className="text-sm truncate" style={{ color: 'var(--pf-ink)' }}>{r.reason}</p>
                     {r.diagnosis && (
-                      <p className="text-xs truncate mt-0.5" style={{ color: 'var(--muted)' }}>Dx: {r.diagnosis}</p>
+                      <p className="text-xs truncate mt-0.5" style={{ color: 'var(--pf-muted)' }}>Dx: {r.diagnosis}</p>
                     )}
                   </div>
 
-                  <span className="text-lg flex-shrink-0" style={{ color: 'var(--border)' }}>›</span>
+                  <span className="text-lg flex-shrink-0" style={{ color: 'var(--pf-border)' }}>›</span>
                 </Link>
               )
             })}
@@ -90,7 +90,7 @@ export default async function RecordsPage() {
         ) : (
           <div className="px-6 py-16 text-center">
             <div className="text-4xl mb-3">📋</div>
-            <p className="font-medium text-sm mb-2" style={{ color: 'var(--text)' }}>Sin consultas registradas</p>
+            <p className="font-medium text-sm mb-2" style={{ color: 'var(--pf-ink)' }}>Sin consultas registradas</p>
             <Link href="/vet/records/new" className="btn-pf px-5 py-2.5 text-sm inline-flex items-center gap-2">
               + Nueva consulta
             </Link>

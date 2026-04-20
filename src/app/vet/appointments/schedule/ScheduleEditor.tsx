@@ -60,8 +60,8 @@ export default function ScheduleEditor({ schedules: initial, clinicId }: { sched
   schedules.forEach(s => { if (!byDay[s.day_of_week]) byDay[s.day_of_week] = []; byDay[s.day_of_week].push(s) })
 
   const inp = "w-full px-3 py-2.5 text-sm border rounded-xl outline-none transition"
-  const inpS = { borderColor: 'var(--border)', color: 'var(--text)', background: '#fff' }
-  const f = { onFocus:(e:any)=>e.target.style.borderColor='var(--accent)', onBlur:(e:any)=>e.target.style.borderColor='var(--border)' }
+  const inpS = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)', background: '#fff' }
+  const f = { onFocus:(e:any)=>e.target.style.borderColor='var(--pf-coral)', onBlur:(e:any)=>e.target.style.borderColor='var(--pf-border)' }
 
   return (
     <div className="space-y-4">
@@ -70,25 +70,25 @@ export default function ScheduleEditor({ schedules: initial, clinicId }: { sched
         const daySchedules = byDay[day] ?? []
         if (!daySchedules.length) return null
         return (
-          <div key={day} className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
-            <div className="px-5 py-3 border-b" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-              <p className="font-semibold text-sm" style={{ color: 'var(--text)' }}>{DAYS[day]}</p>
+          <div key={day} className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
+            <div className="px-5 py-3 border-b" style={{ borderColor: 'var(--pf-border)', background: 'var(--pf-bg)' }}>
+              <p className="font-semibold text-sm" style={{ color: 'var(--pf-ink)' }}>{DAYS[day]}</p>
             </div>
-            <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
+            <div className="divide-y" style={{ borderColor: 'var(--pf-border)' }}>
               {daySchedules.map(s => (
                 <div key={s.id} className="px-5 py-3 flex items-center gap-4">
                   <div className="flex-1">
-                    <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>
+                    <p className="text-sm font-medium" style={{ color: 'var(--pf-ink)' }}>
                       {s.start_time.slice(0,5)} – {s.end_time.slice(0,5)}
                     </p>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--pf-muted)' }}>
                       Slots de {s.slot_duration} min · {countSlots(s)} citas disponibles
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
                     <div onClick={() => toggleActive(s.id, s.is_active)}
                       className="relative w-10 h-5 rounded-full cursor-pointer transition"
-                      style={{ background: s.is_active ? 'var(--accent)' : '#d1d5db' }}>
+                      style={{ background: s.is_active ? 'var(--pf-coral)' : '#d1d5db' }}>
                       <div className="absolute top-0.5 rounded-full bg-white w-4 h-4 transition-all"
                         style={{ left: s.is_active ? '22px' : '2px' }} />
                     </div>
@@ -105,52 +105,52 @@ export default function ScheduleEditor({ schedules: initial, clinicId }: { sched
 
       {/* Sin horarios */}
       {schedules.length === 0 && !adding && (
-        <div className="bg-white rounded-2xl border p-10 text-center" style={{ borderColor: 'var(--border)' }}>
+        <div className="bg-white rounded-2xl border p-10 text-center" style={{ borderColor: 'var(--pf-border)' }}>
           <p className="text-3xl mb-3">📅</p>
-          <p className="text-sm mb-1 font-medium" style={{ color: 'var(--text)' }}>Sin horario configurado</p>
-          <p className="text-xs" style={{ color: 'var(--muted)' }}>Añade bloques horarios para que los dueños puedan reservar citas</p>
+          <p className="text-sm mb-1 font-medium" style={{ color: 'var(--pf-ink)' }}>Sin horario configurado</p>
+          <p className="text-xs" style={{ color: 'var(--pf-muted)' }}>Añade bloques horarios para que los dueños puedan reservar citas</p>
         </div>
       )}
 
       {/* Formulario nuevo bloque */}
       {adding ? (
-        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'var(--border)' }}>
-          <h3 className="font-semibold text-sm mb-4" style={{ color: 'var(--text)' }}>Nuevo bloque horario</h3>
+        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'var(--pf-border)' }}>
+          <h3 className="font-semibold text-sm mb-4" style={{ color: 'var(--pf-ink)' }}>Nuevo bloque horario</h3>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div className="col-span-2">
-              <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--muted)' }}>Día de la semana</label>
+              <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--pf-muted)' }}>Día de la semana</label>
               <select value={form.day_of_week} onChange={e => setForm(f => ({ ...f, day_of_week: parseInt(e.target.value) }))}
                 className={inp} style={inpS}>
                 {DAYS.map((d,i) => <option key={i} value={i}>{d}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--muted)' }}>Hora inicio</label>
+              <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--pf-muted)' }}>Hora inicio</label>
               <input type="time" value={form.start_time} onChange={e => setForm(f => ({ ...f, start_time: e.target.value }))}
                 className={inp} style={inpS} {...f} />
             </div>
             <div>
-              <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--muted)' }}>Hora fin</label>
+              <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--pf-muted)' }}>Hora fin</label>
               <input type="time" value={form.end_time} onChange={e => setForm(f => ({ ...f, end_time: e.target.value }))}
                 className={inp} style={inpS} {...f} />
             </div>
             <div className="col-span-2">
-              <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--muted)' }}>Duración de cada cita</label>
+              <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--pf-muted)' }}>Duración de cada cita</label>
               <div className="flex gap-2">
                 {DURATIONS.map(d => (
                   <button key={d} type="button" onClick={() => setForm(f => ({ ...f, slot_duration: d }))}
                     className="px-3 py-2 rounded-xl text-sm font-medium border transition"
                     style={{
-                      background: form.slot_duration === d ? 'var(--accent-s)' : '#fff',
-                      borderColor: form.slot_duration === d ? 'var(--accent)' : 'var(--border)',
-                      color: form.slot_duration === d ? 'var(--accent)' : 'var(--muted)',
+                      background: form.slot_duration === d ? 'var(--pf-coral-soft)' : '#fff',
+                      borderColor: form.slot_duration === d ? 'var(--pf-coral)' : 'var(--pf-border)',
+                      color: form.slot_duration === d ? 'var(--pf-coral)' : 'var(--pf-muted)',
                     }}>{d} min</button>
                 ))}
               </div>
             </div>
           </div>
           {/* Preview slots */}
-          <div className="rounded-xl p-3 mb-4 text-xs" style={{ background: 'var(--accent-s)', color: 'var(--accent)' }}>
+          <div className="rounded-xl p-3 mb-4 text-xs" style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)' }}>
             ✓ Se generarán aproximadamente <strong>
               {Math.floor((parseInt(form.end_time) * 60 + parseInt(form.end_time.split(':')[1]) - parseInt(form.start_time) * 60 - parseInt(form.start_time.split(':')[1])) / form.slot_duration)} citas
             </strong> de {form.slot_duration} min entre {form.start_time} y {form.end_time}
@@ -158,7 +158,7 @@ export default function ScheduleEditor({ schedules: initial, clinicId }: { sched
           {error && <p className="text-xs mb-3" style={{ color: '#dc2626' }}>{error}</p>}
           <div className="flex gap-3">
             <button onClick={() => { setAdding(false); setError('') }}
-              className="px-5 py-2.5 text-sm rounded-xl border" style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}>
+              className="px-5 py-2.5 text-sm rounded-xl border" style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-muted)' }}>
               Cancelar
             </button>
             <button onClick={save} disabled={saving} className="btn-pf px-6 py-2.5 text-sm">

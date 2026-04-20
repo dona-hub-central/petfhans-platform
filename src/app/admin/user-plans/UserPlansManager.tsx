@@ -96,8 +96,8 @@ export default function UserPlansManager({ plans: initial }: { plans: UserPlan[]
   }
 
   const inp = "w-full px-3 py-2.5 text-sm border rounded-xl outline-none transition"
-  const inpS = { borderColor: 'var(--border)', color: 'var(--text)', background: '#fff' }
-  const fcs = { onFocus: (e:any) => e.target.style.borderColor='var(--accent)', onBlur: (e:any) => e.target.style.borderColor='var(--border)' }
+  const inpS = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)', background: '#fff' }
+  const fcs = { onFocus: (e:any) => e.target.style.borderColor='var(--pf-coral)', onBlur: (e:any) => e.target.style.borderColor='var(--pf-border)' }
 
   const showForm = creating || editing !== null
 
@@ -111,19 +111,19 @@ export default function UserPlansManager({ plans: initial }: { plans: UserPlan[]
 
       {/* Formulario */}
       {showForm && (
-        <div className="bg-white rounded-2xl border p-6 mb-6" style={{ borderColor: 'var(--border)' }}>
-          <h3 className="font-semibold text-sm mb-5" style={{ color: 'var(--text)' }}>
+        <div className="bg-white rounded-2xl border p-6 mb-6" style={{ borderColor: 'var(--pf-border)' }}>
+          <h3 className="font-semibold text-sm mb-5" style={{ color: 'var(--pf-ink)' }}>
             {creating ? 'Nuevo plan de usuario' : 'Editar plan'}
           </h3>
 
           <div className="grid grid-cols-2 gap-4 mb-5">
             <div>
-              <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--muted)' }}>Nombre del plan *</label>
+              <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--pf-muted)' }}>Nombre del plan *</label>
               <input value={form.name ?? ''} onChange={e => set('name', e.target.value)}
                 placeholder="Ej: Básico, Premium, Ilimitado…" className={inp} style={inpS} {...fcs} />
             </div>
             <div>
-              <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--muted)' }}>Precio por usuario/mes (€)</label>
+              <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--pf-muted)' }}>Precio por usuario/mes (€)</label>
               <input type="number" step="0.01" value={form.price_per_seat ?? ''} onChange={e => set('price_per_seat', parseFloat(e.target.value) || 0)}
                 placeholder="0" className={inp} style={inpS} {...fcs} />
             </div>
@@ -131,7 +131,7 @@ export default function UserPlansManager({ plans: initial }: { plans: UserPlan[]
 
           {/* Accesos a la app */}
           <div className="mb-5">
-            <label className="block text-xs font-semibold mb-3" style={{ color: 'var(--muted)' }}>
+            <label className="block text-xs font-semibold mb-3" style={{ color: 'var(--pf-muted)' }}>
               Acceso a funciones de la app
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -140,15 +140,15 @@ export default function UserPlansManager({ plans: initial }: { plans: UserPlan[]
                 return (
                   <label key={feat.key} className="flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition"
                     style={{
-                      borderColor: active ? 'var(--accent)' : 'var(--border)',
-                      background: active ? 'var(--accent-s)' : '#fff',
+                      borderColor: active ? 'var(--pf-coral)' : 'var(--pf-border)',
+                      background: active ? 'var(--pf-coral-soft)' : '#fff',
                     }}>
                     <input type="checkbox" checked={active} onChange={() => togglePerm(feat.key)} className="mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium" style={{ color: active ? 'var(--accent)' : 'var(--text)' }}>
+                      <p className="text-sm font-medium" style={{ color: active ? 'var(--pf-coral)' : 'var(--pf-ink)' }}>
                         {feat.label}
                       </p>
-                      <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{feat.desc}</p>
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--pf-muted)' }}>{feat.desc}</p>
                     </div>
                   </label>
                 )
@@ -158,11 +158,11 @@ export default function UserPlansManager({ plans: initial }: { plans: UserPlan[]
 
           {/* Características extra */}
           <div className="mb-5">
-            <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--muted)' }}>Características destacadas</label>
+            <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--pf-muted)' }}>Características destacadas</label>
             <div className="space-y-1.5 mb-2">
               {(form.features ?? []).map((feat, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <span className="text-xs flex-1 px-3 py-1.5 rounded-lg" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
+                  <span className="text-xs flex-1 px-3 py-1.5 rounded-lg" style={{ background: 'var(--pf-bg)', color: 'var(--pf-ink)' }}>
                     ✓ {feat}
                   </span>
                   <button onClick={() => removeFeat(i)} className="text-xs" style={{ color: '#dc2626' }}>✕</button>
@@ -174,20 +174,20 @@ export default function UserPlansManager({ plans: initial }: { plans: UserPlan[]
                 onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addFeature())}
                 placeholder="Añadir característica…" className={`${inp} flex-1`} style={inpS} {...fcs} />
               <button onClick={addFeature} className="px-3 text-sm rounded-xl"
-                style={{ background: 'var(--accent-s)', color: 'var(--accent)' }}>+</button>
+                style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)' }}>+</button>
             </div>
           </div>
 
           <label className="flex items-center gap-2 mb-5 cursor-pointer">
             <input type="checkbox" checked={form.is_active ?? true} onChange={e => set('is_active', e.target.checked)} />
-            <span className="text-sm" style={{ color: 'var(--text)' }}>Plan activo</span>
+            <span className="text-sm" style={{ color: 'var(--pf-ink)' }}>Plan activo</span>
           </label>
 
           {error && <p className="text-sm mb-3" style={{ color: '#dc2626' }}>{error}</p>}
 
           <div className="flex gap-3">
             <button onClick={cancel} className="px-5 py-2.5 text-sm rounded-xl border"
-              style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}>Cancelar</button>
+              style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-muted)' }}>Cancelar</button>
             <button onClick={save} disabled={saving} className="btn-pf px-6 py-2.5 text-sm">
               {saving ? 'Guardando…' : creating ? 'Crear plan' : 'Guardar cambios'}
             </button>
@@ -197,39 +197,39 @@ export default function UserPlansManager({ plans: initial }: { plans: UserPlan[]
 
       {/* Lista de planes */}
       {plans.length === 0 ? (
-        <div className="bg-white rounded-2xl border p-12 text-center" style={{ borderColor: 'var(--border)' }}>
+        <div className="bg-white rounded-2xl border p-12 text-center" style={{ borderColor: 'var(--pf-border)' }}>
           <p className="text-3xl mb-3">👤</p>
-          <p className="text-sm" style={{ color: 'var(--muted)' }}>Sin planes de usuario. Crea el primero.</p>
+          <p className="text-sm" style={{ color: 'var(--pf-muted)' }}>Sin planes de usuario. Crea el primero.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {plans.map(p => (
-            <div key={p.id} className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
-              <div className="px-5 py-4 border-b" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+            <div key={p.id} className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
+              <div className="px-5 py-4 border-b" style={{ borderColor: 'var(--pf-border)', background: 'var(--pf-bg)' }}>
                 <div className="flex items-center justify-between">
-                  <p className="font-bold text-sm" style={{ color: 'var(--text)' }}>{p.name}</p>
+                  <p className="font-bold text-sm" style={{ color: 'var(--pf-ink)' }}>{p.name}</p>
                   <span className="text-xs px-2 py-0.5 rounded-full"
                     style={{ background: p.is_active ? '#edfaf1' : '#fee2e2', color: p.is_active ? '#1a7a3c' : '#dc2626' }}>
                     {p.is_active ? 'Activo' : 'Inactivo'}
                   </span>
                 </div>
-                <p className="text-xl font-bold mt-1" style={{ color: 'var(--accent)' }}>
+                <p className="text-xl font-bold mt-1" style={{ color: 'var(--pf-coral)' }}>
                   {p.price_per_seat === 0 ? 'Gratis' : `${p.price_per_seat}€/usuario`}
                 </p>
               </div>
               <div className="p-5 space-y-4">
                 {/* Accesos activos */}
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--muted)' }}>Accesos</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--pf-muted)' }}>Accesos</p>
                   <div className="flex flex-wrap gap-1.5">
                     {APP_FEATURES.filter(f => p.permissions?.[f.key]).map(f => (
                       <span key={f.key} className="text-xs px-2 py-0.5 rounded-lg font-medium"
-                        style={{ background: 'var(--accent-s)', color: 'var(--accent)' }}>
+                        style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)' }}>
                         {f.label.split(' ')[0]} {f.label.split(' ').slice(1).join(' ')}
                       </span>
                     ))}
                     {!APP_FEATURES.some(f => p.permissions?.[f.key]) && (
-                      <span className="text-xs" style={{ color: 'var(--muted)' }}>Sin accesos configurados</span>
+                      <span className="text-xs" style={{ color: 'var(--pf-muted)' }}>Sin accesos configurados</span>
                     )}
                   </div>
                 </div>
@@ -237,14 +237,14 @@ export default function UserPlansManager({ plans: initial }: { plans: UserPlan[]
                 {p.features?.length > 0 && (
                   <ul className="space-y-1">
                     {p.features.map((feat, i) => (
-                      <li key={i} className="text-xs flex items-center gap-1.5" style={{ color: 'var(--text)' }}>
-                        <span style={{ color: 'var(--accent)' }}>✓</span>{feat}
+                      <li key={i} className="text-xs flex items-center gap-1.5" style={{ color: 'var(--pf-ink)' }}>
+                        <span style={{ color: 'var(--pf-coral)' }}>✓</span>{feat}
                       </li>
                     ))}
                   </ul>
                 )}
-                <div className="flex gap-2 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
-                  <button onClick={() => startEdit(p)} className="text-xs font-medium" style={{ color: 'var(--accent)' }}>Editar</button>
+                <div className="flex gap-2 pt-2 border-t" style={{ borderColor: 'var(--pf-border)' }}>
+                  <button onClick={() => startEdit(p)} className="text-xs font-medium" style={{ color: 'var(--pf-coral)' }}>Editar</button>
                   <button onClick={() => deletePlan(p.id, p.name)} className="text-xs" style={{ color: '#dc2626' }}>Eliminar</button>
                 </div>
               </div>

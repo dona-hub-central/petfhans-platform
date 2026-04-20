@@ -70,32 +70,32 @@ export default function AppointmentsCalendar({
       {/* Columna izquierda: pendientes */}
       <div className="lg:col-span-1 space-y-4">
         {/* Pendientes */}
-        <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
-          <div className="px-5 py-3 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-            <h3 className="font-semibold text-sm" style={{ color: 'var(--text)' }}>⏳ Por confirmar</h3>
+        <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
+          <div className="px-5 py-3 border-b flex items-center justify-between" style={{ borderColor: 'var(--pf-border)', background: 'var(--pf-bg)' }}>
+            <h3 className="font-semibold text-sm" style={{ color: 'var(--pf-ink)' }}>⏳ Por confirmar</h3>
             {pendingList.length > 0 && (
               <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: '#fff8e6', color: '#b07800' }}>
                 {pendingList.length}
               </span>
             )}
           </div>
-          <div className="divide-y max-h-80 overflow-y-auto" style={{ borderColor: 'var(--border)' }}>
+          <div className="divide-y max-h-80 overflow-y-auto" style={{ borderColor: 'var(--pf-border)' }}>
             {pendingList.length === 0 ? (
-              <p className="px-5 py-8 text-sm text-center" style={{ color: 'var(--muted)' }}>Sin citas pendientes 🎉</p>
+              <p className="px-5 py-8 text-sm text-center" style={{ color: 'var(--pf-muted)' }}>Sin citas pendientes 🎉</p>
             ) : pendingList.map(a => (
               <div key={a.id} className="px-4 py-3 cursor-pointer hover:bg-gray-50 transition"
                 onClick={() => { setSelectedAppt(a); setSelectedDate(a.appointment_date) }}>
                 <div className="flex items-center gap-2 mb-1">
                   <span>{SPECIES_ICON[a.pets?.species ?? 'other']}</span>
-                  <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{a.pets?.name}</span>
-                  <span className="text-xs ml-auto" style={{ color: 'var(--muted)' }}>
+                  <span className="text-sm font-semibold" style={{ color: 'var(--pf-ink)' }}>{a.pets?.name}</span>
+                  <span className="text-xs ml-auto" style={{ color: 'var(--pf-muted)' }}>
                     {a.appointment_time.slice(0,5)}
                   </span>
                 </div>
-                <p className="text-xs" style={{ color: 'var(--muted)' }}>
+                <p className="text-xs" style={{ color: 'var(--pf-muted)' }}>
                   {new Date(a.appointment_date + 'T12:00').toLocaleDateString('es-ES', { day:'numeric', month:'short' })} · {a.profiles?.full_name}
                 </p>
-                <p className="text-xs mt-1 truncate" style={{ color: 'var(--text)' }}>{a.reason}</p>
+                <p className="text-xs mt-1 truncate" style={{ color: 'var(--pf-ink)' }}>{a.reason}</p>
               </div>
             ))}
           </div>
@@ -103,20 +103,20 @@ export default function AppointmentsCalendar({
 
         {/* Detalle cita seleccionada */}
         {selectedAppt && (
-          <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
-            <div className="px-5 py-3 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-              <h3 className="font-semibold text-sm" style={{ color: 'var(--text)' }}>Detalle de cita</h3>
-              <button onClick={() => setSelectedAppt(null)} style={{ color: 'var(--muted)', fontSize: 18 }}>×</button>
+          <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
+            <div className="px-5 py-3 border-b flex items-center justify-between" style={{ borderColor: 'var(--pf-border)', background: 'var(--pf-bg)' }}>
+              <h3 className="font-semibold text-sm" style={{ color: 'var(--pf-ink)' }}>Detalle de cita</h3>
+              <button onClick={() => setSelectedAppt(null)} style={{ color: 'var(--pf-muted)', fontSize: 18 }}>×</button>
             </div>
             <div className="p-5 space-y-3">
               <div className="flex items-center gap-3">
                 <span className="text-2xl">{SPECIES_ICON[selectedAppt.pets?.species ?? 'other']}</span>
                 <div>
-                  <p className="font-bold text-sm" style={{ color: 'var(--text)' }}>{selectedAppt.pets?.name}</p>
-                  <p className="text-xs" style={{ color: 'var(--muted)' }}>{selectedAppt.profiles?.full_name} · {selectedAppt.profiles?.email}</p>
+                  <p className="font-bold text-sm" style={{ color: 'var(--pf-ink)' }}>{selectedAppt.pets?.name}</p>
+                  <p className="text-xs" style={{ color: 'var(--pf-muted)' }}>{selectedAppt.profiles?.full_name} · {selectedAppt.profiles?.email}</p>
                 </div>
               </div>
-              <div className="rounded-xl p-3 space-y-1.5" style={{ background: 'var(--bg)' }}>
+              <div className="rounded-xl p-3 space-y-1.5" style={{ background: 'var(--pf-bg)' }}>
                 <p className="text-xs"><strong>📅</strong> {new Date(selectedAppt.appointment_date + 'T12:00').toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' })}</p>
                 <p className="text-xs"><strong>🕐</strong> {selectedAppt.appointment_time.slice(0,5)}</p>
                 <p className="text-xs"><strong>📋</strong> {selectedAppt.reason}</p>
@@ -134,7 +134,7 @@ export default function AppointmentsCalendar({
                   <input value={vetNotes} onChange={e => setVetNotes(e.target.value)}
                     placeholder="Nota para el dueño (opcional)…"
                     className="w-full px-3 py-2 text-xs border rounded-xl outline-none"
-                    style={{ borderColor: 'var(--border)' }} />
+                    style={{ borderColor: 'var(--pf-border)' }} />
                   <div className="flex gap-2">
                     <button onClick={() => updateAppt(selectedAppt.id, 'confirmed', { notes: vetNotes || null })}
                       disabled={actionLoading}
@@ -152,7 +152,7 @@ export default function AppointmentsCalendar({
                   <input value={cancelReason} onChange={e => setCancelReason(e.target.value)}
                     placeholder="Motivo de cancelación (si rechaza)…"
                     className="w-full px-3 py-2 text-xs border rounded-xl outline-none"
-                    style={{ borderColor: 'var(--border)' }} />
+                    style={{ borderColor: 'var(--pf-border)' }} />
                 </div>
               )}
               {selectedAppt.status === 'confirmed' && (
@@ -169,25 +169,25 @@ export default function AppointmentsCalendar({
 
       {/* Columna derecha: calendario */}
       <div className="lg:col-span-2">
-        <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
+        <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
           {/* Cabecera mes */}
-          <div className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
-            <h3 className="font-semibold" style={{ color: 'var(--text)' }}>{MONTHS[month]} {year}</h3>
+          <div className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--pf-border)' }}>
+            <h3 className="font-semibold" style={{ color: 'var(--pf-ink)' }}>{MONTHS[month]} {year}</h3>
             <div className="flex gap-3">
               {Object.entries(STATUS_CFG).map(([key, cfg]) => (
                 <div key={key} className="flex items-center gap-1">
                   <div className="w-2 h-2 rounded-full" style={{ background: cfg.dot }} />
-                  <span className="text-xs" style={{ color: 'var(--muted)' }}>{cfg.label}</span>
+                  <span className="text-xs" style={{ color: 'var(--pf-muted)' }}>{cfg.label}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Grid días semana */}
-          <div className="grid grid-cols-7 border-b" style={{ borderColor: 'var(--border)' }}>
+          <div className="grid grid-cols-7 border-b" style={{ borderColor: 'var(--pf-border)' }}>
             {DAYS.map(d => (
               <div key={d} className="py-2 text-center text-xs font-semibold uppercase tracking-wide"
-                style={{ color: 'var(--muted)', borderRight: '1px solid var(--border)' }}>
+                style={{ color: 'var(--pf-muted)', borderRight: '1px solid var(--pf-border)' }}>
                 {d}
               </div>
             ))}
@@ -196,7 +196,7 @@ export default function AppointmentsCalendar({
           {/* Grid celdas */}
           <div className="grid grid-cols-7">
             {cells.map((day, i) => {
-              if (!day) return <div key={i} style={{ borderRight: '1px solid var(--border)', borderBottom: '1px solid var(--border)', minHeight: 80 }} />
+              if (!day) return <div key={i} style={{ borderRight: '1px solid var(--pf-border)', borderBottom: '1px solid var(--pf-border)', minHeight: 80 }} />
               const ds = dateStr(day)
               const dayApptList = byDate[ds] ?? []
               const isToday = ds === today
@@ -205,17 +205,17 @@ export default function AppointmentsCalendar({
                 <div key={i} onClick={() => { setSelectedDate(ds); setSelectedAppt(null) }}
                   className="cursor-pointer transition"
                   style={{
-                    borderRight: '1px solid var(--border)',
-                    borderBottom: '1px solid var(--border)',
+                    borderRight: '1px solid var(--pf-border)',
+                    borderBottom: '1px solid var(--pf-border)',
                     minHeight: 80, padding: '6px 8px',
-                    background: isSelected ? 'var(--accent-s)' : 'transparent',
+                    background: isSelected ? 'var(--pf-coral-soft)' : 'transparent',
                   }}
                   onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = '#f9f9f9' }}
                   onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = 'transparent' }}>
                   <span className="text-sm font-semibold flex items-center justify-center w-7 h-7 rounded-full mb-1"
                     style={{
-                      background: isToday ? 'var(--accent)' : 'transparent',
-                      color: isToday ? '#fff' : 'var(--text)',
+                      background: isToday ? 'var(--pf-coral)' : 'transparent',
+                      color: isToday ? '#fff' : 'var(--pf-ink)',
                     }}>
                     {day}
                   </span>
@@ -232,7 +232,7 @@ export default function AppointmentsCalendar({
                       )
                     })}
                     {dayApptList.length > 3 && (
-                      <p className="text-xs" style={{ color: 'var(--muted)' }}>+{dayApptList.length - 3} más</p>
+                      <p className="text-xs" style={{ color: 'var(--pf-muted)' }}>+{dayApptList.length - 3} más</p>
                     )}
                   </div>
                 </div>
@@ -243,23 +243,23 @@ export default function AppointmentsCalendar({
 
         {/* Lista del día seleccionado */}
         {selectedDate && dayAppts.length > 0 && (
-          <div className="bg-white rounded-2xl border mt-4 overflow-hidden" style={{ borderColor: 'var(--border)' }}>
-            <div className="px-5 py-3 border-b" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-              <h3 className="font-semibold text-sm" style={{ color: 'var(--text)' }}>
+          <div className="bg-white rounded-2xl border mt-4 overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
+            <div className="px-5 py-3 border-b" style={{ borderColor: 'var(--pf-border)', background: 'var(--pf-bg)' }}>
+              <h3 className="font-semibold text-sm" style={{ color: 'var(--pf-ink)' }}>
                 📅 {new Date(selectedDate + 'T12:00').toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' })}
               </h3>
             </div>
-            <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
+            <div className="divide-y" style={{ borderColor: 'var(--pf-border)' }}>
               {dayAppts.map(a => {
                 const cfg = STATUS_CFG[a.status as keyof typeof STATUS_CFG] ?? STATUS_CFG.pending
                 return (
                   <div key={a.id} className="px-5 py-3 flex items-center gap-4 cursor-pointer hover:bg-gray-50"
                     onClick={() => setSelectedAppt(a)}>
-                    <span className="text-sm font-bold w-12 flex-shrink-0" style={{ color: 'var(--text)' }}>{a.appointment_time.slice(0,5)}</span>
+                    <span className="text-sm font-bold w-12 flex-shrink-0" style={{ color: 'var(--pf-ink)' }}>{a.appointment_time.slice(0,5)}</span>
                     <span className="text-xl">{SPECIES_ICON[a.pets?.species ?? 'other']}</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{a.pets?.name} · {a.profiles?.full_name}</p>
-                      <p className="text-xs truncate" style={{ color: 'var(--muted)' }}>{a.reason}</p>
+                      <p className="text-sm font-semibold truncate" style={{ color: 'var(--pf-ink)' }}>{a.pets?.name} · {a.profiles?.full_name}</p>
+                      <p className="text-xs truncate" style={{ color: 'var(--pf-muted)' }}>{a.reason}</p>
                     </div>
                     <span className="text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0"
                       style={{ background: cfg.bg, color: cfg.color }}>{cfg.label}</span>

@@ -66,18 +66,18 @@ function InviteForm() {
   }
 
   const inputCls = "w-full px-4 py-3 rounded-lg border text-sm outline-none transition"
-  const inputStyle = { borderColor: 'var(--border)', color: 'var(--text)' }
+  const inputStyle = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }
   const focus = {
-    onFocus: (e: any) => e.target.style.borderColor = 'var(--accent)',
-    onBlur:  (e: any) => e.target.style.borderColor = 'var(--border)',
+    onFocus: (e: any) => e.target.style.borderColor = 'var(--pf-coral)',
+    onBlur:  (e: any) => e.target.style.borderColor = 'var(--pf-border)',
   }
 
   if (step === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--pf-bg)' }}>
         <div className="text-center">
           <div className="text-4xl mb-3 animate-bounce">🐾</div>
-          <p className="text-sm" style={{ color: 'var(--muted)' }}>Validando invitación...</p>
+          <p className="text-sm" style={{ color: 'var(--pf-muted)' }}>Validando invitación...</p>
         </div>
       </div>
     )
@@ -85,11 +85,11 @@ function InviteForm() {
 
   if (step === 'error') {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--bg)' }}>
-        <div className="bg-white rounded-2xl border p-8 max-w-sm w-full text-center" style={{ borderColor: 'var(--border)' }}>
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--pf-bg)' }}>
+        <div className="bg-white rounded-2xl border p-8 max-w-sm w-full text-center" style={{ borderColor: 'var(--pf-border)' }}>
           <div className="text-4xl mb-4">😕</div>
-          <h2 className="font-bold text-lg mb-2" style={{ color: 'var(--text)' }}>Invitación inválida</h2>
-          <p className="text-sm mb-6" style={{ color: 'var(--muted)' }}>
+          <h2 className="font-bold text-lg mb-2" style={{ color: 'var(--pf-ink)' }}>Invitación inválida</h2>
+          <p className="text-sm mb-6" style={{ color: 'var(--pf-muted)' }}>
             Este link ya fue usado, expiró o no es válido. Pide una nueva invitación a tu veterinaria.
           </p>
           <a href="/auth/login" className="btn-pf px-6 py-2.5 text-sm inline-block">Ir al login</a>
@@ -99,48 +99,48 @@ function InviteForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--bg)' }}>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--pf-bg)' }}>
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl border p-8" style={{ borderColor: 'var(--border)' }}>
+        <div className="bg-white rounded-2xl border p-8" style={{ borderColor: 'var(--pf-border)' }}>
           {/* Header */}
           <div className="text-center mb-6">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-3"
-              style={{ background: 'var(--accent-s)' }}>
+              style={{ background: 'var(--pf-coral-soft)' }}>
               <span className="text-2xl">🐾</span>
             </div>
-            <h1 className="text-xl font-bold" style={{ color: 'var(--text)' }}>
+            <h1 className="text-xl font-bold" style={{ color: 'var(--pf-ink)' }}>
               {invitation.clinics?.name} te invita
             </h1>
             {invitation.pets && (
-              <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>
+              <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>
                 Acceso al perfil de <strong>{invitation.pets.name}</strong>
               </p>
             )}
           </div>
 
           {/* Info */}
-          <div className="rounded-xl p-3 mb-6 text-sm" style={{ background: 'var(--accent-s)' }}>
-            <p style={{ color: 'var(--accent)' }}>
+          <div className="rounded-xl p-3 mb-6 text-sm" style={{ background: 'var(--pf-coral-soft)' }}>
+            <p style={{ color: 'var(--pf-coral)' }}>
               📧 Invitación para <strong>{invitation.email}</strong>
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text)' }}>Tu nombre</label>
+              <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--pf-ink)' }}>Tu nombre</label>
               <input value={form.full_name} onChange={e => setForm(p => ({ ...p, full_name: e.target.value }))}
                 required className={inputCls} style={inputStyle} {...focus}
                 placeholder="María García" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text)' }}>Contraseña</label>
+              <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--pf-ink)' }}>Contraseña</label>
               <input type="password" value={form.password}
                 onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
                 required minLength={8} className={inputCls} style={inputStyle} {...focus}
                 placeholder="mínimo 8 caracteres" />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text)' }}>Confirmar contraseña</label>
+              <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--pf-ink)' }}>Confirmar contraseña</label>
               <input type="password" value={form.confirm}
                 onChange={e => setForm(p => ({ ...p, confirm: e.target.value }))}
                 required className={inputCls} style={inputStyle} {...focus}
@@ -148,7 +148,7 @@ function InviteForm() {
             </div>
 
             {error && (
-              <div className="text-sm p-3 rounded-lg" style={{ background: 'var(--accent-s)', color: 'var(--accent-h)' }}>
+              <div className="text-sm p-3 rounded-lg" style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral-dark)' }}>
                 {error}
               </div>
             )}

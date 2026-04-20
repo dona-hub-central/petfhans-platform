@@ -52,7 +52,7 @@ export default async function OwnerProfilePage({
   return (
     <>
       <style>{`
-        html, body { margin:0; padding:0; background:#f2f2f7; font-family:'Roboto',sans-serif; }
+        html, body { margin:0; padding:0; background:#f2f2f7; font-family:var(--pf-font-body); }
         .prof { min-height:100svh; }
         .prof-header { background:linear-gradient(135deg,#EE726D 0%,#f9a394 100%); padding:48px 18px 24px; display:flex; align-items:center; gap:12px; }
         .prof-back { color:rgba(255,255,255,.85); font-size:22px; text-decoration:none; line-height:1; }
