@@ -34,9 +34,6 @@ export default function NewInvitationPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    const { data: profile } = await supabase.from('profiles')
-      .select('id, clinic_id').eq('user_id', user.id).single()
-
     const res = await fetch('/api/vet/create-invitation', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

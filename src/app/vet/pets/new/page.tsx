@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import BreedSelect from '@/components/shared/BreedSelect'
 
@@ -63,7 +64,7 @@ export default function NewPetPage() {
     <div className="min-h-screen flex items-start justify-center p-8" style={{ background: 'var(--pf-bg)' }}>
       <div className="w-full max-w-2xl">
         <div className="bg-white rounded-2xl border p-8" style={{ borderColor: 'var(--pf-border)' }}>
-          <a href="/vet/pets" className="text-xs mb-6 inline-block" style={{ color: 'var(--pf-muted)' }}>← Mascotas</a>
+          <Link href="/vet/pets" className="text-xs mb-6 inline-block" style={{ color: 'var(--pf-muted)' }}>← Mascotas</Link>
           <h1 className="text-xl font-bold mb-1" style={{ color: 'var(--pf-ink)' }}>Nueva mascota</h1>
           <p className="text-sm mb-6" style={{ color: 'var(--pf-muted)' }}>Registra un nuevo paciente</p>
 
@@ -167,11 +168,11 @@ export default function NewPetPage() {
             )}
 
             <div className="flex gap-3 pt-2">
-              <a href="/vet/pets"
+              <Link href="/vet/pets"
                 className="flex-1 py-3 text-sm font-semibold rounded-lg border text-center transition"
                 style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }}>
                 Cancelar
-              </a>
+              </Link>
               <button type="submit" disabled={loading} className="btn-pf flex-1 py-3 text-sm">
                 {loading ? 'Guardando...' : 'Registrar mascota'}
               </button>

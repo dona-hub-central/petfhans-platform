@@ -188,7 +188,7 @@ export default function OwnerPetView({ pet, records, photos, docs, clinicName, c
 
 /* ── Sub-componentes ── */
 
-function DataCard({ pet, clinicName, nextVisit }: any) {
+function DataCard({ pet, clinicName }: any) {
   return (
     <>
       <div className="card">

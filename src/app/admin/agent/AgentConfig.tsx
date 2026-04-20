@@ -264,7 +264,7 @@ export default function AgentConfig({ agent: initial }: { agent: Agent | null })
                 ['✅ Vacunas', 'Registro de vacunación'],
                 ['✅ Archivos', 'Documentos y resultados'],
                 ['✅ Clínicas', 'Información del centro'],
-              ].map(([label, desc]) => (
+              ].map(([label]) => (
                 <div key={label} className="flex items-start gap-2 p-3 rounded-xl" style={{ background: '#edfaf1' }}>
                   <span className="text-xs font-semibold" style={{ color: '#1a7a3c' }}>{label}</span>
                 </div>

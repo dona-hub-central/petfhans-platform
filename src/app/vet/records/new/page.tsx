@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import VetLayout from '@/components/shared/VetLayout'
 import PetSearch from '@/components/shared/PetSearch'
@@ -165,13 +166,13 @@ function NewRecordForm() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <a href="/vet/pets" className="text-xs" style={{ color: 'var(--pf-muted)' }}>Mascotas</a>
+              <Link href="/vet/pets" className="text-xs" style={{ color: 'var(--pf-muted)' }}>Mascotas</Link>
               {form.pet_id && (
                 <>
                   <span style={{ color: 'var(--pf-border)' }}>/</span>
-                  <a href={`/vet/pets/${form.pet_id}`} className="text-xs" style={{ color: 'var(--pf-muted)' }}>
+                  <Link href={`/vet/pets/${form.pet_id}`} className="text-xs" style={{ color: 'var(--pf-muted)' }}>
                     {selectedPet?.name ?? '…'}
-                  </a>
+                  </Link>
                 </>
               )}
               <span style={{ color: 'var(--pf-border)' }}>/</span>

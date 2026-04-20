@@ -10,9 +10,6 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-  const { data: profile } = await supabase.from('profiles')
-    .select('id, role, clinic_id').eq('user_id', user.id).single()
-
   const formData = await req.formData()
   const file  = formData.get('file') as File
   const petId = formData.get('pet_id') as string
@@ -29,7 +26,7 @@ export async function POST(req: NextRequest) {
     try {
       const { data: files } = await admin.storage.from('pet-files').list(`photos/${petId}`)
       if (files?.length) await admin.storage.from('pet-files').remove(files.map(f => `photos/${petId}/${f.name}`))
-    } catch (_) {}
+    } catch {}
   }
 
   // Subir nueva foto

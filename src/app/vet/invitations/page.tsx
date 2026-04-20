@@ -6,12 +6,6 @@ import VetLayout from '@/components/shared/VetLayout'
 import { InvitationCard } from '@/components/vet/InvitationCard'
 import { Mail } from 'lucide-react'
 
-const roleLabel: Record<string, string> = {
-  veterinarian: 'Veterinario',
-  pet_owner:    'Dueño de mascota',
-  vet_admin:    'Admin',
-}
-
 export default async function InvitationsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
