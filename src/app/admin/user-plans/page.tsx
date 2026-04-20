@@ -18,8 +18,8 @@ export default async function UserPlansPage() {
     <AdminLayout userName={profile?.full_name ?? 'Admin'}>
       <div className="px-8 py-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Planes de usuario</h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Planes de usuario</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>
             Define qué puede acceder cada tipo de usuario dentro de una clínica y su precio por asiento
           </p>
         </div>

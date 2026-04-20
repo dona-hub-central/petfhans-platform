@@ -69,18 +69,18 @@ export default function ClinicChangeForm({
         <button type="button" onClick={() => setMode('permanent')}
           className="flex-1 text-xs py-2 rounded-xl border font-medium transition"
           style={{
-            background: mode === 'permanent' ? 'var(--accent)' : '#fff',
-            color: mode === 'permanent' ? '#fff' : 'var(--muted)',
-            borderColor: mode === 'permanent' ? 'var(--accent)' : 'var(--border)',
+            background: mode === 'permanent' ? 'var(--pf-coral)' : '#fff',
+            color: mode === 'permanent' ? '#fff' : 'var(--pf-muted)',
+            borderColor: mode === 'permanent' ? 'var(--pf-coral)' : 'var(--pf-border)',
           }}>
           🔄 Cambio definitivo
         </button>
         <button type="button" onClick={() => setMode('access')}
           className="flex-1 text-xs py-2 rounded-xl border font-medium transition"
           style={{
-            background: mode === 'access' ? 'var(--accent)' : '#fff',
-            color: mode === 'access' ? '#fff' : 'var(--muted)',
-            borderColor: mode === 'access' ? 'var(--accent)' : 'var(--border)',
+            background: mode === 'access' ? 'var(--pf-coral)' : '#fff',
+            color: mode === 'access' ? '#fff' : 'var(--pf-muted)',
+            borderColor: mode === 'access' ? 'var(--pf-coral)' : 'var(--pf-border)',
           }}>
           👁 Dar acceso
         </button>
@@ -88,7 +88,7 @@ export default function ClinicChangeForm({
 
       <div className="flex gap-2">
         <div className="flex-1 flex items-center rounded-xl border overflow-hidden"
-          style={{ borderColor: 'var(--border)' }}>
+          style={{ borderColor: 'var(--pf-border)' }}>
           <input
             type="text"
             value={slug}
@@ -96,16 +96,16 @@ export default function ClinicChangeForm({
             required
             placeholder="slug-de-la-clinica"
             className="flex-1 px-3 py-2.5 text-sm outline-none"
-            style={{ color: 'var(--text)' }}
+            style={{ color: 'var(--pf-ink)' }}
           />
           <span className="px-2 py-2.5 text-xs border-l"
-            style={{ borderColor: 'var(--border)', color: 'var(--muted)', background: 'var(--bg)' }}>
+            style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-muted)', background: 'var(--pf-bg)' }}>
             .petfhans.com
           </span>
         </div>
         <button type="submit" disabled={status === 'loading'}
           className="text-sm font-semibold px-4 py-2.5 rounded-xl disabled:opacity-50 transition"
-          style={{ background: 'var(--accent)', color: '#fff' }}>
+          style={{ background: 'var(--pf-coral)', color: '#fff' }}>
           {status === 'loading' ? '...' : mode === 'permanent' ? 'Cambiar' : 'Solicitar'}
         </button>
       </div>
@@ -120,7 +120,7 @@ export default function ClinicChangeForm({
         </p>
       )}
 
-      <p className="text-xs" style={{ color: 'var(--muted)' }}>
+      <p className="text-xs" style={{ color: 'var(--pf-muted)' }}>
         {mode === 'permanent'
           ? 'El cambio definitivo transfiere tu perfil y el de tus mascotas a la nueva clínica.'
           : 'Dar acceso permite que otra clínica consulte el historial de tus mascotas sin perder tu clínica actual.'}

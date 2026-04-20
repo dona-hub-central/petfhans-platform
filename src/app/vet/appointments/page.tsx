@@ -40,8 +40,8 @@ export default async function AppointmentsPage() {
     <VetLayout clinicName={(profile as any)?.clinics?.name ?? ''} userName={profile?.full_name ?? ''}>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Citas</h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Citas</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>
             {pending?.length ?? 0} pendiente{pending?.length !== 1 ? 's' : ''} de confirmar
           </p>
         </div>

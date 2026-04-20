@@ -42,23 +42,23 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--bg)' }}>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--pf-bg)' }}>
       <div className="w-full max-w-md">
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-sm border p-8" style={{ borderColor: 'var(--border)' }}>
+        <div className="bg-white rounded-2xl shadow-sm border p-8" style={{ borderColor: 'var(--pf-border)' }}>
           {/* Logo */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-3"
-              style={{ background: 'var(--accent-s)' }}>
+              style={{ background: 'var(--pf-coral-soft)' }}>
               <span className="text-2xl">🐾</span>
             </div>
-            <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Petfhans</h1>
-            <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>Plataforma veterinaria</p>
+            <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Petfhans</h1>
+            <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>Plataforma veterinaria</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text)' }}>
+              <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--pf-ink)' }}>
                 Email
               </label>
               <input
@@ -67,15 +67,15 @@ export default function LoginPage() {
                 onChange={e => setEmail(e.target.value)}
                 required
                 className="w-full px-4 py-3 rounded-lg border text-sm transition outline-none"
-                style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
-                onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-                onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }}
+                onFocus={e => e.target.style.borderColor = 'var(--pf-coral)'}
+                onBlur={e => e.target.style.borderColor = 'var(--pf-border)'}
                 placeholder="tu@email.com"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text)' }}>
+              <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--pf-ink)' }}>
                 Contraseña
               </label>
               <input
@@ -84,15 +84,15 @@ export default function LoginPage() {
                 onChange={e => setPassword(e.target.value)}
                 required
                 className="w-full px-4 py-3 rounded-lg border text-sm transition outline-none"
-                style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
-                onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-                onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }}
+                onFocus={e => e.target.style.borderColor = 'var(--pf-coral)'}
+                onBlur={e => e.target.style.borderColor = 'var(--pf-border)'}
                 placeholder="••••••••"
               />
             </div>
 
             {error && (
-              <div className="text-sm p-3 rounded-lg" style={{ background: 'var(--accent-s)', color: 'var(--accent-h)' }}>
+              <div className="text-sm p-3 rounded-lg" style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral-dark)' }}>
                 {error}
               </div>
             )}
@@ -106,9 +106,9 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="text-center text-xs mt-6" style={{ color: 'var(--muted)' }}>
+          <p className="text-center text-xs mt-6" style={{ color: 'var(--pf-muted)' }}>
             ¿Acceso por invitación?{' '}
-            <a href="/auth/invite" className="font-medium" style={{ color: 'var(--accent)' }}>
+            <a href="/auth/invite" className="font-medium" style={{ color: 'var(--pf-coral)' }}>
               Usar link de invitación
             </a>
           </p>

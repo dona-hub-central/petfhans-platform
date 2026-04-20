@@ -24,7 +24,7 @@ export function InvitationCard({
 
   const statusStyle = {
     active:  { bg: '#edfaf1', color: '#1a7a3c', label: 'Activa' },
-    used:    { bg: 'var(--bg)', color: 'var(--muted)', label: '✓ Aceptada' },
+    used:    { bg: 'var(--pf-bg)', color: 'var(--pf-muted)', label: '✓ Aceptada' },
     expired: { bg: '#fff8e6', color: '#b07800', label: 'Expirada' },
   }[status]
 
@@ -52,18 +52,18 @@ export function InvitationCard({
   }
 
   return (
-    <div className="bg-white rounded-2xl border p-5" style={{ borderColor: 'var(--border)' }}>
+    <div className="bg-white rounded-2xl border p-5" style={{ borderColor: 'var(--pf-border)' }}>
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           {/* Header */}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-medium" style={{ color: 'var(--text)' }}>{inv.email}</span>
+            <span className="text-sm font-medium" style={{ color: 'var(--pf-ink)' }}>{inv.email}</span>
             <span className="text-xs px-2 py-0.5 rounded-full"
-              style={{ background: 'var(--accent-s)', color: 'var(--accent)' }}>
+              style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)' }}>
               {roleLabel[inv.role] ?? inv.role}
             </span>
             {inv.pets && (
-              <span className="text-xs" style={{ color: 'var(--muted)' }}>· 🐾 {inv.pets.name}</span>
+              <span className="text-xs" style={{ color: 'var(--pf-muted)' }}>· 🐾 {inv.pets.name}</span>
             )}
           </div>
 
@@ -71,14 +71,14 @@ export function InvitationCard({
           {status === 'active' && (
             <div className="mt-2.5 flex items-center gap-2 flex-wrap">
               <code className="text-xs px-2 py-1.5 rounded-lg truncate max-w-[240px]"
-                style={{ background: 'var(--bg)', color: 'var(--muted)' }}>
+                style={{ background: 'var(--pf-bg)', color: 'var(--pf-muted)' }}>
                 {link}
               </code>
               <button onClick={handleCopy}
                 className="text-xs px-2.5 py-1.5 rounded-lg border transition font-medium flex-shrink-0"
                 style={{
-                  borderColor: copied ? '#1a7a3c' : 'var(--border)',
-                  color: copied ? '#1a7a3c' : 'var(--accent)',
+                  borderColor: copied ? '#1a7a3c' : 'var(--pf-border)',
+                  color: copied ? '#1a7a3c' : 'var(--pf-coral)',
                   background: copied ? '#edfaf1' : '#fff',
                 }}>
                 {copied ? '✓ Copiado' : 'Copiar'}
@@ -86,8 +86,8 @@ export function InvitationCard({
               <button onClick={handleResend} disabled={resending}
                 className="text-xs px-2.5 py-1.5 rounded-lg border transition font-medium flex-shrink-0"
                 style={{
-                  borderColor: resent ? '#1a7a3c' : 'var(--border)',
-                  color: resent ? '#1a7a3c' : 'var(--muted)',
+                  borderColor: resent ? '#1a7a3c' : 'var(--pf-border)',
+                  color: resent ? '#1a7a3c' : 'var(--pf-muted)',
                   background: resent ? '#edfaf1' : '#fff',
                 }}>
                 {resending ? 'Reenviando...' : resent ? '✓ Reenviado' : '↩ Reenviar'}
@@ -96,7 +96,7 @@ export function InvitationCard({
           )}
 
           {/* Fecha */}
-          <p className="text-xs mt-2" style={{ color: 'var(--muted)' }}>
+          <p className="text-xs mt-2" style={{ color: 'var(--pf-muted)' }}>
             {status === 'used'
               ? `Aceptada el ${new Date(inv.used_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}`
               : status === 'expired'

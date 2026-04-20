@@ -18,8 +18,8 @@ export default async function PlansPage() {
     <AdminLayout userName={profile?.full_name ?? 'Admin'}>
       <div className="px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Planes de suscripción</h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>Define precios, límites y características de cada plan</p>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Planes de suscripción</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>Define precios, límites y características de cada plan</p>
         </div>
         <PlansEditor plans={plans ?? []} />
       </div>

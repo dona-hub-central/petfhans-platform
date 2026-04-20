@@ -46,12 +46,12 @@ export default async function BillingPage() {
   const status  = (clinic as { subscription_status?: string } | null)?.subscription_status ?? 'inactive'
   const stripeId = (clinic as { stripe_customer_id?: string | null } | null)?.stripe_customer_id
 
-  const barColor = pct >= 100 ? '#dc2626' : pct >= 80 ? '#d97706' : 'var(--accent)'
+  const barColor = pct >= 100 ? '#dc2626' : pct >= 80 ? '#d97706' : 'var(--pf-coral)'
 
   return (
     <VetLayout clinicName={clinicName} userName={userName}>
       <div className="max-w-2xl">
-        <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--text)' }}>Facturación y plan</h1>
+        <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--pf-ink)' }}>Facturación y plan</h1>
 
         {/* Alert: at limit */}
         {pct >= 100 && (
@@ -82,12 +82,12 @@ export default async function BillingPage() {
         )}
 
         {/* Plan info */}
-        <div className="bg-white rounded-2xl border p-6 mb-4" style={{ borderColor: 'var(--border)' }}>
+        <div className="bg-white rounded-2xl border p-6 mb-4" style={{ borderColor: 'var(--pf-border)' }}>
           <div className="flex items-start justify-between mb-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--muted)' }}>Plan actual</p>
-              <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{PLAN_LABELS[plan] ?? plan}</p>
-              <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>{PLAN_DESCRIPTIONS[plan] ?? ''}</p>
+              <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: 'var(--pf-muted)' }}>Plan actual</p>
+              <p className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>{PLAN_LABELS[plan] ?? plan}</p>
+              <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>{PLAN_DESCRIPTIONS[plan] ?? ''}</p>
             </div>
             <span className="text-xs px-3 py-1 rounded-full font-semibold"
               style={{
@@ -101,25 +101,25 @@ export default async function BillingPage() {
           {/* Usage bar */}
           <div>
             <div className="flex justify-between items-center mb-2">
-              <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>Uso de pacientes</p>
+              <p className="text-sm font-medium" style={{ color: 'var(--pf-ink)' }}>Uso de pacientes</p>
               <p className="text-sm font-bold" style={{ color: barColor }}>
                 {count} / {maxPats}
               </p>
             </div>
-            <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'var(--bg)' }}>
+            <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'var(--pf-bg)' }}>
               <div className="h-full rounded-full transition-all"
                 style={{ width: `${pct}%`, background: barColor }} />
             </div>
-            <p className="text-xs mt-1.5" style={{ color: 'var(--muted)' }}>
+            <p className="text-xs mt-1.5" style={{ color: 'var(--pf-muted)' }}>
               {maxPats - count > 0 ? `${maxPats - count} pacientes disponibles` : 'Sin cuota disponible'}
             </p>
           </div>
         </div>
 
         {/* Stripe portal / upgrade */}
-        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'var(--border)' }}>
-          <h2 className="font-semibold mb-1" style={{ color: 'var(--text)' }}>Gestionar suscripción</h2>
-          <p className="text-sm mb-4" style={{ color: 'var(--muted)' }}>
+        <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'var(--pf-border)' }}>
+          <h2 className="font-semibold mb-1" style={{ color: 'var(--pf-ink)' }}>Gestionar suscripción</h2>
+          <p className="text-sm mb-4" style={{ color: 'var(--pf-muted)' }}>
             Cambia de plan, actualiza tu método de pago o descarga facturas.
           </p>
           {stripeId ? (
@@ -128,7 +128,7 @@ export default async function BillingPage() {
               Ir al portal de facturación →
             </a>
           ) : (
-            <p className="text-sm px-4 py-3 rounded-xl" style={{ background: 'var(--bg)', color: 'var(--muted)' }}>
+            <p className="text-sm px-4 py-3 rounded-xl" style={{ background: 'var(--pf-bg)', color: 'var(--pf-muted)' }}>
               Contacta con soporte en <strong>soporte@petfhans.com</strong> para gestionar tu plan.
             </p>
           )}

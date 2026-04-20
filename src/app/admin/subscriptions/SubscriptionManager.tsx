@@ -81,15 +81,15 @@ export default function SubscriptionManager({ clinics: initial }: { clinics: Cli
         const isOpen = expanded === c.id
 
         return (
-          <div key={c.id} className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
+          <div key={c.id} className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
             {/* Cabecera clínica */}
             <div className="px-5 py-4 flex items-center gap-4 cursor-pointer hover:bg-gray-50 transition"
               onClick={() => setExpanded(isOpen ? null : c.id)}>
               <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-                style={{ background: 'var(--accent-s)' }}>🏥</div>
+                style={{ background: 'var(--pf-coral-soft)' }}>🏥</div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm" style={{ color: 'var(--text)' }}>{c.name}</p>
-                <p className="text-xs" style={{ color: 'var(--muted)' }}>{c.slug}.petfhans.com · {c.users.length} usuario{c.users.length !== 1 ? 's' : ''}</p>
+                <p className="font-semibold text-sm" style={{ color: 'var(--pf-ink)' }}>{c.name}</p>
+                <p className="text-xs" style={{ color: 'var(--pf-muted)' }}>{c.slug}.petfhans.com · {c.users.length} usuario{c.users.length !== 1 ? 's' : ''}</p>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <span className="text-xs px-2.5 py-1 rounded-full font-medium"
@@ -97,20 +97,20 @@ export default function SubscriptionManager({ clinics: initial }: { clinics: Cli
                 <span className="text-xs px-2.5 py-1 rounded-full font-medium"
                   style={{ background: status.bg, color: status.color }}>{status.label}</span>
                 {saved === c.id && <span className="text-xs font-medium" style={{ color: '#1a7a3c' }}>✓</span>}
-                <span style={{ color: 'var(--muted)', transition: 'transform .2s', display: 'inline-block', transform: isOpen ? 'rotate(180deg)' : 'none' }}>▾</span>
+                <span style={{ color: 'var(--pf-muted)', transition: 'transform .2s', display: 'inline-block', transform: isOpen ? 'rotate(180deg)' : 'none' }}>▾</span>
               </div>
             </div>
 
             {/* Panel expandido */}
             {isOpen && (
-              <div className="border-t px-5 py-4 space-y-5" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+              <div className="border-t px-5 py-4 space-y-5" style={{ borderColor: 'var(--pf-border)', background: 'var(--pf-bg)' }}>
 
                 {/* Editar suscripción */}
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <p className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>Suscripción</p>
+                    <p className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--pf-muted)' }}>Suscripción</p>
                     {editing !== c.id && (
-                      <button onClick={() => startEdit(c)} className="text-xs font-medium" style={{ color: 'var(--accent)' }}>Editar</button>
+                      <button onClick={() => startEdit(c)} className="text-xs font-medium" style={{ color: 'var(--pf-coral)' }}>Editar</button>
                     )}
                   </div>
 
@@ -123,8 +123,8 @@ export default function SubscriptionManager({ clinics: initial }: { clinics: Cli
                             className="py-2 rounded-xl border text-xs font-semibold transition"
                             style={{
                               background: form.subscription_plan === p.value ? p.bg : '#fff',
-                              borderColor: form.subscription_plan === p.value ? p.color : 'var(--border)',
-                              color: form.subscription_plan === p.value ? p.color : 'var(--muted)',
+                              borderColor: form.subscription_plan === p.value ? p.color : 'var(--pf-border)',
+                              color: form.subscription_plan === p.value ? p.color : 'var(--pf-muted)',
                             }}>{p.label}</button>
                         ))}
                       </div>
@@ -135,42 +135,42 @@ export default function SubscriptionManager({ clinics: initial }: { clinics: Cli
                             className="py-2 rounded-xl border text-xs font-semibold transition"
                             style={{
                               background: form.subscription_status === s.value ? s.bg : '#fff',
-                              borderColor: form.subscription_status === s.value ? s.color : 'var(--border)',
-                              color: form.subscription_status === s.value ? s.color : 'var(--muted)',
+                              borderColor: form.subscription_status === s.value ? s.color : 'var(--pf-border)',
+                              color: form.subscription_status === s.value ? s.color : 'var(--pf-muted)',
                             }}>{s.label}</button>
                         ))}
                       </div>
                       <div className="flex items-center gap-2">
-                        <label className="text-xs" style={{ color: 'var(--muted)' }}>Máx. pacientes:</label>
+                        <label className="text-xs" style={{ color: 'var(--pf-muted)' }}>Máx. pacientes:</label>
                         <input type="number" value={form.max_patients ?? ''} onChange={e => setForm(f => ({ ...f, max_patients: parseInt(e.target.value) }))}
                           className="px-3 py-1.5 text-sm border rounded-xl outline-none w-24"
-                          style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
-                          onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-                          onBlur={e => e.target.style.borderColor = 'var(--border)'} />
+                          style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }}
+                          onFocus={e => e.target.style.borderColor = 'var(--pf-coral)'}
+                          onBlur={e => e.target.style.borderColor = 'var(--pf-border)'} />
                       </div>
                       <div className="flex gap-2">
                         <button onClick={cancel} className="text-xs px-4 py-2 rounded-xl border"
-                          style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}>Cancelar</button>
+                          style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-muted)' }}>Cancelar</button>
                         <button onClick={() => save(c.id)} disabled={!!saving}
                           className="text-xs font-semibold px-4 py-2 rounded-xl"
-                          style={{ background: 'var(--accent)', color: '#fff', opacity: saving === c.id ? .7 : 1 }}>
+                          style={{ background: 'var(--pf-coral)', color: '#fff', opacity: saving === c.id ? .7 : 1 }}>
                           {saving === c.id ? 'Guardando…' : 'Guardar'}
                         </button>
                       </div>
                     </div>
                   ) : (
                     <div className="grid grid-cols-3 gap-3 text-center">
-                      <div className="bg-white rounded-xl p-3 border" style={{ borderColor: 'var(--border)' }}>
-                        <p className="text-xs" style={{ color: 'var(--muted)' }}>Plan</p>
+                      <div className="bg-white rounded-xl p-3 border" style={{ borderColor: 'var(--pf-border)' }}>
+                        <p className="text-xs" style={{ color: 'var(--pf-muted)' }}>Plan</p>
                         <p className="font-bold text-sm mt-0.5" style={{ color: plan.color }}>{plan.label}</p>
                       </div>
-                      <div className="bg-white rounded-xl p-3 border" style={{ borderColor: 'var(--border)' }}>
-                        <p className="text-xs" style={{ color: 'var(--muted)' }}>Estado</p>
+                      <div className="bg-white rounded-xl p-3 border" style={{ borderColor: 'var(--pf-border)' }}>
+                        <p className="text-xs" style={{ color: 'var(--pf-muted)' }}>Estado</p>
                         <p className="font-bold text-sm mt-0.5" style={{ color: status.color }}>{status.label}</p>
                       </div>
-                      <div className="bg-white rounded-xl p-3 border" style={{ borderColor: 'var(--border)' }}>
-                        <p className="text-xs" style={{ color: 'var(--muted)' }}>Pacientes</p>
-                        <p className="font-bold text-sm mt-0.5" style={{ color: 'var(--text)' }}>
+                      <div className="bg-white rounded-xl p-3 border" style={{ borderColor: 'var(--pf-border)' }}>
+                        <p className="text-xs" style={{ color: 'var(--pf-muted)' }}>Pacientes</p>
+                        <p className="font-bold text-sm mt-0.5" style={{ color: 'var(--pf-ink)' }}>
                           {c.max_patients >= 999 ? '∞' : c.max_patients}
                         </p>
                       </div>
@@ -180,30 +180,30 @@ export default function SubscriptionManager({ clinics: initial }: { clinics: Cli
 
                 {/* Usuarios de la clínica */}
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: 'var(--muted)' }}>
+                  <p className="text-xs font-bold uppercase tracking-wide mb-3" style={{ color: 'var(--pf-muted)' }}>
                     Usuarios ({c.users.length})
                   </p>
                   {c.users.length === 0 ? (
-                    <p className="text-xs" style={{ color: 'var(--muted)' }}>Sin usuarios asignados</p>
+                    <p className="text-xs" style={{ color: 'var(--pf-muted)' }}>Sin usuarios asignados</p>
                   ) : (
                     <div className="space-y-2">
                       {c.users.map(u => {
                         const roleInfo = ROLES.find(r => r.value === u.role) ?? ROLES[1]
                         return (
                           <div key={u.id} className="bg-white rounded-xl px-4 py-3 flex items-center gap-3 border"
-                            style={{ borderColor: 'var(--border)' }}>
+                            style={{ borderColor: 'var(--pf-border)' }}>
                             <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
                               style={{ background: roleInfo.color + '18', color: roleInfo.color }}>
                               {u.full_name?.[0]}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate" style={{ color: 'var(--text)' }}>{u.full_name}</p>
-                              <p className="text-xs truncate" style={{ color: 'var(--muted)' }}>{u.email}</p>
+                              <p className="text-sm font-medium truncate" style={{ color: 'var(--pf-ink)' }}>{u.full_name}</p>
+                              <p className="text-xs truncate" style={{ color: 'var(--pf-muted)' }}>{u.email}</p>
                             </div>
                             {/* Cambiar rol */}
                             <select value={u.role} onChange={e => updateUserRole(u.id, c.id, e.target.value)}
                               className="text-xs border rounded-xl px-2 py-1.5 outline-none flex-shrink-0"
-                              style={{ borderColor: 'var(--border)', color: roleInfo.color, fontWeight: 600 }}>
+                              style={{ borderColor: 'var(--pf-border)', color: roleInfo.color, fontWeight: 600 }}>
                               {ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                             </select>
                             {/* Quitar acceso */}
@@ -221,11 +221,11 @@ export default function SubscriptionManager({ clinics: initial }: { clinics: Cli
 
                 {/* Stripe */}
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: 'var(--muted)' }}>Stripe</p>
+                  <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: 'var(--pf-muted)' }}>Stripe</p>
                   <div className="bg-white rounded-xl px-4 py-3 border flex items-center justify-between"
-                    style={{ borderColor: 'var(--border)' }}>
-                    <span className="text-xs" style={{ color: 'var(--muted)' }}>Customer ID</span>
-                    <span className="text-xs font-mono" style={{ color: c.stripe_customer_id ? 'var(--text)' : 'var(--muted)' }}>
+                    style={{ borderColor: 'var(--pf-border)' }}>
+                    <span className="text-xs" style={{ color: 'var(--pf-muted)' }}>Customer ID</span>
+                    <span className="text-xs font-mono" style={{ color: c.stripe_customer_id ? 'var(--pf-ink)' : 'var(--pf-muted)' }}>
                       {c.stripe_customer_id || '—'}
                     </span>
                   </div>

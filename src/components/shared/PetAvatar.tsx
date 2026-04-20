@@ -66,12 +66,12 @@ export default function PetAvatar({
         style={{
           width: size, height: size,
           borderRadius: radius,
-          background: 'var(--accent-s)',
+          background: 'var(--pf-coral-soft)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           overflow: 'hidden',
           cursor: editable ? 'pointer' : 'default',
           fontSize: size * 0.5,
-          border: editable ? '2px dashed var(--accent)' : 'none',
+          border: editable ? '2px dashed var(--pf-coral)' : 'none',
           position: 'relative',
         }}
         title={editable ? 'Cambiar foto' : undefined}

@@ -20,12 +20,12 @@ export default async function SchedulePage() {
     <VetLayout clinicName={(profile as any)?.clinics?.name ?? ''} userName={profile?.full_name ?? ''}>
       <div className="max-w-2xl">
         <div className="flex items-center gap-3 mb-6">
-          <a href="/vet/appointments" className="text-xs" style={{ color: 'var(--muted)' }}>← Citas</a>
-          <span style={{ color: 'var(--border)' }}>/</span>
-          <span className="text-xs" style={{ color: 'var(--muted)' }}>Configurar horario</span>
+          <a href="/vet/appointments" className="text-xs" style={{ color: 'var(--pf-muted)' }}>← Citas</a>
+          <span style={{ color: 'var(--pf-border)' }}>/</span>
+          <span className="text-xs" style={{ color: 'var(--pf-muted)' }}>Configurar horario</span>
         </div>
-        <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--text)' }}>Horario de disponibilidad</h1>
-        <p className="text-sm mb-6" style={{ color: 'var(--muted)' }}>
+        <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--pf-ink)' }}>Horario de disponibilidad</h1>
+        <p className="text-sm mb-6" style={{ color: 'var(--pf-muted)' }}>
           Define los días y horas en que los dueños pueden solicitar citas
         </p>
         <ScheduleEditor schedules={schedules ?? []} clinicId={profile?.clinic_id ?? ''} />

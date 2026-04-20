@@ -23,31 +23,31 @@ export default async function ClinicsPage() {
       <div className="px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Clínicas</h1>
-            <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>{clinics?.length ?? 0} registradas</p>
+            <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Clínicas</h1>
+            <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>{clinics?.length ?? 0} registradas</p>
           </div>
           <Link href="/admin/clinics/new" className="btn-pf px-5 py-2.5 text-sm inline-flex items-center gap-2">
             <span>+</span> Nueva clínica
           </Link>
         </div>
 
-        <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
-          <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
+        <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
+          <div className="divide-y" style={{ borderColor: 'var(--pf-border)' }}>
             {clinics && clinics.length > 0 ? clinics.map((clinic: any) => (
               <div key={clinic.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
-                    style={{ background: 'var(--accent-s)' }}>🏥</div>
+                    style={{ background: 'var(--pf-coral-soft)' }}>🏥</div>
                   <div>
-                    <p className="font-medium text-sm" style={{ color: 'var(--text)' }}>{clinic.name}</p>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{clinic.slug}.petfhans.com</p>
+                    <p className="font-medium text-sm" style={{ color: 'var(--pf-ink)' }}>{clinic.name}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--pf-muted)' }}>{clinic.slug}.petfhans.com</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <PlanBadge plan={clinic.subscription_plan} />
                   <StatusBadge status={clinic.subscription_status} />
                   <Link href={`/admin/clinics/${clinic.id}`}
-                    className="text-xs font-medium" style={{ color: 'var(--accent)' }}>
+                    className="text-xs font-medium" style={{ color: 'var(--pf-coral)' }}>
                     Ver →
                   </Link>
                 </div>
@@ -55,9 +55,9 @@ export default async function ClinicsPage() {
             )) : (
               <div className="px-6 py-16 text-center">
                 <div className="text-4xl mb-3">🏥</div>
-                <p className="text-sm" style={{ color: 'var(--muted)' }}>No hay clínicas registradas</p>
+                <p className="text-sm" style={{ color: 'var(--pf-muted)' }}>No hay clínicas registradas</p>
                 <Link href="/admin/clinics/new"
-                  className="text-sm font-medium mt-2 inline-block" style={{ color: 'var(--accent)' }}>
+                  className="text-sm font-medium mt-2 inline-block" style={{ color: 'var(--pf-coral)' }}>
                   Crear la primera →
                 </Link>
               </div>

@@ -19,8 +19,8 @@ export default async function TiersPage() {
     <AdminLayout userName={profile?.full_name ?? 'Admin'}>
       <div className="px-8 py-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Tarifas por tramos</h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Tarifas por tramos</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>
             Define el precio según el número de pacientes de cada clínica
           </p>
         </div>

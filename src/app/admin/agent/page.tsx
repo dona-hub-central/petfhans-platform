@@ -26,12 +26,12 @@ export default async function AgentPage() {
       <div className="px-8 py-8">
         <div className="flex items-center gap-4 mb-8">
           <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl"
-            style={{ background: 'var(--accent-s)' }}>🤖</div>
+            style={{ background: 'var(--pf-coral-soft)' }}>🤖</div>
           <div>
-            <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>
+            <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>
               {agent?.name ?? 'Dr. Petfhans'}
             </h1>
-            <p className="text-sm mt-0.5" style={{ color: 'var(--muted)' }}>
+            <p className="text-sm mt-0.5" style={{ color: 'var(--pf-muted)' }}>
               Agente veterinario experto con IA
             </p>
           </div>
@@ -54,11 +54,11 @@ export default async function AgentPage() {
             { icon: '🏥', label: 'Clínicas',         value: totalClinics ?? 0 },
           ].map(s => (
             <div key={s.label} className="bg-white rounded-2xl border p-5 flex items-center gap-4"
-              style={{ borderColor: 'var(--border)' }}>
+              style={{ borderColor: 'var(--pf-border)' }}>
               <span className="text-2xl">{s.icon}</span>
               <div>
-                <p className="text-xl font-bold" style={{ color: 'var(--text)' }}>{s.value}</p>
-                <p className="text-xs" style={{ color: 'var(--muted)' }}>{s.label}</p>
+                <p className="text-xl font-bold" style={{ color: 'var(--pf-ink)' }}>{s.value}</p>
+                <p className="text-xs" style={{ color: 'var(--pf-muted)' }}>{s.label}</p>
               </div>
             </div>
           ))}

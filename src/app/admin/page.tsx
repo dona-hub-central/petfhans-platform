@@ -33,8 +33,8 @@ export default async function AdminDashboard() {
       <div className="px-8 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Panel Global</h1>
-            <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>Visión general del sistema</p>
+            <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Panel Global</h1>
+            <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>Visión general del sistema</p>
           </div>
           <Link href="/admin/clinics/new" className="btn-pf px-5 py-2.5 text-sm inline-flex items-center gap-2">
             <span>+</span> Nueva clínica
@@ -50,23 +50,23 @@ export default async function AdminDashboard() {
         </div>
 
         {/* Tabla clínicas recientes */}
-        <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
-          <div className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
-            <h3 className="font-semibold text-sm" style={{ color: 'var(--text)' }}>Clínicas recientes</h3>
-            <Link href="/admin/clinics" className="text-xs font-medium" style={{ color: 'var(--accent)' }}>
+        <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
+          <div className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--pf-border)' }}>
+            <h3 className="font-semibold text-sm" style={{ color: 'var(--pf-ink)' }}>Clínicas recientes</h3>
+            <Link href="/admin/clinics" className="text-xs font-medium" style={{ color: 'var(--pf-coral)' }}>
               Ver todas →
             </Link>
           </div>
 
-          <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
+          <div className="divide-y" style={{ borderColor: 'var(--pf-border)' }}>
             {clinics && clinics.length > 0 ? clinics.map((clinic: any) => (
               <div key={clinic.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
-                    style={{ background: 'var(--accent-s)' }}>🏥</div>
+                    style={{ background: 'var(--pf-coral-soft)' }}>🏥</div>
                   <div>
-                    <p className="font-medium text-sm" style={{ color: 'var(--text)' }}>{clinic.name}</p>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
+                    <p className="font-medium text-sm" style={{ color: 'var(--pf-ink)' }}>{clinic.name}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--pf-muted)' }}>
                       {clinic.slug}.petfhans.com
                     </p>
                   </div>
@@ -75,7 +75,7 @@ export default async function AdminDashboard() {
                   <PlanBadge plan={clinic.subscription_plan} />
                   <StatusBadge status={clinic.subscription_status} />
                   <Link href={`/admin/clinics/${clinic.id}`}
-                    className="text-xs font-medium" style={{ color: 'var(--accent)' }}>
+                    className="text-xs font-medium" style={{ color: 'var(--pf-coral)' }}>
                     Ver →
                   </Link>
                 </div>
@@ -83,9 +83,9 @@ export default async function AdminDashboard() {
             )) : (
               <div className="px-6 py-16 text-center">
                 <div className="text-4xl mb-3">🏥</div>
-                <p className="text-sm" style={{ color: 'var(--muted)' }}>No hay clínicas registradas aún</p>
+                <p className="text-sm" style={{ color: 'var(--pf-muted)' }}>No hay clínicas registradas aún</p>
                 <Link href="/admin/clinics/new"
-                  className="text-sm font-medium mt-2 inline-block" style={{ color: 'var(--accent)' }}>
+                  className="text-sm font-medium mt-2 inline-block" style={{ color: 'var(--pf-coral)' }}>
                   Crear la primera →
                 </Link>
               </div>
@@ -99,11 +99,11 @@ export default async function AdminDashboard() {
 
 function MetricCard({ icon, label, value }: { icon: string; label: string; value: number }) {
   return (
-    <div className="bg-white rounded-2xl border p-5" style={{ borderColor: 'var(--border)' }}>
+    <div className="bg-white rounded-2xl border p-5" style={{ borderColor: 'var(--pf-border)' }}>
       <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg mb-3"
-        style={{ background: 'var(--accent-s)' }}>{icon}</div>
-      <p className="text-2xl font-bold" style={{ color: 'var(--text)' }}>{value}</p>
-      <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{label}</p>
+        style={{ background: 'var(--pf-coral-soft)' }}>{icon}</div>
+      <p className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>{value}</p>
+      <p className="text-xs mt-0.5" style={{ color: 'var(--pf-muted)' }}>{label}</p>
     </div>
   )
 }

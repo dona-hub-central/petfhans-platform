@@ -28,16 +28,16 @@ export default async function TeamPage() {
     <VetLayout clinicName={(profile as any)?.clinics?.name ?? ''} userName={profile?.full_name ?? ''}>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Equipo</h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>{team?.length ?? 0} miembros</p>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Equipo</h1>
+          <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>{team?.length ?? 0} miembros</p>
         </div>
         <Link href="/vet/invitations/new" className="btn-pf px-5 py-2.5 text-sm inline-flex items-center gap-2">
           + Invitar miembro
         </Link>
       </div>
 
-      <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--border)' }}>
-        <div className="divide-y" style={{ borderColor: 'var(--border)' }}>
+      <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
+        <div className="divide-y" style={{ borderColor: 'var(--pf-border)' }}>
           {team && team.length > 0 ? team.map((member: any) => {
             const rs = roleLabel[member.role] ?? roleLabel.veterinarian
             return (
@@ -47,10 +47,10 @@ export default async function TeamPage() {
                   {member.full_name?.[0]?.toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm" style={{ color: 'var(--text)' }}>{member.full_name}</p>
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{member.email}</p>
+                  <p className="font-medium text-sm" style={{ color: 'var(--pf-ink)' }}>{member.full_name}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--pf-muted)' }}>{member.email}</p>
                   {member.phone && (
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>📞 {member.phone}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--pf-muted)' }}>📞 {member.phone}</p>
                   )}
                 </div>
                 <span className="text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0"
@@ -62,9 +62,9 @@ export default async function TeamPage() {
           }) : (
             <div className="px-6 py-16 text-center">
               <div className="text-4xl mb-3">👥</div>
-              <p className="font-medium text-sm" style={{ color: 'var(--text)' }}>Sin equipo aún</p>
+              <p className="font-medium text-sm" style={{ color: 'var(--pf-ink)' }}>Sin equipo aún</p>
               <Link href="/vet/invitations/new"
-                className="text-sm font-medium mt-2 inline-block" style={{ color: 'var(--accent)' }}>
+                className="text-sm font-medium mt-2 inline-block" style={{ color: 'var(--pf-coral)' }}>
                 Invitar primer miembro →
               </Link>
             </div>
