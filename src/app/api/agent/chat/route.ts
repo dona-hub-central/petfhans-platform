@@ -11,8 +11,20 @@ async function handler(req: NextRequest): Promise<NextResponse> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-  const { message, history = [], test = false } = await req.json()
+  // C-3: verificar que el usuario es superadmin
+  const { data: profile } = await supabase.from('profiles')
+    .select('role').eq('user_id', user.id).single()
+  if (profile?.role !== 'superadmin') {
+    return NextResponse.json({ error: 'Acceso restringido a superadmin' }, { status: 403 })
+  }
+
+  const { message, history = [], clinic_id, test = false } = await req.json()
   if (!message) return NextResponse.json({ error: 'Mensaje vacío' }, { status: 400 })
+
+  // C-3: requerir selección explícita de clínica — nunca cargar todas
+  if (!clinic_id) {
+    return NextResponse.json({ error: 'Selecciona una clínica para consultar' }, { status: 400 })
+  }
 
   const admin = createAdminClient()
 
@@ -20,35 +32,38 @@ async function handler(req: NextRequest): Promise<NextResponse> {
   if (!agent?.openai_api_key) return NextResponse.json({ error: 'Sin API key' }, { status: 400 })
   if (!agent.is_active && !test) return NextResponse.json({ error: 'Agente inactivo' }, { status: 400 })
 
-  const [{ data: pets }, { data: records }, { data: clinics }] = await Promise.all([
+  // C-3: verificar que la clínica existe y obtener solo sus metadatos
+  const { data: clinic } = await admin.from('clinics')
+    .select('id, name, slug, subscription_plan').eq('id', clinic_id).single()
+  if (!clinic) return NextResponse.json({ error: 'Clínica no encontrada' }, { status: 404 })
+
+  // C-3: cargar datos SOLO de la clínica seleccionada, sin registros médicos individuales
+  const [{ data: pets }, { data: appointments }] = await Promise.all([
     admin.from('pets')
-      .select('id, name, species, breed, birth_date, weight, gender, neutered, clinic_id, clinics(name)')
-      .eq('is_active', true).limit(100),
-    admin.from('medical_records')
-      .select('id, pet_id, visit_date, reason, diagnosis, treatment, medications, pets(name, species), profiles!medical_records_vet_id_fkey(full_name)')
-      .order('visit_date', { ascending: false }).limit(200),
-    admin.from('clinics').select('id, name, slug, subscription_plan').limit(50),
+      .select('id, name, species, breed, birth_date, weight, gender, neutered')
+      .eq('clinic_id', clinic_id)
+      .eq('is_active', true)
+      .limit(100),
+    admin.from('appointments')
+      .select('id, appointment_date, appointment_time, status, reason, is_virtual')
+      .eq('clinic_id', clinic_id)
+      .order('appointment_date', { ascending: false })
+      .limit(50),
   ])
 
   const dbContext = `
-=== BASE DE DATOS PETFHANS ===
+=== CLÍNICA SELECCIONADA: ${clinic.name} (${clinic.slug}) ===
+Plan: ${clinic.subscription_plan}
 Fecha: ${new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
 
-CLÍNICAS (${clinics?.length ?? 0}):
-${clinics?.map(c => `- ${c.name} (${c.slug}) · ${c.subscription_plan}`).join('\n') ?? 'Sin clínicas'}
-
-MASCOTAS (${pets?.length ?? 0}):
+MASCOTAS ACTIVAS (${pets?.length ?? 0}):
 ${pets?.map(p => {
   const age = p.birth_date ? Math.floor((Date.now() - new Date(p.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 365)) : null
-  return `- ${p.name} | ${p.species}${p.breed ? ` ${p.breed}` : ''} | ${age ? age + 'a' : '?'} | Clínica: ${(p as unknown as { clinics?: { name: string } }).clinics?.name ?? '?'}`
+  return `- ${p.name} | ${p.species}${p.breed ? ` ${p.breed}` : ''} | ${age !== null ? age + 'a' : '?'}`
 }).join('\n') ?? 'Sin mascotas'}
 
-HISTORIAL RECIENTE (${records?.length ?? 0}):
-${records?.slice(0, 50).map(r => {
-  const pet = r.pets as unknown as { name: string; species: string } | null
-  const vet = r.profiles as unknown as { full_name: string } | null
-  return `[${r.visit_date}] ${pet?.name ?? '?'} · ${r.reason}${r.diagnosis ? ` → ${r.diagnosis}` : ''} · Dr: ${vet?.full_name ?? '?'}`
-}).join('\n') ?? 'Sin historial'}
+CITAS RECIENTES (${appointments?.length ?? 0}):
+${appointments?.map(a => `[${a.appointment_date}] ${a.status} | ${a.reason}`).join('\n') ?? 'Sin citas'}
 === FIN ===`
 
   const skillsText = (agent.skills ?? []).length > 0
