@@ -22,8 +22,8 @@ type Appt = {
 }
 
 export default function AppointmentsCalendar({
-  appointments, pending, year, month
-}: { appointments: Appt[]; pending: Appt[]; year: number; month: number }) {
+  appointments, pending, year, month, isAdmin = true
+}: { appointments: Appt[]; pending: Appt[]; year: number; month: number; isAdmin?: boolean }) {
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [selectedAppt, setSelectedAppt] = useState<Appt | null>(null)

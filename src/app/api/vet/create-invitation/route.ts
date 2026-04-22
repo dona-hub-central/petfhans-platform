@@ -35,13 +35,13 @@ export async function POST(req: NextRequest) {
       : pet_id ? [pet_id] : []
 
     // Crear invitación
+    // pet_ids (array) se activa con migration 009; por ahora solo pet_id singular
     const { data: inv, error } = await admin.from('invitations')
       .insert({
         clinic_id:  profile.clinic_id,
         email,
         role,
         pet_id:     resolvedPetIds[0] || null,
-        pet_ids:    resolvedPetIds,
         created_by: profile.id,
       })
       .select('*, pets(name)')
