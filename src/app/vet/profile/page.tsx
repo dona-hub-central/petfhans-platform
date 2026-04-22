@@ -67,18 +67,22 @@ export default async function VetProfilePage({
   const inpStyle = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }
 
   return (
-    <div className="max-w-xl">
+    <div>
 
       {/* Alertas */}
-      {success === 'profile'  && <Alert ok msg="Perfil actualizado correctamente." />}
-      {success === 'password' && <Alert ok msg="Contraseña cambiada correctamente." />}
-      {error === 'match'  && <Alert msg="Las contraseñas no coinciden." />}
-      {error === 'wrong'  && <Alert msg="Contraseña actual incorrecta." />}
-      {error === 'short'  && <Alert msg="La contraseña debe tener mínimo 8 caracteres." />}
-      {error === 'fields' && <Alert msg="Completa todos los campos." />}
-      {error === 'update' && <Alert msg="No se pudo actualizar la contraseña." />}
+      {(success || error) && (
+        <div className="mb-4">
+          {success === 'profile'  && <Alert ok msg="Perfil actualizado correctamente." />}
+          {success === 'password' && <Alert ok msg="Contraseña cambiada correctamente." />}
+          {error === 'match'  && <Alert msg="Las contraseñas no coinciden." />}
+          {error === 'wrong'  && <Alert msg="Contraseña actual incorrecta." />}
+          {error === 'short'  && <Alert msg="La contraseña debe tener mínimo 8 caracteres." />}
+          {error === 'fields' && <Alert msg="Completa todos los campos." />}
+          {error === 'update' && <Alert msg="No se pudo actualizar la contraseña." />}
+        </div>
+      )}
 
-      {/* Cabecera de perfil */}
+      {/* Cabecera de perfil — ancho completo */}
       <div className="bg-white rounded-2xl border p-6 mb-4 flex items-center gap-5"
         style={{ borderColor: 'var(--pf-border)' }}>
         <AvatarUpload currentUrl={profile?.avatar_url} name={profile?.full_name} size={72} />
@@ -104,70 +108,77 @@ export default async function VetProfilePage({
         </div>
       </div>
 
-      {/* Datos personales */}
-      <div className="bg-white rounded-2xl border p-6 mb-4" style={{ borderColor: 'var(--pf-border)' }}>
-        <h2 className="font-semibold text-sm mb-4" style={{ color: 'var(--pf-ink)' }}>Datos personales</h2>
-        <form action={saveProfile} className="space-y-4">
-          <Label text="Correo electrónico">
-            <input value={user.email ?? ''} readOnly disabled className={inp}
-              style={{ ...inpStyle, background: 'var(--pf-bg)', color: 'var(--pf-muted)' }} />
-          </Label>
-          <Label text="Nombre completo">
-            <input name="full_name" defaultValue={profile?.full_name ?? ''} required className={inp} style={inpStyle} />
-          </Label>
-          <Label text="Teléfono">
-            <input name="phone" defaultValue={profile?.phone ?? ''} type="tel" className={inp} style={inpStyle} placeholder="+34 600 000 000" />
-          </Label>
-          <button type="submit" className="btn-pf px-5 py-2.5 text-sm">Guardar cambios</button>
-        </form>
-      </div>
+      {/* Grid de dos columnas en desktop */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
-      {/* Gestión de clínica — solo vet_admin */}
-      {isVetAdmin && (
-        <div className="bg-white rounded-2xl border p-6 mb-4" style={{ borderColor: 'var(--pf-border)' }}>
-          <h2 className="font-semibold text-sm mb-4 flex items-center gap-1.5" style={{ color: 'var(--pf-ink)' }}>
-            <Building2 size={14} strokeWidth={2} /> Gestión de clínica
-          </h2>
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              { href: '/vet/team',                   Icon: Users,     label: 'Equipo' },
-              { href: '/vet/billing',                Icon: CreditCard, label: 'Facturación' },
-              { href: '/vet/invitations',            Icon: Mail,       label: 'Invitaciones' },
-              { href: '/vet/appointments/schedule',  Icon: Calendar,   label: 'Horario' },
-            ].map(({ href, Icon, label }) => (
-              <Link key={href} href={href}
-                className="flex items-center gap-2.5 p-3 rounded-xl transition hover:bg-gray-50"
-                style={{ color: 'var(--pf-ink)', textDecoration: 'none', border: '1px solid var(--pf-border)' }}>
-                <Icon size={15} strokeWidth={1.75} style={{ color: 'var(--pf-coral)', flexShrink: 0 }} />
-                <span className="text-sm font-medium">{label}</span>
-              </Link>
-            ))}
+        {/* Columna izquierda: datos personales + gestión (vet_admin) */}
+        <div className="space-y-4">
+          <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'var(--pf-border)' }}>
+            <h2 className="font-semibold text-sm mb-4" style={{ color: 'var(--pf-ink)' }}>Datos personales</h2>
+            <form action={saveProfile} className="space-y-4">
+              <Label text="Correo electrónico">
+                <input value={user.email ?? ''} readOnly disabled className={inp}
+                  style={{ ...inpStyle, background: 'var(--pf-bg)', color: 'var(--pf-muted)' }} />
+              </Label>
+              <Label text="Nombre completo">
+                <input name="full_name" defaultValue={profile?.full_name ?? ''} required className={inp} style={inpStyle} />
+              </Label>
+              <Label text="Teléfono">
+                <input name="phone" defaultValue={profile?.phone ?? ''} type="tel" className={inp} style={inpStyle} placeholder="+34 600 000 000" />
+              </Label>
+              <button type="submit" className="btn-pf px-5 py-2.5 text-sm">Guardar cambios</button>
+            </form>
           </div>
+
+          {/* Gestión de clínica — solo vet_admin */}
+          {isVetAdmin && (
+            <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'var(--pf-border)' }}>
+              <h2 className="font-semibold text-sm mb-4 flex items-center gap-1.5" style={{ color: 'var(--pf-ink)' }}>
+                <Building2 size={14} strokeWidth={2} /> Gestión de clínica
+              </h2>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { href: '/vet/team',                  Icon: Users,      label: 'Equipo' },
+                  { href: '/vet/billing',               Icon: CreditCard, label: 'Facturación' },
+                  { href: '/vet/invitations',           Icon: Mail,       label: 'Invitaciones' },
+                  { href: '/vet/appointments/schedule', Icon: Calendar,   label: 'Horario' },
+                ].map(({ href, Icon, label }) => (
+                  <Link key={href} href={href}
+                    className="flex items-center gap-2.5 p-3 rounded-xl transition hover:bg-gray-50"
+                    style={{ color: 'var(--pf-ink)', textDecoration: 'none', border: '1px solid var(--pf-border)' }}>
+                    <Icon size={15} strokeWidth={1.75} style={{ color: 'var(--pf-coral)', flexShrink: 0 }} />
+                    <span className="text-sm font-medium">{label}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-      )}
 
-      {/* Seguridad */}
-      <div className="bg-white rounded-2xl border p-6 mb-4" style={{ borderColor: 'var(--pf-border)' }}>
-        <h2 className="font-semibold text-sm mb-4 flex items-center gap-1.5" style={{ color: 'var(--pf-ink)' }}>
-          <Shield size={14} strokeWidth={2} /> Seguridad
-        </h2>
-        <form action={changePassword} className="space-y-4">
-          <Label text="Contraseña actual">
-            <input name="current_password" type="password" required className={inp} style={inpStyle} />
-          </Label>
-          <Label text="Nueva contraseña">
-            <input name="new_password" type="password" required minLength={8} className={inp} style={inpStyle} placeholder="mínimo 8 caracteres" />
-          </Label>
-          <Label text="Confirmar contraseña">
-            <input name="confirm_password" type="password" required minLength={8} className={inp} style={inpStyle} />
-          </Label>
-          <button type="submit" className="btn-pf px-5 py-2.5 text-sm">Cambiar contraseña</button>
-        </form>
+        {/* Columna derecha: seguridad + logout */}
+        <div className="space-y-4">
+          <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'var(--pf-border)' }}>
+            <h2 className="font-semibold text-sm mb-4 flex items-center gap-1.5" style={{ color: 'var(--pf-ink)' }}>
+              <Shield size={14} strokeWidth={2} /> Seguridad
+            </h2>
+            <form action={changePassword} className="space-y-4">
+              <Label text="Contraseña actual">
+                <input name="current_password" type="password" required className={inp} style={inpStyle} />
+              </Label>
+              <Label text="Nueva contraseña">
+                <input name="new_password" type="password" required minLength={8} className={inp} style={inpStyle} placeholder="mínimo 8 caracteres" />
+              </Label>
+              <Label text="Confirmar contraseña">
+                <input name="confirm_password" type="password" required minLength={8} className={inp} style={inpStyle} />
+              </Label>
+              <button type="submit" className="btn-pf px-5 py-2.5 text-sm">Cambiar contraseña</button>
+            </form>
+          </div>
+
+          <LogoutButton variant="danger" />
+        </div>
+
       </div>
-
-      {/* Cerrar sesión */}
-      <LogoutButton variant="danger" />
-
     </div>
   )
 }

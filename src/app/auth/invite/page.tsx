@@ -73,7 +73,7 @@ function InviteForm() {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--pf-bg)' }}>
         <div className="text-center">
-          <div className="text-4xl mb-3 animate-bounce">🐾</div>
+          <div className="mb-3"><img src="/logo-icon.svg" width={48} height={48} alt="Petfhans" style={{ borderRadius: 12 }} /></div>
           <p className="text-sm" style={{ color: 'var(--pf-muted)' }}>Validando invitación...</p>
         </div>
       </div>
@@ -103,7 +103,7 @@ function InviteForm() {
           <div className="text-center mb-6">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-3"
               style={{ background: 'var(--pf-coral-soft)' }}>
-              <span className="text-2xl">🐾</span>
+              <img src="/logo-icon.svg" width={40} height={40} alt="Petfhans" />
             </div>
             <h1 className="text-xl font-bold" style={{ color: 'var(--pf-ink)' }}>
               {invitation.clinics?.name} te invita

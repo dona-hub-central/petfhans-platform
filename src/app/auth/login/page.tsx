@@ -88,7 +88,7 @@ function LoginForm() {
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-3"
               style={{ background: 'var(--pf-coral-soft)' }}>
-              <span className="text-2xl">🐾</span>
+              <img src="/logo-icon.svg" width={40} height={40} alt="Petfhans" />
             </div>
             <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Petfhans</h1>
             <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>Plataforma veterinaria</p>
