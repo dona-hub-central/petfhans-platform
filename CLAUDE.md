@@ -18,7 +18,7 @@
 
 ---
 
-## Skills — léelas según la tarea
+## Flujo de ramas y merge strategy
 
 Lee la skill correspondiente **antes de escribir cualquier código**.
 
