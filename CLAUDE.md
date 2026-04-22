@@ -20,60 +20,88 @@
 
 ## Skills — léelas según la tarea
 
-Lee la skill correspondiente **antes de escribir cualquier código**. No asumas — verifica en el archivo real.
+Lee la skill correspondiente **antes de escribir cualquier código**.
 
 ### Siempre que toques un archivo `.ts` o `.tsx`
 ```
 skills-ai/coding-best-practices/SKILL.md
 ```
-Cubre: TypeScript estricto, JSDoc, reglas ESLint activas, patrones Supabase seguros, checklist de commit.
+TypeScript estricto, JSDoc, reglas ESLint activas, patrones Supabase seguros, checklist de commit.
 
-### Siempre que crees o modifiques UI (componentes, páginas, layouts)
+### Siempre que crees o modifiques UI
 ```
 skills-ai/frontend-design-quality/SKILL.md
 skills-ai/frontend-ui-engineering/SKILL.md
 ```
-- **frontend-design-quality** → tokens `--pf-*`, patrón `tintMap`, clases utilitarias, plantillas de StatCard / lista / formulario / empty state, reglas de iconos.
-- **frontend-ui-engineering** → arquitectura de componentes, loading/error/empty states, responsive por portal, optimistic updates, anti-patrones de "AI aesthetic".
-- Checklist de accesibilidad: `skills-ai/frontend-ui-engineering/accessibility-checklist.md`
+- **frontend-design-quality** → tokens `--pf-*`, tintMap, clases utilitarias, StatCard / lista / formulario / empty state.
+- **frontend-ui-engineering** → arquitectura de componentes, loading/error/empty states, responsive, anti-patrones AI aesthetic.
+- Accesibilidad: `skills-ai/frontend-ui-engineering/accessibility-checklist.md`
 
-### Cuando manejes input de usuario, auth, uploads, o APIs externas
+### Cuando manejes input, auth, uploads o APIs externas
 ```
 skills-ai/security-and-hardening/SKILL.md
 ```
-Cubre: ownership checks en queries admin, validación con Zod, sanitizado XSS, env vars, rate limiting en rutas IA, errores sin exponer internos.
-- Checklist rápido: `skills-ai/security-and-hardening/security-checklist.md`
+Ownership checks, Zod validation, XSS, env vars, rate limiting en rutas IA, errores sin exponer internos.
+- Checklist: `skills-ai/security-and-hardening/security-checklist.md`
 
-### Cuando implementes queries a Supabase, imágenes, fuentes o fetches en bucle
+### Cuando implementes queries Supabase, imágenes, fuentes o fetches en bucle
 ```
 skills-ai/performance-optimization/SKILL.md
 ```
-Cubre: N+1 Supabase, `createSignedUrls` plural, `next/font`, `next/image`, paginación, cache headers en API routes.
-- Checklist rápido: `skills-ai/performance-optimization/performance-checklist.md`
+N+1 Supabase, `createSignedUrls` plural, `next/font`, `next/image`, paginación, cache headers.
+- Checklist: `skills-ai/performance-optimization/performance-checklist.md`
+
+### Cuando crees o modifiques API routes (`src/app/api/*`)
+```
+skills-ai/api-and-interface-design/SKILL.md
+```
+Plantilla de route, error shape consistente, tipos compartidos, paginación obligatoria, ownership scoping.
+
+### Cuando implementes algo que toca más de un archivo
+```
+skills-ai/incremental-implementation/SKILL.md
+```
+Slices verticales, scope discipline, feature flags, keep compilable between slices.
+
+### Cuando encuentres un bug o fallo inesperado
+```
+skills-ai/debugging-and-error-recovery/SKILL.md
+```
+Stop-the-line rule, PM2 logs, Supabase silent failures, root cause vs symptom.
+
+### Cuando vayas a hacer merge o revisar código
+```
+skills-ai/code-review-and-quality/SKILL.md
+```
+Five-axis review, severity labels, checklist de PR, dependency discipline.
+
+### Cuando implementes lógica nueva o corrijas un bug
+```
+skills-ai/test-driven-development/SKILL.md
+```
+Setup de Vitest, patrones de test para API routes y utilidades, Prove-It Pattern para bugs.
 
 ### Para contexto de producto y rutas
 ```
 PRODUCT.md
 ```
-Cubre: roles de usuario, rutas existentes, rutas que faltan, flujos críticos, modelo de negocio.
 
 ### Para contexto de diseño visual
 ```
 DESIGN_SYSTEM.md
 ```
-Cubre: paleta de colores, tipografía, componentes de referencia, reglas de motion.
 
 ---
 
 ## Reglas de trabajo obligatorias
 
-1. **Lee el archivo antes de editarlo.** Nunca asumas props, imports ni variables — verifícalos en el archivo real.
-2. **Verifica TypeScript después de cada tarea.** Corre `npx tsc --noEmit` antes de continuar con la siguiente.
-3. **No instales dependencias nuevas** sin confirmación explícita. Usa solo lo que está en `package.json`.
-4. **No modifiques el schema de Supabase** (tablas, columnas, políticas RLS) a menos que se indique explícitamente.
-5. **No toques archivos de API** (`src/app/api/*`) cuando la tarea es solo de UI, y viceversa.
-6. **Nunca hardcodees** colores hex, claves de API ni strings de configuración. Usa siempre `var(--pf-*)` y `process.env.*`.
-7. **Un commit al final**, no uno por archivo. El mensaje sigue el formato `type: descripción` (feat / fix / docs / refactor).
+1. **Lee el archivo antes de editarlo.** Nunca asumas props, imports ni variables.
+2. **Verifica TypeScript después de cada tarea.** `npx tsc --noEmit` antes de continuar.
+3. **No instales dependencias nuevas** sin confirmación explícita.
+4. **No modifiques el schema de Supabase** a menos que se indique explícitamente.
+5. **No toques archivos de API** cuando la tarea es solo de UI, y viceversa.
+6. **Nunca hardcodees** colores hex, claves de API ni strings de configuración.
+7. **Un commit al final**, formato `type: descripción` (feat / fix / docs / refactor).
 
 ---
 
@@ -83,14 +111,14 @@ Cubre: paleta de colores, tipografía, componentes de referencia, reglas de moti
 |---|---|---|
 | `createClient()` | `@/lib/supabase/client` | Client Components (`'use client'`) |
 | `createClient()` | `@/lib/supabase/server` | Server Components y `layout.tsx` |
-| `createAdminClient()` | `@/lib/supabase/admin` | API Routes y Server Components que necesitan bypassar RLS |
+| `createAdminClient()` | `@/lib/supabase/admin` | API Routes y Server Components que bypasan RLS |
 
 `createAdminClient()` usa `SUPABASE_SERVICE_ROLE_KEY`. **Nunca en archivos con `'use client'`.**
-Siempre añade `.eq('clinic_id', userClinicId)` al usar `createAdminClient()` para evitar IDOR.
+Siempre añade `.eq('clinic_id', userClinicId)` al usar `createAdminClient()`.
 
 ---
 
-## Estructura de directorios relevante
+## Estructura de directorios
 
 ```
 src/
@@ -99,32 +127,29 @@ src/
 │   ├── vet/            ← Panel veterinario (layout.tsx + páginas)
 │   ├── owner/          ← Portal dueño de mascota
 │   ├── auth/           ← Login, invite
-│   └── api/            ← API Routes (no tocar en tareas de UI)
+│   └── api/            ← API Routes
 ├── components/
-│   ├── admin/          ← AdminLayout y componentes del panel admin
+│   ├── admin/          ← AdminLayout
 │   ├── shared/         ← VetLayout, PetAvatar, PetSearch, PetFiles, BreedSelect
 │   └── owner/          ← OwnerPetView, BookAppointment, PetGallery
 └── lib/
     ├── supabase/       ← client.ts, server.ts, admin.ts
-    ├── metrics.ts      ← withMetrics() wrapper para API routes de IA
-    └── email.ts        ← sendInvitationEmail, sendWelcomeEmail (Resend)
+    ├── metrics.ts      ← withMetrics() wrapper
+    └── email.ts        ← Resend emails
 
 skills-ai/
-├── coding-best-practices/
-│   └── SKILL.md
-├── frontend-design-quality/
-│   └── SKILL.md
-├── frontend-ui-engineering/
-│   ├── SKILL.md
-│   └── accessibility-checklist.md
-├── security-and-hardening/
-│   ├── SKILL.md
-│   └── security-checklist.md
-└── performance-optimization/
-    ├── SKILL.md
-    └── performance-checklist.md
+├── coding-best-practices/SKILL.md
+├── frontend-design-quality/SKILL.md
+├── frontend-ui-engineering/SKILL.md + accessibility-checklist.md
+├── security-and-hardening/SKILL.md + security-checklist.md
+├── performance-optimization/SKILL.md + performance-checklist.md
+├── api-and-interface-design/SKILL.md      ← NEW
+├── incremental-implementation/SKILL.md    ← NEW
+├── debugging-and-error-recovery/SKILL.md  ← NEW
+├── code-review-and-quality/SKILL.md       ← NEW
+└── test-driven-development/SKILL.md       ← NEW
 
 prompts/
-├── navigation-fix.md              ← Correcciones de navegación y accesibilidad
-└── ui-navigation-improvement.md  ← Páginas de perfil, billing y breadcrumbs
+├── navigation-fix.md
+└── ui-navigation-improvement.md
 ```
