@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function GET(req: NextRequest) {
+  // L-15: requerir autenticación en el endpoint de slots
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
   const { searchParams } = req.nextUrl
   const clinic_id = searchParams.get('clinic_id')
   const date      = searchParams.get('date')
@@ -21,7 +27,7 @@ export async function GET(req: NextRequest) {
     .select('appointment_time').eq('clinic_id', clinic_id)
     .eq('appointment_date', date).in('status', ['pending', 'confirmed'])
 
-  const bookedTimes = new Set(booked?.map(b => b.appointment_time.slice(0, 5)) ?? [])
+  const bookedTimes = new Set(booked?.map((b: { appointment_time: string }) => b.appointment_time.slice(0, 5)) ?? [])
 
   // Generar slots
   const slots: string[] = []
