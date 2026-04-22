@@ -1,0 +1,7 @@
+# Archivos excluidos de merge hacia main
+# Al hacer merge de Develop → main, estos paths mantienen
+# la versión de main (nunca se sobreescriben con cambios de Develop).
+# Requiere: git config merge.ours.driver true  (una vez por máquina)
+
+prompts/**  merge=ours
+skills-ai/** merge=ours
