@@ -25,7 +25,17 @@ function VetAvatar({ name }: { name: string }) {
 }
 
 function OnlineSince({ since }: { since: number }) {
-  const mins = Math.floor((Date.now() - since) / 60000)
+  const [mins, setMins] = useState(0)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    setMins(Math.floor((Date.now() - since) / 60000))
+    intervalRef.current = setInterval(() => {
+      setMins(Math.floor((Date.now() - since) / 60000))
+    }, 60000)
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
+  }, [since])
+
   return (
     <span style={{ fontSize: 11, color: '#16a34a' }}>
       Disponible · {mins < 1 ? 'ahora mismo' : `hace ${mins} min`}
