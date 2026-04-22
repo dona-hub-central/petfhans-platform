@@ -18,7 +18,62 @@
 
 ---
 
-## Skills — léelas según la tarea
+## Flujo de ramas y merge strategy
+
+### Estructura de ramas
+
+```
+main     ← producción — solo código de app, skills curadas, sin tooling de dev
+Develop  ← desarrollo — código + skills experimentales + prompts + design files
+```
+
+### Regla de merge Develop → main
+
+El archivo `.gitattributes` en `main` define qué directorios conservan **siempre
+la versión de `main`** cuando se hace merge desde `Develop` (estrategia `merge=ours`).
+
+**Archivos que NUNCA fluyen de Develop a main automáticamente:**
+
+| Path | Razón |
+|------|-------|
+| `design_handoff_petfhans/**` | Archivos de diseño, solo necesarios en Develop |
+| `frontend.md` | Documento de auditoría, solo relevante en Develop |
+| `prompts/**` | Prompts de Claude Code específicos del workflow de Develop |
+
+**Archivos que SÍ fluyen pero requieren revisión en el PR:**
+
+| Path | Qué revisar |
+|------|-------------|
+| `skills-ai/**` | Verificar que solo llegan skills validadas, no experimentales |
+| `CLAUDE.md` | Comparar manualmente — Develop tiene más skills que main |
+| `src/**` | Código de aplicación — revisión normal de PR |
+| `supabase/migrations/**` | Siempre revisar antes de merge |
+
+### Setup requerido (una vez por developer y por runner de CI)
+
+```bash
+# Habilitar el driver merge=ours localmente
+git config --global merge.ours.driver true
+
+# En GitHub Actions (añadir al workflow antes del paso de merge):
+# - run: git config merge.ours.driver true
+```
+
+Sin este comando, `.gitattributes` existe pero la estrategia `merge=ours` no se aplica.
+
+### Limitaciones de este enfoque
+
+`merge=ours` en `.gitattributes` **no es una medida de seguridad** — es higiene de rama.
+Los archivos en `prompts/` y `design_handoff_petfhans/` no son vulnerables, son simplemente
+irrelevantes en producción. Para protección real:
+
+- Las **variables de entorno** no están en el repo (`.env.local` en `.gitignore`)
+- Los **secretos** se gestionan en GitHub Secrets y en el VPS
+- La **seguridad del código** la gestionan las skills de `skills-ai/security-*`
+
+---
+
+## Skills disponibles en main
 
 Lee la skill correspondiente **antes de escribir cualquier código**.
 
@@ -91,6 +146,10 @@ PRODUCT.md
 DESIGN_SYSTEM.md
 ```
 
+> **Nota:** En la rama `Develop` hay más skills disponibles (security-invitation-flow,
+> browser-testing-with-devtools, spec-driven-development, agents/security-auditor, etc.).
+> Consulta `CLAUDE.md` en `Develop` para el conjunto completo.
+
 ---
 
 ## Reglas de trabajo obligatorias
@@ -102,6 +161,7 @@ DESIGN_SYSTEM.md
 5. **No toques archivos de API** cuando la tarea es solo de UI, y viceversa.
 6. **Nunca hardcodees** colores hex, claves de API ni strings de configuración.
 7. **Un commit al final**, formato `type: descripción` (feat / fix / docs / refactor).
+8. **Merge Develop → main:** ejecutar `git config merge.ours.driver true` antes del merge.
 
 ---
 
@@ -137,19 +197,6 @@ src/
     ├── metrics.ts      ← withMetrics() wrapper
     └── email.ts        ← Resend emails
 
-skills-ai/
-├── coding-best-practices/SKILL.md
-├── frontend-design-quality/SKILL.md
-├── frontend-ui-engineering/SKILL.md + accessibility-checklist.md
-├── security-and-hardening/SKILL.md + security-checklist.md
-├── performance-optimization/SKILL.md + performance-checklist.md
-├── api-and-interface-design/SKILL.md      ← NEW
-├── incremental-implementation/SKILL.md    ← NEW
-├── debugging-and-error-recovery/SKILL.md  ← NEW
-├── code-review-and-quality/SKILL.md       ← NEW
-└── test-driven-development/SKILL.md       ← NEW
-
-prompts/
-├── navigation-fix.md
-└── ui-navigation-improvement.md
+skills-ai/            ← Skills curadas para producción
+  (ver Develop/skills-ai/ para el conjunto completo)
 ```
