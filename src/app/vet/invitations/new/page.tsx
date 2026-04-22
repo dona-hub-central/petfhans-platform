@@ -55,9 +55,8 @@ export default function NewInvitationPage() {
   ]
 
   return (
-    <div className="min-h-screen flex items-start justify-center p-8" style={{ background: 'var(--pf-bg)' }}>
-      <div className="w-full max-w-lg">
-        <div className="bg-white rounded-2xl border p-8" style={{ borderColor: 'var(--pf-border)' }}>
+    <div className="max-w-lg">
+      <div className="bg-white rounded-2xl border p-8" style={{ borderColor: 'var(--pf-border)' }}>
           <a href="/vet/invitations" className="text-xs mb-6 inline-block" style={{ color: 'var(--pf-muted)' }}>← Invitaciones</a>
           <h1 className="text-xl font-bold mb-1" style={{ color: 'var(--pf-ink)' }}>Nueva invitación</h1>
           <p className="text-sm mb-6" style={{ color: 'var(--pf-muted)' }}>El invitado recibirá un link de acceso</p>
@@ -118,7 +117,6 @@ export default function NewInvitationPage() {
               </button>
             </div>
           </form>
-        </div>
       </div>
     </div>
   )

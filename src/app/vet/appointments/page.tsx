@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
-import VetLayout from '@/components/shared/VetLayout'
+
 import AppointmentsCalendar from './AppointmentsCalendar'
 import Link from 'next/link'
 import { Settings } from 'lucide-react'
@@ -12,7 +12,7 @@ export default async function AppointmentsPage() {
   if (!user) redirect('/auth/login')
 
   const { data: profile } = await supabase.from('profiles')
-    .select('*, clinics(name)').eq('user_id', user.id).single()
+    .select('*').eq('user_id', user.id).single()
 
   const admin = createAdminClient()
 
@@ -38,7 +38,7 @@ export default async function AppointmentsPage() {
     .limit(20)
 
   return (
-    <VetLayout clinicName={(profile as any)?.clinics?.name ?? ''} userName={profile?.full_name ?? ''}>
+    <>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Citas</h1>
@@ -57,6 +57,6 @@ export default async function AppointmentsPage() {
         year={now.getFullYear()}
         month={now.getMonth()}
       />
-    </VetLayout>
+    </>
   )
 }

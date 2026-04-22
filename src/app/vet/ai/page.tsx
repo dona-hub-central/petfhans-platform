@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import VetLayout from '@/components/shared/VetLayout'
+
 import PetSearch from '@/components/shared/PetSearch'
 import { Sparkles } from 'lucide-react'
 
@@ -14,8 +14,6 @@ export default function AIPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [clinicName, setClinicName] = useState('')
-  const [userName, setUserName] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -24,9 +22,7 @@ export default function AIPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
       const { data: profile } = await supabase.from('profiles')
-        .select('*, clinics(name)').eq('user_id', user.id).single()
-      setClinicName((profile as any)?.clinics?.name ?? '')
-      setUserName(profile?.full_name ?? '')
+        .select('clinic_id').eq('user_id', user.id).single()
       const { data } = await supabase.from('pets').select('id, name, species, breed')
         .eq('clinic_id', profile?.clinic_id).eq('is_active', true).order('name')
       setPets(data ?? [])
@@ -60,7 +56,7 @@ export default function AIPage() {
   }
 
   return (
-    <VetLayout clinicName={clinicName} userName={userName}>
+    <>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 style={{ fontFamily: 'var(--pf-font-display)', fontWeight: 700, fontSize: 24, color: 'var(--pf-ink)', margin: 0 }}>IA Clínica</h1>
@@ -146,6 +142,6 @@ export default function AIPage() {
           </button>
         </div>
       </div>
-    </VetLayout>
+    </>
   )
 }

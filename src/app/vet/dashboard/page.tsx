@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import VetLayout from '@/components/shared/VetLayout'
+
 import { PawPrint, ClipboardCheck, Mail, Plus, ClipboardList, Sparkles, type LucideIcon } from 'lucide-react'
 
 export const metadata = { title: 'Dashboard · Petfhans', description: 'Panel de gestión de tu clínica veterinaria.' }
@@ -13,7 +13,7 @@ export default async function VetDashboard() {
   if (!user) redirect('/auth/login')
 
   const { data: profile } = await supabase.from('profiles')
-    .select('*, clinics(name)').eq('user_id', user.id).single()
+    .select('*').eq('user_id', user.id).single()
 
   const admin = createAdminClient()
   const { count: petCount } = await admin.from('pets')
@@ -39,13 +39,11 @@ export default async function VetDashboard() {
     .is('used_at', null)
     .gt('expires_at', new Date().toISOString())
 
-  const clinicName = (profile as any)?.clinics?.name ?? ''
-  const userName = profile?.full_name ?? ''
-  const firstName = userName.split(' ')[0]
+  const firstName = (profile?.full_name ?? '').split(' ')[0]
   const today = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
 
   return (
-    <VetLayout clinicName={clinicName} userName={userName}>
+    <>
       <style>{`
         @keyframes fadeUp { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:none } }
         .qa-card { background:var(--pf-white); border:0.5px solid var(--pf-border); border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:10px; text-decoration:none; transition:border-color 0.2s, box-shadow 0.2s; }
@@ -104,7 +102,7 @@ export default async function VetDashboard() {
           </div>
         )}
       </section>
-    </VetLayout>
+    </>
   )
 }
 

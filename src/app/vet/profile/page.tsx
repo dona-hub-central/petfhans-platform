@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
-import VetLayout from '@/components/shared/VetLayout'
+
 
 export const metadata = { title: 'Mi perfil · Petfhans' }
 
@@ -17,7 +17,7 @@ export default async function VetProfilePage({
   if (!user) redirect('/auth/login')
 
   const { data: profile } = await supabase.from('profiles')
-    .select('*, clinics(name)').eq('user_id', user.id).single()
+    .select('*').eq('user_id', user.id).single()
 
   async function saveProfile(formData: FormData) {
     'use server'
@@ -49,15 +49,11 @@ export default async function VetProfilePage({
     redirect('/vet/profile?success=password')
   }
 
-  const clinicName = (profile as { clinics?: { name: string } | null } | null)?.clinics?.name ?? ''
-  const userName   = profile?.full_name ?? ''
-
   const inp = 'w-full rounded-xl border px-3 py-2.5 text-sm outline-none'
   const inpStyle = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }
 
   return (
-    <VetLayout clinicName={clinicName} userName={userName}>
-      <div className="max-w-xl">
+    <div className="max-w-xl">
         <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--pf-ink)' }}>Mi perfil</h1>
 
         {success === 'profile'  && <Alert ok msg="Perfil actualizado correctamente." />}
@@ -102,8 +98,7 @@ export default async function VetProfilePage({
             <button type="submit" className="btn-pf px-5 py-2.5 text-sm">Cambiar contraseña</button>
           </form>
         </div>
-      </div>
-    </VetLayout>
+    </div>
   )
 }
 

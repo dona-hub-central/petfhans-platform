@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import VetLayout from '@/components/shared/VetLayout'
+
 import { Stethoscope, FileText, Pill, Syringe, StickyNote } from 'lucide-react'
 
 const VISIT_TYPE: Record<string, { label: string; color: string }> = {
@@ -25,7 +25,7 @@ export default async function RecordDetailPage({ params }: { params: Promise<{ i
   if (!user) redirect('/auth/login')
 
   const { data: profile } = await supabase.from('profiles')
-    .select('*, clinics(name)').eq('user_id', user.id).single()
+    .select('*').eq('user_id', user.id).single()
 
   const admin = createAdminClient()
   const { data: r } = await admin.from('medical_records')
@@ -49,7 +49,7 @@ export default async function RecordDetailPage({ params }: { params: Promise<{ i
   ]
 
   return (
-    <VetLayout clinicName={(profile as any)?.clinics?.name ?? ''} userName={profile?.full_name ?? ''}>
+    <>
 
       {/* Nav + acciones */}
       <div className="flex items-center justify-between mb-6">
@@ -221,6 +221,6 @@ export default async function RecordDetailPage({ params }: { params: Promise<{ i
         )}
 
       </div>
-    </VetLayout>
+    </>
   )
 }

@@ -61,9 +61,8 @@ export default function NewPetPage() {
   ]
 
   return (
-    <div className="min-h-screen flex items-start justify-center p-8" style={{ background: 'var(--pf-bg)' }}>
-      <div className="w-full max-w-2xl">
-        <div className="bg-white rounded-2xl border p-8" style={{ borderColor: 'var(--pf-border)' }}>
+    <div className="max-w-2xl">
+      <div className="bg-white rounded-2xl border p-8" style={{ borderColor: 'var(--pf-border)' }}>
           <Link href="/vet/pets" className="text-xs mb-6 inline-block" style={{ color: 'var(--pf-muted)' }}>← Mascotas</Link>
           <h1 className="text-xl font-bold mb-1" style={{ color: 'var(--pf-ink)' }}>Nueva mascota</h1>
           <p className="text-sm mb-6" style={{ color: 'var(--pf-muted)' }}>Registra un nuevo paciente</p>
@@ -178,7 +177,6 @@ export default function NewPetPage() {
               </button>
             </div>
           </form>
-        </div>
       </div>
     </div>
   )
