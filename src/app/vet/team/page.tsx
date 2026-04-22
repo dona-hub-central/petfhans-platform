@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import VetLayout from '@/components/shared/VetLayout'
+
 import { Users } from 'lucide-react'
 
 const roleLabel: Record<string, { label: string; color: string; bg: string }> = {
@@ -16,7 +16,7 @@ export default async function TeamPage() {
   if (!user) redirect('/auth/login')
 
   const { data: profile } = await supabase.from('profiles')
-    .select('*, clinics(name)').eq('user_id', user.id).single()
+    .select('*').eq('user_id', user.id).single()
 
   const admin = createAdminClient()
   const { data: team } = await admin.from('profiles')
@@ -26,7 +26,7 @@ export default async function TeamPage() {
     .order('created_at')
 
   return (
-    <VetLayout clinicName={(profile as any)?.clinics?.name ?? ''} userName={profile?.full_name ?? ''}>
+    <>
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Equipo</h1>
@@ -74,6 +74,6 @@ export default async function TeamPage() {
           )}
         </div>
       </div>
-    </VetLayout>
+    </>
   )
 }

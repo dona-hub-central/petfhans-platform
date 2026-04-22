@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import VetLayout from '@/components/shared/VetLayout'
+
 import { InvitationCard } from '@/components/vet/InvitationCard'
 import { Mail } from 'lucide-react'
 
@@ -12,7 +12,7 @@ export default async function InvitationsPage() {
   if (!user) redirect('/auth/login')
 
   const { data: profile } = await supabase.from('profiles')
-    .select('*, clinics(name)').eq('user_id', user.id).single()
+    .select('*').eq('user_id', user.id).single()
 
   const admin = createAdminClient()
   const { data: invitations } = await admin.from('invitations')
@@ -27,7 +27,7 @@ export default async function InvitationsPage() {
   const appUrl = 'https://clinicavet.petfhans.com'
 
   return (
-    <VetLayout clinicName={(profile as any)?.clinics?.name ?? ''} userName={profile?.full_name ?? ''}>
+    <>
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Invitaciones</h1>
@@ -83,7 +83,7 @@ export default async function InvitationsPage() {
           </Link>
         </div>
       )}
-    </VetLayout>
+    </>
   )
 }
 

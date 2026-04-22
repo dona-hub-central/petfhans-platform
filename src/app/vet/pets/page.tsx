@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import VetLayout from '@/components/shared/VetLayout'
+
 import { PawPrint, User, XCircle, AlertTriangle } from 'lucide-react'
 
 const speciesLabel: Record<string, string> = {
@@ -15,7 +15,7 @@ export default async function PetsPage() {
   if (!user) redirect('/auth/login')
 
   const { data: profile } = await supabase.from('profiles')
-    .select('*, clinics(name)').eq('user_id', user.id).single()
+    .select('*').eq('user_id', user.id).single()
 
   const admin = createAdminClient()
   const [
@@ -44,7 +44,7 @@ export default async function PetsPage() {
   const nearLimit = maxPats > 0 && count / maxPats >= 0.8 && !atLimit
 
   return (
-    <VetLayout clinicName={(profile as { clinics?: { name: string } | null } | null)?.clinics?.name ?? ''} userName={profile?.full_name ?? ''}>
+    <>
 
       {atLimit && (
         <div className="rounded-xl p-4 mb-4 flex items-center gap-3"
@@ -142,7 +142,7 @@ export default async function PetsPage() {
           </Link>
         </div>
       )}
-    </VetLayout>
+    </>
   )
 }
 

@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import VetLayout from '@/components/shared/VetLayout'
+
 import PetFiles from '@/components/shared/PetFiles'
 import PetAvatar from '@/components/shared/PetAvatar'
 import { CheckCircle } from 'lucide-react'
@@ -24,7 +24,7 @@ export default async function PetDetailPage({
   if (!user) redirect('/auth/login')
 
   const { data: profile } = await supabase.from('profiles')
-    .select('*, clinics(name)').eq('user_id', user.id).single()
+    .select('*').eq('user_id', user.id).single()
 
   const admin = createAdminClient()
   const { data: pet } = await admin.from('pets')
@@ -46,7 +46,7 @@ export default async function PetDetailPage({
   const age = pet.birth_date ? getAge(pet.birth_date) : null
 
   return (
-    <VetLayout clinicName={(profile as any)?.clinics?.name ?? ''} userName={profile?.full_name ?? ''}>
+    <>
       {created && (
         <div className="rounded-xl p-4 mb-6 flex items-center gap-3"
           style={{ background: '#edfaf1', border: '1px solid #b2f0c9' }}>
@@ -198,7 +198,7 @@ export default async function PetDetailPage({
           </div>
         </div>
       </div>
-    </VetLayout>
+    </>
   )
 }
 

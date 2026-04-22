@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import VetLayout from '@/components/shared/VetLayout'
+
 import PetSearch from '@/components/shared/PetSearch'
 import { ClipboardList, Stethoscope, FileText, Pill, Syringe, StickyNote, type LucideIcon } from 'lucide-react'
 
@@ -70,8 +70,6 @@ function NewRecordForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [pets, setPets] = useState<any[]>([])
-  const [clinicName, setClinicName] = useState('')
-  const [userName, setUserName] = useState('')
 
   const [form, setForm] = useState({
     pet_id:     petId ?? '',
@@ -95,12 +93,10 @@ function NewRecordForm() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
       const { data: profile } = await supabase.from('profiles')
-        .select('id, clinic_id, full_name, clinics(name)').eq('user_id', user.id).single()
+        .select('id, clinic_id').eq('user_id', user.id).single()
       const { data } = await supabase.from('pets')
         .select('id, name, species, breed, weight').eq('clinic_id', profile?.clinic_id).eq('is_active', true)
       setPets(data ?? [])
-      setClinicName((profile as any)?.clinics?.name ?? '')
-      setUserName(profile?.full_name ?? '')
 
       // Pre-cargar peso si hay mascota seleccionada
       if (petId && data) {
@@ -160,8 +156,7 @@ function NewRecordForm() {
   const selectedPet = pets.find(p => p.id === form.pet_id)
 
   return (
-    <VetLayout clinicName={clinicName} userName={userName}>
-      <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit}>
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -444,7 +439,6 @@ function NewRecordForm() {
 
         </div>
       </form>
-    </VetLayout>
   )
 }
 

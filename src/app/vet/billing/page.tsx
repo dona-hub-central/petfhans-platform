@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
-import VetLayout from '@/components/shared/VetLayout'
+
 import { XCircle, AlertTriangle } from 'lucide-react'
 
 export const metadata = { title: 'Facturación · Petfhans' }
@@ -24,7 +24,7 @@ export default async function BillingPage() {
   if (!user) redirect('/auth/login')
 
   const { data: profile } = await supabase.from('profiles')
-    .select('*, clinics(name)').eq('user_id', user.id).single()
+    .select('*').eq('user_id', user.id).single()
 
   const admin = createAdminClient()
   const { data: clinic } = await admin.from('clinics')
@@ -37,9 +37,6 @@ export default async function BillingPage() {
     .eq('clinic_id', profile?.clinic_id)
     .eq('is_active', true)
 
-  const clinicName = (profile as { clinics?: { name: string } | null } | null)?.clinics?.name ?? ''
-  const userName   = profile?.full_name ?? ''
-
   const count   = petCount ?? 0
   const maxPats = (clinic as { max_patients?: number } | null)?.max_patients ?? 10
   const pct     = maxPats > 0 ? Math.min((count / maxPats) * 100, 100) : 0
@@ -50,8 +47,7 @@ export default async function BillingPage() {
   const barColor = pct >= 100 ? '#dc2626' : pct >= 80 ? '#d97706' : 'var(--pf-coral)'
 
   return (
-    <VetLayout clinicName={clinicName} userName={userName}>
-      <div className="max-w-2xl">
+    <div className="max-w-2xl">
         <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--pf-ink)' }}>Facturación y plan</h1>
 
         {/* Alert: at limit */}
@@ -134,7 +130,6 @@ export default async function BillingPage() {
             </p>
           )}
         </div>
-      </div>
-    </VetLayout>
+    </div>
   )
 }
