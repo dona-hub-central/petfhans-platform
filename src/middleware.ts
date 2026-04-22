@@ -55,9 +55,12 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse
   }
 
-  // Redirigir a login si no autenticado
+  // Redirigir a login si no autenticado — preservar URL de destino en ?next=
   if (!user) {
     const loginUrl = new URL('/auth/login', request.url)
+    if (!path.startsWith('/auth')) {
+      loginUrl.searchParams.set('next', path)
+    }
     return NextResponse.redirect(loginUrl)
   }
 

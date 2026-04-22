@@ -1,15 +1,49 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-export default function LoginPage() {
+const ROLE_REDIRECTS: Record<string, string> = {
+  superadmin:   '/admin',
+  vet_admin:    '/vet/dashboard',
+  veterinarian: '/vet/dashboard',
+  pet_owner:    '/owner/dashboard',
+}
+
+// Validates ?next= is a safe relative path (prevents open redirect)
+function safeNext(next: string | null): string | null {
+  if (!next) return null
+  if (next.startsWith('/') && !next.startsWith('//') && !next.startsWith('/auth')) return next
+  return null
+}
+
+function LoginForm() {
   const router = useRouter()
-  const [email, setEmail] = useState('')
+  const searchParams = useSearchParams()
+  const next = safeNext(searchParams.get('next'))
+
+  const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [loading, setLoading]   = useState(false)
+  const [checking, setChecking] = useState(true)
+  const [error, setError]       = useState('')
+
+  // Already authenticated → redirect immediately
+  useEffect(() => {
+    const check = async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles').select('role').eq('user_id', user.id).single()
+        router.replace(next ?? ROLE_REDIRECTS[profile?.role ?? ''] ?? '/vet/dashboard')
+      } else {
+        setChecking(false)
+      }
+    }
+    check()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -17,35 +51,39 @@ export default function LoginPage() {
     setError('')
 
     const supabase = createClient()
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    const { data, error: authError } = await supabase.auth.signInWithPassword({
+      email:    email.trim().toLowerCase(),
+      password,
+    })
 
-    if (error) {
+    if (authError) {
       setError('Email o contraseña incorrectos')
       setLoading(false)
       return
     }
 
     const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('user_id', data.user.id)
-      .single()
+      .from('profiles').select('role').eq('user_id', data.user.id).single()
 
-    const roleRedirects: Record<string, string> = {
-      superadmin:   '/admin',
-      vet_admin:    '/vet/dashboard',
-      veterinarian: '/vet/dashboard',
-      pet_owner:    '/owner/dashboard',
-    }
+    router.push(next ?? ROLE_REDIRECTS[profile?.role ?? ''] ?? '/vet/dashboard')
+  }
 
-    router.push(roleRedirects[profile?.role ?? ''] ?? '/vet/dashboard')
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--pf-bg)' }}>
+        <div className="text-center">
+          <div className="text-4xl mb-3">🐾</div>
+          <p className="text-sm" style={{ color: 'var(--pf-muted)' }}>Cargando...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--pf-bg)' }}>
       <div className="w-full max-w-md">
-        {/* Card */}
         <div className="bg-white rounded-2xl shadow-sm border p-8" style={{ borderColor: 'var(--pf-border)' }}>
+
           {/* Logo */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-3"
@@ -66,6 +104,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
+                autoComplete="email"
                 className="w-full px-4 py-3 rounded-lg border text-sm transition outline-none"
                 style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }}
                 onFocus={e => e.target.style.borderColor = 'var(--pf-coral)'}
@@ -83,6 +122,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
+                autoComplete="current-password"
                 className="w-full px-4 py-3 rounded-lg border text-sm transition outline-none"
                 style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }}
                 onFocus={e => e.target.style.borderColor = 'var(--pf-coral)'}
@@ -97,11 +137,7 @@ export default function LoginPage() {
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-pf w-full py-3 text-sm mt-2"
-            >
+            <button type="submit" disabled={loading} className="btn-pf w-full py-3 text-sm mt-2">
               {loading ? 'Ingresando...' : 'Ingresar'}
             </button>
           </form>
@@ -116,4 +152,8 @@ export default function LoginPage() {
       </div>
     </div>
   )
+}
+
+export default function LoginPage() {
+  return <Suspense><LoginForm /></Suspense>
 }
