@@ -1,7 +1,55 @@
-# Archivos excluidos de merge hacia main
-# Al hacer merge de Develop → main, estos paths mantienen
-# la versión de main (nunca se sobreescriben con cambios de Develop).
-# Requiere: git config merge.ours.driver true  (una vez por máquina)
+# ─────────────────────────────────────────────────────────────────────────────
+# MERGE STRATEGY — Develop → main
+# ─────────────────────────────────────────────────────────────────────────────
+# Los paths marcados con merge=ours hacen que git conserve SIEMPRE la versión
+# de main cuando se hace merge desde Develop. Esto evita que archivos de
+# desarrollo, diseño o tooling de IA contaminen la rama de producción.
+#
+# REQUISITO: cada developer y el runner de CI deben ejecutar una vez:
+#   git config --global merge.ours.driver true
+#
+# Para el runner de GitHub Actions, añadir al workflow antes del merge:
+#   git config merge.ours.driver true
+# ─────────────────────────────────────────────────────────────────────────────
 
-prompts/**  merge=ours
-skills-ai/** merge=ours
+# Archivos de handoff de diseño — solo necesarios en Develop
+design_handoff_petfhans/**  merge=ours
+
+# Documentos de auditoría y análisis — solo relevantes en Develop
+frontend.md                 merge=ours
+
+# Prompts de Claude Code — específicos del workflow de Develop
+# main tiene sus propios prompts para producción
+prompts/**                  merge=ours
+
+# ─────────────────────────────────────────────────────────────────────────────
+# NOTA sobre skills-ai/ y CLAUDE.md
+# ─────────────────────────────────────────────────────────────────────────────
+# Estos NO están marcados como merge=ours porque sí deben fluir de Develop
+# a main, pero requieren revisión manual en el PR para decidir qué cambios
+# aplican a producción. Ver sección "Flujo Develop → main" en CLAUDE.md.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Normalización de líneas (estándar)
+# ─────────────────────────────────────────────────────────────────────────────
+* text=auto
+*.ts   text eol=lf
+*.tsx  text eol=lf
+*.js   text eol=lf
+*.mjs  text eol=lf
+*.css  text eol=lf
+*.json text eol=lf
+*.md   text eol=lf
+*.sql  text eol=lf
+*.sh   text eol=lf
+
+# Binarios — no diff ni merge
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.webp binary
+*.svg  binary
+*.ico  binary
+*.woff binary
+*.woff2 binary
