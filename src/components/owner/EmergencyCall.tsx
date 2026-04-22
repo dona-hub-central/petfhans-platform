@@ -68,7 +68,8 @@ export default function EmergencyCall({
       const state = ch.presenceState<AvailableVet>()
       const available = Object.values(state)
         .flat()
-        .filter((v): v is AvailableVet => Boolean((v as any).vet_id))
+        .filter(v => Boolean((v as any).vet_id))
+        .map(v => ({ vet_id: (v as any).vet_id, vet_name: (v as any).vet_name, since: (v as any).since } as AvailableVet))
       setVets(available)
     }).subscribe()
 
