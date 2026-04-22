@@ -1,10 +1,35 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Home, Calendar, PawPrint, ClipboardList, Mail, Sparkles, Users, CreditCard } from 'lucide-react'
+import { Home, Calendar, PawPrint, ClipboardList, Mail, Sparkles, Users, CreditCard, LogOut } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 import AvailabilityToggle from '@/components/vet/AvailabilityToggle'
+
+function LogoutSidebarButton() {
+  const router = useRouter()
+  const logout = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/auth/login')
+  }
+  return (
+    <button onClick={logout} style={{
+      width: '100%', display: 'flex', alignItems: 'center', gap: 8,
+      padding: '7px 10px', borderRadius: 8, border: 'none',
+      background: 'transparent', color: 'var(--pf-muted)',
+      fontSize: 12, fontFamily: 'var(--pf-font-body)', cursor: 'pointer',
+      transition: 'background 0.15s, color 0.15s',
+    }}
+    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#fff1f0'; (e.currentTarget as HTMLElement).style.color = '#dc2626' }}
+    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--pf-muted)' }}
+    >
+      <LogOut size={13} strokeWidth={2} />
+      Cerrar sesión
+    </button>
+  )
+}
 
 const nav = [
   { href: '/vet/dashboard',    Icon: Home,          label: 'Inicio' },
@@ -21,10 +46,14 @@ export default function VetLayout({
   children,
   clinicName,
   userName,
+  avatarUrl,
+  role,
 }: {
   children: React.ReactNode
   clinicName: string
   userName: string
+  avatarUrl?: string | null
+  role?: string | null
 }) {
   const path = usePathname()
   const [usage, setUsage] = useState<{ count: number; max: number } | null>(null)
@@ -113,20 +142,33 @@ export default function VetLayout({
         </div>
 
         {/* User */}
-        <div style={{ borderTop: '0.5px solid var(--pf-border)', padding: '14px 16px' }}>
-          <Link href="/vet/profile" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+        <div style={{ borderTop: '0.5px solid var(--pf-border)', padding: '12px 14px' }}>
+          <Link href="/vet/profile" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', marginBottom: 8 }}>
             <div style={{
-              width: 28, height: 28, borderRadius: '50%',
-              background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)',
+              width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
+              background: avatarUrl ? 'transparent' : 'var(--pf-coral-soft)',
+              color: 'var(--pf-coral)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'var(--pf-font-body)', fontSize: 12, fontWeight: 700, flexShrink: 0,
+              fontFamily: 'var(--pf-font-body)', fontSize: 13, fontWeight: 700,
+              overflow: 'hidden', border: '1.5px solid var(--pf-border)',
             }}>
-              {userName[0]}
+              {avatarUrl
+                ? <img src={avatarUrl} alt={userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : userName[0]
+              }
             </div>
-            <span style={{ fontFamily: 'var(--pf-font-body)', fontSize: 13, color: 'var(--pf-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 140 }}>
-              {userName}
-            </span>
+            <div style={{ minWidth: 0 }}>
+              <span style={{ fontFamily: 'var(--pf-font-body)', fontSize: 13, fontWeight: 500, color: 'var(--pf-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 130, display: 'block' }}>
+                {userName}
+              </span>
+              {role && (
+                <span style={{ fontFamily: 'var(--pf-font-body)', fontSize: 10, color: 'var(--pf-muted)' }}>
+                  {role === 'vet_admin' ? 'Admin de clínica' : role === 'veterinarian' ? 'Veterinario/a' : role}
+                </span>
+              )}
+            </div>
           </Link>
+          <LogoutSidebarButton />
         </div>
       </aside>
 
