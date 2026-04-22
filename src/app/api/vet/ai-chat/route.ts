@@ -11,6 +11,11 @@ async function handler(req: NextRequest): Promise<NextResponse> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
+  // C-4: obtener clinic_id del perfil antes de cualquier query de datos
+  const { data: profile } = await supabase.from('profiles')
+    .select('clinic_id').eq('user_id', user.id).single()
+  if (!profile?.clinic_id) return NextResponse.json({ error: 'Sin clínica asignada' }, { status: 403 })
+
   const { message, pet_id, history = [] } = await req.json()
   const admin = createAdminClient()
 
@@ -24,15 +29,19 @@ async function handler(req: NextRequest): Promise<NextResponse> {
 
   let petContext = ''
   if (pet_id) {
+    // C-4: scope explícito por clinic_id — impide IDOR cross-clínica
     const { data: pet } = await admin.from('pets')
       .select('*, profiles!pets_owner_id_fkey(full_name)')
-      .eq('id', pet_id).single()
+      .eq('id', pet_id)
+      .eq('clinic_id', profile.clinic_id)
+      .single()
+
+    if (!pet) return NextResponse.json({ error: 'Mascota no encontrada' }, { status: 404 })
 
     const { data: records } = await admin.from('medical_records')
       .select('*').eq('pet_id', pet_id).order('visit_date', { ascending: false }).limit(10)
 
-    if (pet) {
-      petContext = `
+    petContext = `
 PACIENTE ACTIVO:
 - Nombre: ${pet.name} | Especie: ${pet.species} | Raza: ${pet.breed ?? 'N/D'}
 - Edad: ${pet.birth_date ? calcAge(pet.birth_date) : 'N/D'} | Peso: ${pet.weight ? `${pet.weight} kg` : 'N/D'}
@@ -42,7 +51,6 @@ ${pet.notes ? `- Notas: ${pet.notes}` : ''}
 
 HISTORIAL (${records?.length ?? 0} consultas):
 ${records?.map(r => `[${r.visit_date}] ${r.reason} → Dx: ${r.diagnosis ?? 'N/D'} · Tto: ${r.treatment ?? 'N/D'}`).join('\n') ?? 'Sin consultas'}`
-    }
   }
 
   const systemPrompt = (agent.system_prompt || 'Eres Dr. Petfhans, veterinario experto.') +
