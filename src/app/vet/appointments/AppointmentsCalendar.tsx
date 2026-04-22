@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { PawPrint, Calendar, Clock, ClipboardList } from 'lucide-react'
+import { PawPrint, Calendar, Clock, ClipboardList, Video } from 'lucide-react'
+import { VetVideoJoinButton } from '@/components/owner/VideoCallRoom'
 
 const DAYS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
@@ -15,6 +16,7 @@ const STATUS_CFG = {
 type Appt = {
   id: string; appointment_date: string; appointment_time: string
   reason: string; status: string; duration: number; notes: string | null; cancellation_reason: string | null
+  is_virtual?: boolean
   pets: { name: string; species: string } | null
   profiles: { full_name: string; email: string } | null
 }
@@ -88,6 +90,11 @@ export default function AppointmentsCalendar({
                 <div className="flex items-center gap-2 mb-1">
                   <PawPrint size={14} strokeWidth={1.75} style={{ color: 'var(--pf-coral)', flexShrink: 0 }} />
                   <span className="text-sm font-semibold" style={{ color: 'var(--pf-ink)' }}>{a.pets?.name}</span>
+                  {a.is_virtual && (
+                    <span style={{ display:'inline-flex', alignItems:'center', gap:3, fontSize:10, fontWeight:700, padding:'1px 6px', borderRadius:20, background:'#ede9fe', color:'#6d28d9' }}>
+                      <Video size={9} strokeWidth={2.5} /> Video
+                    </span>
+                  )}
                   <span className="text-xs ml-auto" style={{ color: 'var(--pf-muted)' }}>
                     {a.appointment_time.slice(0,5)}
                   </span>
@@ -123,12 +130,19 @@ export default function AppointmentsCalendar({
                 <p className="text-xs flex items-center gap-1.5"><Calendar size={12} strokeWidth={2} style={{ color: 'var(--pf-muted)', flexShrink: 0 }} /> {new Date(selectedAppt.appointment_date + 'T12:00').toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' })}</p>
                 <p className="text-xs flex items-center gap-1.5"><Clock size={12} strokeWidth={2} style={{ color: 'var(--pf-muted)', flexShrink: 0 }} /> {selectedAppt.appointment_time.slice(0,5)}</p>
                 <p className="text-xs flex items-center gap-1.5"><ClipboardList size={12} strokeWidth={2} style={{ color: 'var(--pf-muted)', flexShrink: 0 }} /> {selectedAppt.reason}</p>
+                <p className="text-xs flex items-center gap-1.5">
+                  <Video size={12} strokeWidth={2} style={{ color: 'var(--pf-muted)', flexShrink: 0 }} />
+                  {selectedAppt.is_virtual ? 'Videollamada' : 'Presencial'}
+                </p>
               </div>
-              <div>
+              <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold px-2.5 py-1 rounded-full"
                   style={{ background: STATUS_CFG[selectedAppt.status as keyof typeof STATUS_CFG]?.bg, color: STATUS_CFG[selectedAppt.status as keyof typeof STATUS_CFG]?.color }}>
                   {STATUS_CFG[selectedAppt.status as keyof typeof STATUS_CFG]?.label}
                 </span>
+                {selectedAppt.is_virtual && selectedAppt.status === 'confirmed' && (
+                  <VetVideoJoinButton appointmentId={selectedAppt.id} petName={selectedAppt.pets?.name ?? ''} />
+                )}
               </div>
 
               {/* Acciones según estado */}

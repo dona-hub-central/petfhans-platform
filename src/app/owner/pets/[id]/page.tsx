@@ -24,6 +24,13 @@ export default async function OwnerPetPage({ params }: { params: Promise<{ id: s
     .select('id, file_name, file_type, file_size, mime_type, notes, created_at, file_path')
     .eq('pet_id', id).order('created_at', { ascending: false })
 
+  // Citas de la mascota (próximas y recientes)
+  const { data: appointments } = await admin.from('appointments')
+    .select('id, appointment_date, appointment_time, reason, status, is_virtual, notes, cancellation_reason')
+    .eq('pet_id', id)
+    .order('appointment_date', { ascending: false })
+    .limit(20)
+
   // Separar fotos de docs
   const photoFiles = (petFiles ?? []).filter(f => f.file_type === 'photo' || f.mime_type?.startsWith('image/'))
   const docFiles   = (petFiles ?? []).filter(f => f.file_type !== 'photo' && !f.mime_type?.startsWith('image/'))
@@ -42,6 +49,7 @@ export default async function OwnerPetPage({ params }: { params: Promise<{ id: s
       records={records ?? []}
       photos={photosWithUrls}
       docs={docFiles}
+      appointments={appointments ?? []}
       clinicName={clinicName}
       clinicId={pet.clinic_id}
     />

@@ -5,6 +5,10 @@ import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
+function jitsiRoom(appointmentId: string) {
+  return `petfhans-${appointmentId.replace(/-/g, '').slice(0, 16)}`
+}
+
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
@@ -19,6 +23,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     .eq('id', id).single()
 
   if (!appt) return NextResponse.json({ error: 'Cita no encontrada' }, { status: 404 })
+
+  const isVirtual = Boolean(appt.is_virtual)
+  const room = jitsiRoom(id)
+  const joinUrl = `https://meet.jit.si/${room}`
 
   const { error } = await admin.from('appointments').update({
     status,
@@ -36,10 +44,22 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const dateStr = new Date(appt.appointment_date).toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' })
   const timeStr = appt.appointment_time.slice(0,5)
 
+  const virtualBlock = isVirtual && status === 'confirmed'
+    ? `<div style="background:#f0f4ff;border-radius:10px;padding:16px;margin:16px 0;border-left:3px solid #6366f1">
+        <p style="margin:0 0 6px;font-size:14px;color:#4338ca"><strong>📹 Enlace de videollamada</strong></p>
+        <p style="margin:0 0 10px;font-size:13px;color:#4338ca">Únete a la consulta virtual en el horario indicado:</p>
+        <a href="${joinUrl}" style="background:#6366f1;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:13px;display:inline-block">
+          Unirse con Jitsi Meet
+        </a>
+        <p style="margin:10px 0 0;font-size:11px;color:#6366f1">Sala: ${room}</p>
+      </div>`
+    : ''
+
   const templates: Record<string, { subject: string; body: string; icon: string }> = {
     confirmed: {
-      icon: '✅', subject: `Cita confirmada para ${pet?.name}`,
-      body: `Tu cita del <strong>${dateStr} a las ${timeStr}</strong> ha sido <strong style="color:#16a34a">confirmada</strong> por ${clinic?.name}.${notes ? `<br><br><em>Nota del veterinario: ${notes}</em>` : ''}`,
+      icon: isVirtual ? '📹' : '✅',
+      subject: `${isVirtual ? 'Videollamada' : 'Cita'} confirmada para ${pet?.name}`,
+      body: `Tu ${isVirtual ? 'consulta virtual' : 'cita'} del <strong>${dateStr} a las ${timeStr}</strong> ha sido <strong style="color:#16a34a">confirmada</strong> por ${clinic?.name}.${notes ? `<br><br><em>Nota del veterinario: ${notes}</em>` : ''}`,
     },
     cancelled: {
       icon: '❌', subject: `Cita cancelada para ${pet?.name}`,
@@ -64,6 +84,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         <div style="background:#fff;padding:28px;border:1px solid #ebebeb;border-top:none;border-radius:0 0 12px 12px">
           <p>Hola <strong>${owner.full_name}</strong>,</p>
           <p>${tpl.body}</p>
+          ${virtualBlock}
           <a href="https://${clinic?.slug}.petfhans.com/owner/dashboard" style="background:#EE726D;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;margin-top:12px">
             Ver mis citas
           </a>

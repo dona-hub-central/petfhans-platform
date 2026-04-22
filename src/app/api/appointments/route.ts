@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-  const { pet_id, appointment_date, appointment_time, reason } = await req.json()
+  const { pet_id, appointment_date, appointment_time, reason, is_virtual = false } = await req.json()
   if (!pet_id || !appointment_date || !appointment_time || !reason)
     return NextResponse.json({ error: 'Faltan datos' }, { status: 400 })
 
@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
     appointment_date,
     appointment_time,
     reason,
+    is_virtual:       Boolean(is_virtual),
   }).select().single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
@@ -45,10 +46,16 @@ export async function POST(req: NextRequest) {
   // Email al dueño — confirmación de solicitud
   const clinicName = (pet as any).clinics?.name ?? 'la clínica'
   const slug = (pet as any).clinics?.slug
+  const virtualNote = is_virtual
+    ? `<div style="background:#f0f4ff;border-radius:10px;padding:14px 16px;margin:12px 0;border-left:3px solid #6366f1">
+        <p style="margin:0;font-size:14px;color:#4338ca"><strong>📹 Cita por videollamada</strong></p>
+        <p style="margin:6px 0 0;font-size:13px;color:#4338ca">Recibirás el enlace de Jitsi Meet en el email de confirmación cuando la clínica apruebe tu solicitud.</p>
+      </div>`
+    : ''
   await resend.emails.send({
     from: 'Petfhans <noreply@petfhans.com>',
     to: profile!.email,
-    subject: `📅 Cita solicitada para ${pet.name}`,
+    subject: `${is_virtual ? '📹' : '📅'} Cita solicitada para ${pet.name}`,
     html: `<div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto">
       <div style="background:#EE726D;padding:20px 28px;border-radius:12px 12px 0 0">
         <h2 style="color:#fff;margin:0">🐾 Petfhans</h2>
@@ -59,8 +66,10 @@ export async function POST(req: NextRequest) {
         <div style="background:#f9f9f9;border-radius:10px;padding:16px;margin:16px 0">
           <p style="margin:0 0 6px"><strong>📅 Fecha:</strong> ${new Date(appointment_date).toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p>
           <p style="margin:0 0 6px"><strong>🕐 Hora:</strong> ${appointment_time.slice(0,5)}</p>
-          <p style="margin:0"><strong>📋 Motivo:</strong> ${reason}</p>
+          <p style="margin:0 0 6px"><strong>📋 Motivo:</strong> ${reason}</p>
+          <p style="margin:0"><strong>Modalidad:</strong> ${is_virtual ? '📹 Videollamada' : '🏥 Presencial'}</p>
         </div>
+        ${virtualNote}
         <p>Te notificaremos cuando la clínica confirme o gestione tu cita.</p>
         <a href="https://${slug}.petfhans.com/owner/dashboard" style="background:#EE726D;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block">
           Ver mis citas

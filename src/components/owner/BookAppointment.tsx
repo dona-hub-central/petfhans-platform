@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import { Video, MapPin } from 'lucide-react'
 
 export default function BookAppointment({ petId, clinicId }: { petId: string; clinicId: string }) {
   const [open, setOpen] = useState(false)
+  const [isVirtual, setIsVirtual] = useState(false)
   const [date, setDate] = useState('')
   const [slots, setSlots] = useState<string[]>([])
   const [time, setTime] = useState('')
@@ -30,19 +32,29 @@ export default function BookAppointment({ petId, clinicId }: { petId: string; cl
     const res = await fetch('/api/appointments', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pet_id: petId, appointment_date: date, appointment_time: time + ':00', reason }),
+      body: JSON.stringify({ pet_id: petId, appointment_date: date, appointment_time: time + ':00', reason, is_virtual: isVirtual }),
       credentials: 'include',
     })
     const data = await res.json()
     if (!res.ok) { setError(data.error || 'Error al solicitar cita'); setLoading(false); return }
     setOk(true); setLoading(false)
-    setTimeout(() => { setOk(false); setOpen(false); setDate(''); setTime(''); setReason('') }, 3000)
+    setTimeout(() => { setOk(false); setOpen(false); setDate(''); setTime(''); setReason(''); setIsVirtual(false) }, 3500)
   }
 
-  // Min date = mañana
   const minDate = new Date()
   minDate.setDate(minDate.getDate() + 1)
   const minDateStr = minDate.toISOString().split('T')[0]
+
+  const S = {
+    btn: (active: boolean) => ({
+      flex: 1, border: 'none', borderRadius: 12, padding: '10px 4px', fontSize: 13,
+      fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+      background: active ? '#fff0ef' : '#f2f2f7',
+      color: active ? '#EE726D' : '#8e8e93',
+      outline: active ? '2px solid #EE726D' : 'none',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+    } as React.CSSProperties),
+  }
 
   if (!open) return (
     <button onClick={() => setOpen(true)} style={{
@@ -51,7 +63,7 @@ export default function BookAppointment({ petId, clinicId }: { petId: string; cl
       fontSize: 15, fontWeight: 700, cursor: 'pointer', marginBottom: 12,
       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
     }}>
-      📅 Solicitar cita
+      Solicitar cita
     </button>
   )
 
@@ -59,16 +71,40 @@ export default function BookAppointment({ petId, clinicId }: { petId: string; cl
     <div style={{ background: '#edfaf1', borderRadius: 18, padding: '20px 16px', textAlign: 'center', marginBottom: 12 }}>
       <p style={{ fontSize: 32, margin: '0 0 8px' }}>✅</p>
       <p style={{ fontWeight: 700, fontSize: 15, color: '#1a7a3c', margin: 0 }}>¡Cita solicitada!</p>
-      <p style={{ fontSize: 13, color: '#166534', margin: '4px 0 0' }}>Te notificaremos cuando la clínica la confirme</p>
+      <p style={{ fontSize: 13, color: '#166534', margin: '4px 0 0' }}>
+        {isVirtual
+          ? 'Recibirás el enlace de videollamada cuando la clínica confirme'
+          : 'Te notificaremos cuando la clínica la confirme'}
+      </p>
     </div>
   )
 
   return (
     <form onSubmit={submit} style={{ background: '#fff', borderRadius: 18, padding: 18, marginBottom: 12 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <p style={{ fontWeight: 700, fontSize: 15, color: '#1c1c1e', margin: 0 }}>📅 Solicitar cita</p>
+        <p style={{ fontWeight: 700, fontSize: 15, color: '#1c1c1e', margin: 0 }}>Solicitar cita</p>
         <button type="button" onClick={() => setOpen(false)}
           style={{ border: 'none', background: 'none', fontSize: 20, cursor: 'pointer', color: '#8e8e93' }}>×</button>
+      </div>
+
+      {/* Tipo de cita */}
+      <div style={{ marginBottom: 14 }}>
+        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#8e8e93', marginBottom: 6 }}>
+          Tipo de cita
+        </label>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button type="button" onClick={() => setIsVirtual(false)} style={S.btn(!isVirtual)}>
+            <MapPin size={13} /> Presencial
+          </button>
+          <button type="button" onClick={() => setIsVirtual(true)} style={S.btn(isVirtual)}>
+            <Video size={13} /> Videollamada
+          </button>
+        </div>
+        {isVirtual && (
+          <p style={{ fontSize: 12, color: '#8e8e93', margin: '8px 0 0', lineHeight: 1.5 }}>
+            La consulta se realizará por videollamada con Jitsi Meet. Recibirás el enlace cuando la clínica confirme la cita.
+          </p>
+        )}
       </div>
 
       {/* Fecha */}
@@ -77,7 +113,7 @@ export default function BookAppointment({ petId, clinicId }: { petId: string; cl
           Selecciona un día
         </label>
         <input type="date" value={date} min={minDateStr} onChange={e => loadSlots(e.target.value)}
-          style={{ width: '100%', border: 'none', background: '#f2f2f7', borderRadius: 12, padding: '12px 14px', fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box' as any }} />
+          style={{ width: '100%', border: 'none', background: '#f2f2f7', borderRadius: 12, padding: '12px 14px', fontSize: 14, fontFamily: 'inherit', boxSizing: 'border-box' }} />
       </div>
 
       {/* Slots */}
@@ -113,7 +149,7 @@ export default function BookAppointment({ petId, clinicId }: { petId: string; cl
           </label>
           <textarea value={reason} onChange={e => setReason(e.target.value)} rows={2}
             placeholder="Describe el motivo de la cita…"
-            style={{ width: '100%', border: 'none', background: '#f2f2f7', borderRadius: 12, padding: '12px 14px', fontSize: 14, fontFamily: 'inherit', resize: 'none', boxSizing: 'border-box' as any }} />
+            style={{ width: '100%', border: 'none', background: '#f2f2f7', borderRadius: 12, padding: '12px 14px', fontSize: 14, fontFamily: 'inherit', resize: 'none', boxSizing: 'border-box' }} />
         </div>
       )}
 
