@@ -20,36 +20,47 @@
 
 ## Skills — léelas según la tarea
 
-### Siempre que toques un archivo `.ts` o `.tsx`
+Lee la skill correspondiente **antes de escribir cualquier código**. No asumas — verifica en el archivo real.
 
+### Siempre que toques un archivo `.ts` o `.tsx`
 ```
 skills-ai/coding-best-practices/SKILL.md
 ```
-
-Cubre: TypeScript estricto, JSDoc, reglas ESLint activas, patrones Supabase seguros, brechas de seguridad comunes, checklist de commit.
+Cubre: TypeScript estricto, JSDoc, reglas ESLint activas, patrones Supabase seguros, checklist de commit.
 
 ### Siempre que crees o modifiques UI (componentes, páginas, layouts)
-
 ```
 skills-ai/frontend-design-quality/SKILL.md
+skills-ai/frontend-ui-engineering/SKILL.md
 ```
+- **frontend-design-quality** → tokens `--pf-*`, patrón `tintMap`, clases utilitarias, plantillas de StatCard / lista / formulario / empty state, reglas de iconos.
+- **frontend-ui-engineering** → arquitectura de componentes, loading/error/empty states, responsive por portal, optimistic updates, anti-patrones de "AI aesthetic".
+- Checklist de accesibilidad: `skills-ai/frontend-ui-engineering/accessibility-checklist.md`
 
-Cubre: tokens `--pf-*`, patrón `tintMap`, clases utilitarias de `globals.css`, plantillas de StatCard / lista / formulario / empty state, reglas de iconos y tipografía, checklist visual.
+### Cuando manejes input de usuario, auth, uploads, o APIs externas
+```
+skills-ai/security-and-hardening/SKILL.md
+```
+Cubre: ownership checks en queries admin, validación con Zod, sanitizado XSS, env vars, rate limiting en rutas IA, errores sin exponer internos.
+- Checklist rápido: `skills-ai/security-and-hardening/security-checklist.md`
+
+### Cuando implementes queries a Supabase, imágenes, fuentes o fetches en bucle
+```
+skills-ai/performance-optimization/SKILL.md
+```
+Cubre: N+1 Supabase, `createSignedUrls` plural, `next/font`, `next/image`, paginación, cache headers en API routes.
+- Checklist rápido: `skills-ai/performance-optimization/performance-checklist.md`
 
 ### Para contexto de producto y rutas
-
 ```
 PRODUCT.md
 ```
-
 Cubre: roles de usuario, rutas existentes, rutas que faltan, flujos críticos, modelo de negocio.
 
 ### Para contexto de diseño visual
-
 ```
 DESIGN_SYSTEM.md
 ```
-
 Cubre: paleta de colores, tipografía, componentes de referencia, reglas de motion.
 
 ---
@@ -75,6 +86,7 @@ Cubre: paleta de colores, tipografía, componentes de referencia, reglas de moti
 | `createAdminClient()` | `@/lib/supabase/admin` | API Routes y Server Components que necesitan bypassar RLS |
 
 `createAdminClient()` usa `SUPABASE_SERVICE_ROLE_KEY`. **Nunca en archivos con `'use client'`.**
+Siempre añade `.eq('clinic_id', userClinicId)` al usar `createAdminClient()` para evitar IDOR.
 
 ---
 
@@ -98,8 +110,19 @@ src/
     └── email.ts        ← sendInvitationEmail, sendWelcomeEmail (Resend)
 
 skills-ai/
-├── coding-best-practices/SKILL.md
-└── frontend-design-quality/SKILL.md
+├── coding-best-practices/
+│   └── SKILL.md
+├── frontend-design-quality/
+│   └── SKILL.md
+├── frontend-ui-engineering/
+│   ├── SKILL.md
+│   └── accessibility-checklist.md
+├── security-and-hardening/
+│   ├── SKILL.md
+│   └── security-checklist.md
+└── performance-optimization/
+    ├── SKILL.md
+    └── performance-checklist.md
 
 prompts/
 ├── navigation-fix.md              ← Correcciones de navegación y accesibilidad
