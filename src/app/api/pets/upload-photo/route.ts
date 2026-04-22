@@ -10,6 +10,9 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
+  const { data: profile } = await supabase.from('profiles')
+    .select('id, role').eq('user_id', user.id).single()
+
   const formData = await req.formData()
   const file  = formData.get('file') as File
   const petId = formData.get('pet_id') as string
@@ -19,10 +22,19 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient()
 
+  // H-9: para pet_owner verificar acceso explícito antes de cualquier operación
+  if (profile?.role === 'pet_owner') {
+    const { data: access } = await admin.from('pet_access')
+      .select('pet_id')
+      .eq('owner_id', profile.id)
+      .eq('pet_id', petId)
+      .single()
+    if (!access) return NextResponse.json({ error: 'Sin acceso a esta mascota' }, { status: 403 })
+  }
+
   // Borrar foto anterior si existe
   const { data: pet } = await admin.from('pets').select('photo_url').eq('id', petId).single()
   if (pet?.photo_url) {
-    // Extraer path del storage desde la URL firmada no es directo — usar lista de archivos
     try {
       const { data: files } = await admin.storage.from('pet-files').list(`photos/${petId}`)
       if (files?.length) await admin.storage.from('pet-files').remove(files.map(f => `photos/${petId}/${f.name}`))
@@ -40,14 +52,12 @@ export async function POST(req: NextRequest) {
 
   if (uploadErr) return NextResponse.json({ error: uploadErr.message }, { status: 400 })
 
-  // URL pública permanente (bucket público)
   const { data: urlData } = admin.storage
     .from('pet-files')
     .getPublicUrl(uploadData.path)
 
   const photo_url = urlData.publicUrl
 
-  // Guardar en BD
   await admin.from('pets').update({ photo_url }).eq('id', petId)
 
   return NextResponse.json({ ok: true, photo_url })

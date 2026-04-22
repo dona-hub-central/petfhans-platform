@@ -20,13 +20,20 @@ export async function POST(req: NextRequest) {
   const notes     = (formData.get('notes') as string) || ''
 
   if (!file || !petId) return NextResponse.json({ error: 'Faltan datos: file=' + !!file + ' petId=' + !!petId }, { status: 400 })
-  console.log('[upload] file:', file.name, file.size, file.type, '| pet:', petId, '| role:', profile?.role)
 
   const admin = createAdminClient()
 
-  // Para dueños: obtener clinic_id de la mascota
+  // Para dueños: verificar acceso explícito a la mascota (H-9)
   let clinicId = profile?.clinic_id
   if (profile?.role === 'pet_owner') {
+    const { data: access } = await admin.from('pet_access')
+      .select('pet_id')
+      .eq('owner_id', profile.id)
+      .eq('pet_id', petId)
+      .single()
+    if (!access) return NextResponse.json({ error: 'Sin acceso a esta mascota' }, { status: 403 })
+
+    // Obtener clinic_id de la mascota (no confiar en el del perfil para pet_owner)
     const { data: pet } = await admin.from('pets').select('clinic_id').eq('id', petId).single()
     clinicId = pet?.clinic_id
   }
@@ -39,7 +46,7 @@ export async function POST(req: NextRequest) {
     .from('pet-files')
     .upload(filePath, buffer, { contentType: file.type, upsert: false })
 
-  if (uploadErr) { console.error('[upload] storage error:', uploadErr); return NextResponse.json({ error: 'Storage: ' + uploadErr.message }, { status: 400 }) }
+  if (uploadErr) return NextResponse.json({ error: 'Storage: ' + uploadErr.message }, { status: 400 })
 
   // Guardar en BD
   const { data: fileRecord, error: dbErr } = await admin.from('pet_files').insert({
@@ -55,7 +62,6 @@ export async function POST(req: NextRequest) {
   }).select().single()
 
   if (dbErr) {
-    console.error('[upload] DB error:', dbErr)
     await admin.storage.from('pet-files').remove([uploadData.path])
     return NextResponse.json({ error: 'DB: ' + dbErr.message }, { status: 400 })
   }

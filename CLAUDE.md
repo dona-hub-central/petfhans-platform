@@ -20,68 +20,32 @@
 
 ## Flujo de ramas y merge strategy
 
-### Estructura de ramas
-
-```
-main     ← producción — solo código de app, skills curadas, sin tooling de dev
-Develop  ← desarrollo — código + skills experimentales + prompts + design files
-```
-
-### Regla de merge Develop → main
-
-El archivo `.gitattributes` en `main` define qué directorios conservan **siempre
-la versión de `main`** cuando se hace merge desde `Develop` (estrategia `merge=ours`).
-
-**Archivos que NUNCA fluyen de Develop a main automáticamente:**
-
-| Path | Razón |
-|------|-------|
-| `design_handoff_petfhans/**` | Archivos de diseño, solo necesarios en Develop |
-| `frontend.md` | Documento de auditoría, solo relevante en Develop |
-| `prompts/**` | Prompts de Claude Code específicos del workflow de Develop |
-
-**Archivos que SÍ fluyen pero requieren revisión en el PR:**
-
-| Path | Qué revisar |
-|------|-------------|
-| `skills-ai/**` | Verificar que solo llegan skills validadas, no experimentales |
-| `CLAUDE.md` | Comparar manualmente — Develop tiene más skills que main |
-| `src/**` | Código de aplicación — revisión normal de PR |
-| `supabase/migrations/**` | Siempre revisar antes de merge |
-
-### Setup requerido (una vez por developer y por runner de CI)
-
-```bash
-# Habilitar el driver merge=ours localmente
-git config --global merge.ours.driver true
-
-# En GitHub Actions (añadir al workflow antes del paso de merge):
-# - run: git config merge.ours.driver true
-```
-
-Sin este comando, `.gitattributes` existe pero la estrategia `merge=ours` no se aplica.
-
-### Limitaciones de este enfoque
-
-`merge=ours` en `.gitattributes` **no es una medida de seguridad** — es higiene de rama.
-Los archivos en `prompts/` y `design_handoff_petfhans/` no son vulnerables, son simplemente
-irrelevantes en producción. Para protección real:
-
-- Las **variables de entorno** no están en el repo (`.env.local` en `.gitignore`)
-- Los **secretos** se gestionan en GitHub Secrets y en el VPS
-- La **seguridad del código** la gestionan las skills de `skills-ai/security-*`
-
----
-
-## Skills disponibles en main
-
 Lee la skill correspondiente **antes de escribir cualquier código**.
+
+### 🔴 CRÍTICO — Siempre que toques rutas de auth, invitaciones o API con datos de usuario
+```
+skills-ai/security-invitation-flow/SKILL.md
+```
+Cubre los 16 hallazgos del audit de seguridad (C-1 a L-15): modelo de sobre sellado, tabla `pet_access`, `ALLOWED_INVITATION_ROLES`, ownership checks, fixes para `accept-invite`, `create-invitation`, `appointments`, `ai-chat`, `agent/chat`, `files/[id]`, `upload`, `resend-invitation`.
+
+### 🔴 Auditoría de seguridad — antes de merge de cualquier API route nueva
+```
+skills-ai/agents/security-auditor.md
+```
+Agente especializado que actúa como Security Engineer. Genera reportes con severidad (Crítico/Alto/Medio/Bajo), pruebas de concepto y código de fix. Cubre OWASP Top 10, IDOR, auth, Stripe webhooks, OpenAI y Resend.
+- Checklist extendida (Stripe, OAuth, headers): `skills-ai/security-and-hardening/security-checklist-extended.md`
 
 ### Siempre que toques un archivo `.ts` o `.tsx`
 ```
 skills-ai/coding-best-practices/SKILL.md
 ```
 TypeScript estricto, JSDoc, reglas ESLint activas, patrones Supabase seguros, checklist de commit.
+
+### Antes de construir cualquier página o feature nuevo
+```
+skills-ai/spec-driven-development/SKILL.md
+```
+Define un spec con criterios de éxito verificables antes de escribir código. Obligatorio para `/vet/profile`, `/vet/settings`, `/vet/billing`, `/owner/profile` y cualquier feature nuevo.
 
 ### Siempre que crees o modifiques UI
 ```
@@ -90,14 +54,22 @@ skills-ai/frontend-ui-engineering/SKILL.md
 ```
 - **frontend-design-quality** → tokens `--pf-*`, tintMap, clases utilitarias, StatCard / lista / formulario / empty state.
 - **frontend-ui-engineering** → arquitectura de componentes, loading/error/empty states, responsive, anti-patrones AI aesthetic.
-- Accesibilidad: `skills-ai/frontend-ui-engineering/accessibility-checklist.md`
+- Accesibilidad WCAG 2.1 AA: `skills-ai/frontend-ui-engineering/accessibility-checklist-wcag.md`
+- Gaps conocidos del codebase: `skills-ai/frontend-ui-engineering/accessibility-checklist.md`
+
+### Para verificar UI en el browser real (DOM, consola, network, performance)
+```
+skills-ai/browser-testing-with-devtools/SKILL.md
+```
+Usa Chrome DevTools MCP para inspeccionar DOM live, capturar errores de consola, analizar requests a Supabase, profiling de Core Web Vitals y verificación visual con screenshots. Usar después de cualquier cambio de UI antes de marcar como done.
 
 ### Cuando manejes input, auth, uploads o APIs externas
 ```
 skills-ai/security-and-hardening/SKILL.md
 ```
 Ownership checks, Zod validation, XSS, env vars, rate limiting en rutas IA, errores sin exponer internos.
-- Checklist: `skills-ai/security-and-hardening/security-checklist.md`
+- Checklist base: `skills-ai/security-and-hardening/security-checklist.md`
+- Checklist extendida (Stripe/OpenAI/Resend): `skills-ai/security-and-hardening/security-checklist-extended.md`
 
 ### Cuando implementes queries Supabase, imágenes, fuentes o fetches en bucle
 ```
@@ -146,10 +118,6 @@ PRODUCT.md
 DESIGN_SYSTEM.md
 ```
 
-> **Nota:** En la rama `Develop` hay más skills disponibles (security-invitation-flow,
-> browser-testing-with-devtools, spec-driven-development, agents/security-auditor, etc.).
-> Consulta `CLAUDE.md` en `Develop` para el conjunto completo.
-
 ---
 
 ## Reglas de trabajo obligatorias
@@ -161,7 +129,6 @@ DESIGN_SYSTEM.md
 5. **No toques archivos de API** cuando la tarea es solo de UI, y viceversa.
 6. **Nunca hardcodees** colores hex, claves de API ni strings de configuración.
 7. **Un commit al final**, formato `type: descripción` (feat / fix / docs / refactor).
-8. **Merge Develop → main:** ejecutar `git config merge.ours.driver true` antes del merge.
 
 ---
 
@@ -174,7 +141,7 @@ DESIGN_SYSTEM.md
 | `createAdminClient()` | `@/lib/supabase/admin` | API Routes y Server Components que bypasan RLS |
 
 `createAdminClient()` usa `SUPABASE_SERVICE_ROLE_KEY`. **Nunca en archivos con `'use client'`.**
-Siempre añade `.eq('clinic_id', userClinicId)` al usar `createAdminClient()`.
+**Siempre añade `.eq('clinic_id', userClinicId)` al usar `createAdminClient()`.** Ver `skills-ai/security-invitation-flow/SKILL.md`.
 
 ---
 
@@ -193,10 +160,36 @@ src/
 │   ├── shared/         ← VetLayout, PetAvatar, PetSearch, PetFiles, BreedSelect
 │   └── owner/          ← OwnerPetView, BookAppointment, PetGallery
 └── lib/
-    ├── supabase/       ← client.ts, server.ts, admin.ts
-    ├── metrics.ts      ← withMetrics() wrapper
-    └── email.ts        ← Resend emails
+    ├── supabase/                  ← client.ts, server.ts, admin.ts
+    ├── invitation-permissions.ts  ← ALLOWED_INVITATION_ROLES
+    ├── metrics.ts                 ← withMetrics() wrapper
+    └── email.ts                   ← Resend emails
 
-skills-ai/            ← Skills curadas para producción
-  (ver Develop/skills-ai/ para el conjunto completo)
+skills-ai/
+├── agents/
+│   └── security-auditor.md            ← 🆕 Agente auditor de seguridad
+├── security-invitation-flow/SKILL.md  ← 🔴 16 hallazgos de seguridad
+├── security-and-hardening/
+│   ├── SKILL.md
+│   ├── security-checklist.md
+│   └── security-checklist-extended.md ← 🆕 Stripe, OAuth, Resend
+├── browser-testing-with-devtools/SKILL.md  ← 🆕 DevTools MCP para UI
+├── spec-driven-development/SKILL.md        ← 🆕 Specs antes de codear
+├── frontend-design-quality/SKILL.md
+├── frontend-ui-engineering/
+│   ├── SKILL.md
+│   ├── accessibility-checklist.md
+│   └── accessibility-checklist-wcag.md ← 🆕 Patrones HTML WCAG
+├── coding-best-practices/SKILL.md
+├── performance-optimization/SKILL.md + performance-checklist.md
+├── api-and-interface-design/SKILL.md
+├── incremental-implementation/SKILL.md
+├── debugging-and-error-recovery/SKILL.md
+├── code-review-and-quality/SKILL.md
+└── test-driven-development/SKILL.md
+
+prompts/
+├── security-fix.md              ← Fix metódico de los 16 hallazgos
+├── navigation-fix.md
+└── ui-navigation-improvement.md
 ```
