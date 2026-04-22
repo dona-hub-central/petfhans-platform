@@ -49,15 +49,13 @@ function InviteForm() {
 
       // Login automático
       const supabase = createClient()
-      await supabase.auth.signInWithPassword({ email: invitation.email, password: form.password })
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email: invitation.email, password: form.password })
+      if (signInError) { setError('Cuenta creada pero no pudo iniciar sesión automáticamente. Ve a login.'); setLoading(false); return }
 
       const role = invitation.role
-      const slug = invitation.clinics?.slug
-      const dest = ['vet_admin', 'veterinarian'].includes(role)
-        ? `https://${slug}.petfhans.com/vet/dashboard`
-        : `https://${slug}.petfhans.com/owner/dashboard`
-
-      window.location.href = dest
+      window.location.href = ['vet_admin', 'veterinarian'].includes(role)
+        ? '/vet/dashboard'
+        : '/owner/dashboard'
     } catch (err: any) {
       setError(err.message)
       setLoading(false)

@@ -18,13 +18,18 @@ export default async function OwnerDashboard() {
   const { data: pets } = await admin.from('pets')
     .select('*').eq('owner_id', profile?.id).eq('is_active', true)
 
-  const petsWithInfo = await Promise.all((pets ?? []).map(async (pet) => {
-    const { data: next } = await admin.from('medical_records')
-      .select('next_visit').eq('pet_id', pet.id)
-      .gt('next_visit', new Date().toISOString().split('T')[0])
-      .order('next_visit', { ascending: true }).limit(1).single()
-    return { ...pet, nextVisit: next?.next_visit }
-  }))
+  const petIds = (pets ?? []).map(p => p.id)
+  const today = new Date().toISOString().split('T')[0]
+  const nextVisitMap: Record<string, string> = {}
+  if (petIds.length > 0) {
+    const { data: visits } = await admin.from('medical_records')
+      .select('pet_id, next_visit')
+      .in('pet_id', petIds)
+      .gt('next_visit', today)
+      .order('next_visit', { ascending: true })
+    visits?.forEach(v => { if (v.pet_id && !nextVisitMap[v.pet_id]) nextVisitMap[v.pet_id] = v.next_visit })
+  }
+  const petsWithInfo = (pets ?? []).map(pet => ({ ...pet, nextVisit: nextVisitMap[pet.id] ?? null }))
 
   const speciesLabel: Record<string, string> = { dog: 'Perro', cat: 'Gato', bird: 'Ave', rabbit: 'Conejo', other: 'Otro' }
   const clinic = (profile as any)?.clinics
