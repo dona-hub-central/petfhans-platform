@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import BookAppointment from '@/components/owner/BookAppointment'
 import { PawPrint, Calendar, Camera, FileText, ClipboardList, Video, MapPin, type LucideIcon } from 'lucide-react'
 import VideoCallRoom from '@/components/owner/VideoCallRoom'
+import EmergencyCall from '@/components/owner/EmergencyCall'
 
 type Tab = 'info' | 'galeria' | 'docs' | 'historial' | 'citas'
 
@@ -452,7 +453,10 @@ function CitasTab({ petId, petName, clinicId, appointments }: {
 
   return (
     <>
-      {/* Booking form */}
+      {/* Emergency / instant call panel */}
+      <EmergencyCall petId={petId} petName={petName} clinicId={clinicId} />
+
+      {/* Scheduled booking form */}
       {clinicId
         ? <BookAppointment petId={petId} clinicId={clinicId} />
         : <div className="empty-box"><p style={{ fontSize: 32, margin: '0 0 8px' }}>📅</p><p style={{ fontSize: 14, color: '#8e8e93', margin: 0 }}>Sin clínica asignada</p></div>
