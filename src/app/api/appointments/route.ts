@@ -23,11 +23,12 @@ export async function POST(req: NextRequest) {
   const admin = createAdminClient()
 
   const { data: profile } = await supabase.from('profiles').select('id, clinic_id, full_name, email').eq('user_id', user.id).single()
+  if (!profile) return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 403 })
 
   // C-2: verificar que el pet pertenece a la clínica del usuario autenticado
   const { data: pet } = await admin.from('pets').select('name, species, clinic_id, clinics(name, slug)').eq('id', pet_id).single()
 
-  if (!pet || pet.clinic_id !== profile?.clinic_id)
+  if (!pet || pet.clinic_id !== profile.clinic_id)
     return NextResponse.json({ error: 'Mascota no encontrada' }, { status: 403 })
 
   // Verificar que el slot no esté ocupado
@@ -100,7 +101,7 @@ export async function POST(req: NextRequest) {
   const { data: clinicVets } = await admin.from('profiles')
     .select('full_name, email')
     .eq('clinic_id', pet.clinic_id)
-    .in('role', ['vet', 'admin'])
+    .in('role', ['vet_admin', 'veterinarian'])
     .limit(10)
 
   if (clinicVets && clinicVets.length > 0) {
