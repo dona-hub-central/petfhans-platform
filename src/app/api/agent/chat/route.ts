@@ -57,13 +57,13 @@ Plan: ${clinic.subscription_plan}
 Fecha: ${new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
 
 MASCOTAS ACTIVAS (${pets?.length ?? 0}):
-${pets?.map(p => {
+${pets?.map((p: { name: string; species: string; breed?: string; birth_date?: string }) => {
   const age = p.birth_date ? Math.floor((Date.now() - new Date(p.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 365)) : null
   return `- ${p.name} | ${p.species}${p.breed ? ` ${p.breed}` : ''} | ${age !== null ? age + 'a' : '?'}`
 }).join('\n') ?? 'Sin mascotas'}
 
 CITAS RECIENTES (${appointments?.length ?? 0}):
-${appointments?.map(a => `[${a.appointment_date}] ${a.status} | ${a.reason}`).join('\n') ?? 'Sin citas'}
+${appointments?.map((a: { appointment_date: string; status: string; reason: string }) => `[${a.appointment_date}] ${a.status} | ${a.reason}`).join('\n') ?? 'Sin citas'}
 === FIN ===`
 
   const skillsText = (agent.skills ?? []).length > 0

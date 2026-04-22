@@ -50,7 +50,7 @@ PACIENTE ACTIVO:
 ${pet.notes ? `- Notas: ${pet.notes}` : ''}
 
 HISTORIAL (${records?.length ?? 0} consultas):
-${records?.map(r => `[${r.visit_date}] ${r.reason} → Dx: ${r.diagnosis ?? 'N/D'} · Tto: ${r.treatment ?? 'N/D'}`).join('\n') ?? 'Sin consultas'}`
+${records?.map((r: { visit_date: string; reason: string; diagnosis?: string; treatment?: string }) => `[${r.visit_date}] ${r.reason} → Dx: ${r.diagnosis ?? 'N/D'} · Tto: ${r.treatment ?? 'N/D'}`).join('\n') ?? 'Sin consultas'}`
   }
 
   const systemPrompt = (agent.system_prompt || 'Eres Dr. Petfhans, veterinario experto.') +
