@@ -22,7 +22,7 @@ export default async function AppointmentsPage() {
   const monthEnd   = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]
 
   const { data: appointments } = await admin.from('appointments')
-    .select('*, pets(name, species), profiles!appointments_owner_id_fkey(full_name, email)')
+    .select('*, is_virtual, pets(name, species), profiles!appointments_owner_id_fkey(full_name, email)')
     .eq('clinic_id', profile?.clinic_id)
     .gte('appointment_date', monthStart)
     .lte('appointment_date', monthEnd)
@@ -30,7 +30,7 @@ export default async function AppointmentsPage() {
 
   // Pendientes de hoy en adelante
   const { data: pending } = await admin.from('appointments')
-    .select('*, pets(name, species), profiles!appointments_owner_id_fkey(full_name, email)')
+    .select('*, is_virtual, pets(name, species), profiles!appointments_owner_id_fkey(full_name, email)')
     .eq('clinic_id', profile?.clinic_id)
     .eq('status', 'pending')
     .gte('appointment_date', now.toISOString().split('T')[0])

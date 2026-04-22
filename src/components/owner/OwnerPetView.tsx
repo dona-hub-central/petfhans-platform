@@ -5,7 +5,9 @@ import PetAvatar from '@/components/shared/PetAvatar'
 import PetGallery from '@/components/owner/PetGallery'
 import { createClient } from '@/lib/supabase/client'
 import BookAppointment from '@/components/owner/BookAppointment'
-import { PawPrint, Calendar, Camera, FileText, ClipboardList, type LucideIcon } from 'lucide-react'
+import { PawPrint, Calendar, Camera, FileText, ClipboardList, Video, MapPin, type LucideIcon } from 'lucide-react'
+import VideoCallRoom from '@/components/owner/VideoCallRoom'
+import EmergencyCall from '@/components/owner/EmergencyCall'
 
 type Tab = 'info' | 'galeria' | 'docs' | 'historial' | 'citas'
 
@@ -21,8 +23,8 @@ const speciesLabel: Record<string, string> = {
   dog: 'Perro', cat: 'Gato', bird: 'Ave', rabbit: 'Conejo', other: 'Otro'
 }
 
-export default function OwnerPetView({ pet, records, photos, docs, clinicName, clinicId }: {
-  pet: any; records: any[]; photos: any[]; docs: any[]; clinicName: string; clinicId?: string
+export default function OwnerPetView({ pet, records, photos, docs, appointments, clinicName, clinicId }: {
+  pet: any; records: any[]; photos: any[]; docs: any[]; appointments: any[]; clinicName: string; clinicId?: string
 }) {
   const [tab, setTab] = useState<Tab>('info')
   const nextVisit = records.find(r => r.next_visit && new Date(r.next_visit) > new Date())
@@ -170,12 +172,9 @@ export default function OwnerPetView({ pet, records, photos, docs, clinicName, c
             <div>
               {tab === 'info'     && <InfoDesktop pet={pet} clinicName={clinicName} nextVisit={nextVisit} records={records} />}
               {tab === 'galeria'  && <PetGallery petId={pet.id} initialPhotos={photos} />}
-              {tab === 'citas'    && <>
-            {clinicId
-              ? <BookAppointment petId={pet.id} clinicId={clinicId} />
-              : <div className="empty-box"><p style={{fontSize:32,margin:'0 0 8px'}}>📅</p><p style={{fontSize:14,color:'#8e8e93',margin:0}}>Sin clínica asignada</p></div>
-            }
-          </>}
+              {tab === 'citas'    && (
+                <CitasTab petId={pet.id} petName={pet.name} clinicId={clinicId} appointments={appointments} />
+              )}
           {tab === 'docs'     && <DocsTab petId={pet.id} initialDocs={docs} />}
               {tab === 'historial'&& <HistorialTab petId={pet.id} records={records} />}
             </div>
@@ -437,6 +436,118 @@ function DocCard({ doc }: { doc: any }) {
 function getAge(d: string) {
   const m = Math.floor((Date.now() - new Date(d).getTime()) / (1000 * 60 * 60 * 24 * 30))
   return m < 12 ? `${m} meses` : `${Math.floor(m / 12)} años`
+}
+
+const APPT_STATUS: Record<string, { label: string; bg: string; color: string }> = {
+  pending:   { label: 'Pendiente',  bg: '#fff8e6', color: '#b07800' },
+  confirmed: { label: 'Confirmada', bg: '#edfaf1', color: '#1a7a3c' },
+  cancelled: { label: 'Cancelada',  bg: '#fee2e2', color: '#dc2626' },
+  completed: { label: 'Completada', bg: '#f0f4ff', color: '#2563eb' },
+}
+
+function CitasTab({ petId, petName, clinicId, appointments }: {
+  petId: string; petName: string; clinicId?: string; appointments: any[]
+}) {
+  const upcoming = appointments.filter(a => a.status === 'pending' || a.status === 'confirmed')
+  const past     = appointments.filter(a => a.status === 'completed' || a.status === 'cancelled')
+
+  return (
+    <>
+      {/* Emergency / instant call panel */}
+      <EmergencyCall petId={petId} petName={petName} clinicId={clinicId} />
+
+      {/* Scheduled booking form */}
+      {clinicId
+        ? <BookAppointment petId={petId} clinicId={clinicId} />
+        : <div className="empty-box"><p style={{ fontSize: 32, margin: '0 0 8px' }}>📅</p><p style={{ fontSize: 14, color: '#8e8e93', margin: 0 }}>Sin clínica asignada</p></div>
+      }
+
+      {/* Upcoming appointments */}
+      {upcoming.length > 0 && (
+        <div style={{ marginBottom: 10 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: '#8e8e93', textTransform: 'uppercase', letterSpacing: '.07em', margin: '0 2px 8px' }}>
+            Próximas
+          </p>
+          {upcoming.map((a: any) => {
+            const st = APPT_STATUS[a.status] ?? APPT_STATUS.pending
+            const dateLabel = new Date(a.appointment_date + 'T12:00').toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
+            return (
+              <div key={a.id} style={{ background: '#fff', borderRadius: 16, padding: '14px 16px', marginBottom: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {a.is_virtual
+                      ? <Video size={13} strokeWidth={2} style={{ color: '#6366f1' }} />
+                      : <MapPin size={13} strokeWidth={2} style={{ color: '#EE726D' }} />
+                    }
+                    <span style={{ fontSize: 13, fontWeight: 700, color: '#1c1c1e' }}>{dateLabel}</span>
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 9px', borderRadius: 20, background: st.bg, color: st.color }}>
+                    {st.label}
+                  </span>
+                </div>
+                <p style={{ fontSize: 12, color: '#8e8e93', margin: '0 0 4px' }}>
+                  {a.appointment_time.slice(0, 5)} · {a.is_virtual ? 'Videollamada' : 'Presencial'}
+                </p>
+                <p style={{ fontSize: 13, color: '#3c3c43', margin: '0 0 10px', lineHeight: 1.5 }}>{a.reason}</p>
+                {a.is_virtual && a.status === 'confirmed' && (
+                  <VideoCallRoom
+                    appointmentId={a.id}
+                    petName={petName}
+                    dateLabel={`${dateLabel} · ${a.appointment_time.slice(0, 5)}`}
+                  />
+                )}
+                {a.status === 'pending' && a.is_virtual && (
+                  <p style={{ fontSize: 11, color: '#6366f1', margin: 0 }}>
+                    El enlace de videollamada estará disponible cuando la clínica confirme la cita.
+                  </p>
+                )}
+                {a.notes && (
+                  <p style={{ fontSize: 12, color: '#1a7a3c', margin: '6px 0 0', fontStyle: 'italic' }}>
+                    Nota del veterinario: {a.notes}
+                  </p>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Past appointments */}
+      {past.length > 0 && (
+        <div>
+          <p style={{ fontSize: 11, fontWeight: 700, color: '#8e8e93', textTransform: 'uppercase', letterSpacing: '.07em', margin: '0 2px 8px' }}>
+            Historial de citas
+          </p>
+          {past.map((a: any) => {
+            const st = APPT_STATUS[a.status] ?? APPT_STATUS.completed
+            return (
+              <div key={a.id} style={{ background: '#fff', borderRadius: 16, padding: '12px 16px', marginBottom: 8, opacity: 0.8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#1c1c1e' }}>
+                    {new Date(a.appointment_date + 'T12:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </span>
+                  <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 9px', borderRadius: 20, background: st.bg, color: st.color }}>
+                    {st.label}
+                  </span>
+                </div>
+                <p style={{ fontSize: 12, color: '#8e8e93', margin: 0 }}>{a.reason}</p>
+                {a.cancellation_reason && (
+                  <p style={{ fontSize: 11, color: '#dc2626', margin: '4px 0 0' }}>Motivo: {a.cancellation_reason}</p>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {appointments.length === 0 && (
+        <div className="empty-box">
+          <p style={{ fontSize: 32, margin: '0 0 8px' }}>📅</p>
+          <p style={{ fontSize: 14, color: '#8e8e93', margin: 0 }}>Sin citas registradas</p>
+        </div>
+      )}
+    </>
+  )
 }
 
 

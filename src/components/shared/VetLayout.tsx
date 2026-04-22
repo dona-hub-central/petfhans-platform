@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Home, Calendar, PawPrint, ClipboardList, Mail, Sparkles, Users, CreditCard } from 'lucide-react'
+import AvailabilityToggle from '@/components/vet/AvailabilityToggle'
 
 const nav = [
   { href: '/vet/dashboard',    Icon: Home,          label: 'Inicio' },
@@ -105,6 +106,11 @@ export default function VetLayout({
             </div>
           </div>
         )}
+
+        {/* Availability toggle */}
+        <div style={{ padding: '8px 10px', borderTop: '0.5px solid var(--pf-border)' }}>
+          <AvailabilityToggle />
+        </div>
 
         {/* User */}
         <div style={{ borderTop: '0.5px solid var(--pf-border)', padding: '14px 16px' }}>
