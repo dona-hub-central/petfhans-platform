@@ -26,13 +26,26 @@ Lee la skill correspondiente **antes de escribir cualquier código**.
 ```
 skills-ai/security-invitation-flow/SKILL.md
 ```
-Cubre los 16 hallazgos del audit de seguridad (C-1 a L-15): modelo de sobre sellado, tabla `pet_access`, `ALLOWED_INVITATION_ROLES`, ownership checks, fixes para `accept-invite`, `create-invitation`, `appointments`, `ai-chat`, `agent/chat`, `files/[id]`, `upload`, `resend-invitation`. **Leer antes de tocar cualquiera de esos archivos.**
+Cubre los 16 hallazgos del audit de seguridad (C-1 a L-15): modelo de sobre sellado, tabla `pet_access`, `ALLOWED_INVITATION_ROLES`, ownership checks, fixes para `accept-invite`, `create-invitation`, `appointments`, `ai-chat`, `agent/chat`, `files/[id]`, `upload`, `resend-invitation`.
+
+### 🔴 Auditoría de seguridad — antes de merge de cualquier API route nueva
+```
+skills-ai/agents/security-auditor.md
+```
+Agente especializado que actúa como Security Engineer. Genera reportes con severidad (Crítico/Alto/Medio/Bajo), pruebas de concepto y código de fix. Cubre OWASP Top 10, IDOR, auth, Stripe webhooks, OpenAI y Resend.
+- Checklist extendida (Stripe, OAuth, headers): `skills-ai/security-and-hardening/security-checklist-extended.md`
 
 ### Siempre que toques un archivo `.ts` o `.tsx`
 ```
 skills-ai/coding-best-practices/SKILL.md
 ```
 TypeScript estricto, JSDoc, reglas ESLint activas, patrones Supabase seguros, checklist de commit.
+
+### Antes de construir cualquier página o feature nuevo
+```
+skills-ai/spec-driven-development/SKILL.md
+```
+Define un spec con criterios de éxito verificables antes de escribir código. Obligatorio para `/vet/profile`, `/vet/settings`, `/vet/billing`, `/owner/profile` y cualquier feature nuevo.
 
 ### Siempre que crees o modifiques UI
 ```
@@ -41,14 +54,22 @@ skills-ai/frontend-ui-engineering/SKILL.md
 ```
 - **frontend-design-quality** → tokens `--pf-*`, tintMap, clases utilitarias, StatCard / lista / formulario / empty state.
 - **frontend-ui-engineering** → arquitectura de componentes, loading/error/empty states, responsive, anti-patrones AI aesthetic.
-- Accesibilidad: `skills-ai/frontend-ui-engineering/accessibility-checklist.md`
+- Accesibilidad WCAG 2.1 AA: `skills-ai/frontend-ui-engineering/accessibility-checklist-wcag.md`
+- Gaps conocidos del codebase: `skills-ai/frontend-ui-engineering/accessibility-checklist.md`
+
+### Para verificar UI en el browser real (DOM, consola, network, performance)
+```
+skills-ai/browser-testing-with-devtools/SKILL.md
+```
+Usa Chrome DevTools MCP para inspeccionar DOM live, capturar errores de consola, analizar requests a Supabase, profiling de Core Web Vitals y verificación visual con screenshots. Usar después de cualquier cambio de UI antes de marcar como done.
 
 ### Cuando manejes input, auth, uploads o APIs externas
 ```
 skills-ai/security-and-hardening/SKILL.md
 ```
 Ownership checks, Zod validation, XSS, env vars, rate limiting en rutas IA, errores sin exponer internos.
-- Checklist: `skills-ai/security-and-hardening/security-checklist.md`
+- Checklist base: `skills-ai/security-and-hardening/security-checklist.md`
+- Checklist extendida (Stripe/OpenAI/Resend): `skills-ai/security-and-hardening/security-checklist-extended.md`
 
 ### Cuando implementes queries Supabase, imágenes, fuentes o fetches en bucle
 ```
@@ -139,17 +160,27 @@ src/
 │   ├── shared/         ← VetLayout, PetAvatar, PetSearch, PetFiles, BreedSelect
 │   └── owner/          ← OwnerPetView, BookAppointment, PetGallery
 └── lib/
-    ├── supabase/              ← client.ts, server.ts, admin.ts
-    ├── invitation-permissions.ts  ← ALLOWED_INVITATION_ROLES (crear si no existe)
-    ├── metrics.ts             ← withMetrics() wrapper
-    └── email.ts               ← Resend emails
+    ├── supabase/                  ← client.ts, server.ts, admin.ts
+    ├── invitation-permissions.ts  ← ALLOWED_INVITATION_ROLES
+    ├── metrics.ts                 ← withMetrics() wrapper
+    └── email.ts                   ← Resend emails
 
 skills-ai/
-├── security-invitation-flow/SKILL.md  ← 🔴 NUEVO: 16 hallazgos de seguridad
-├── coding-best-practices/SKILL.md
+├── agents/
+│   └── security-auditor.md            ← 🆕 Agente auditor de seguridad
+├── security-invitation-flow/SKILL.md  ← 🔴 16 hallazgos de seguridad
+├── security-and-hardening/
+│   ├── SKILL.md
+│   ├── security-checklist.md
+│   └── security-checklist-extended.md ← 🆕 Stripe, OAuth, Resend
+├── browser-testing-with-devtools/SKILL.md  ← 🆕 DevTools MCP para UI
+├── spec-driven-development/SKILL.md        ← 🆕 Specs antes de codear
 ├── frontend-design-quality/SKILL.md
-├── frontend-ui-engineering/SKILL.md + accessibility-checklist.md
-├── security-and-hardening/SKILL.md + security-checklist.md
+├── frontend-ui-engineering/
+│   ├── SKILL.md
+│   ├── accessibility-checklist.md
+│   └── accessibility-checklist-wcag.md ← 🆕 Patrones HTML WCAG
+├── coding-best-practices/SKILL.md
 ├── performance-optimization/SKILL.md + performance-checklist.md
 ├── api-and-interface-design/SKILL.md
 ├── incremental-implementation/SKILL.md
@@ -158,6 +189,7 @@ skills-ai/
 └── test-driven-development/SKILL.md
 
 prompts/
+├── security-fix.md              ← Fix metódico de los 16 hallazgos
 ├── navigation-fix.md
 └── ui-navigation-improvement.md
 ```
