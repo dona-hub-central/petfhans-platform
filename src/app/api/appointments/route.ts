@@ -3,8 +3,6 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 const URGENCY_LABELS: Record<string, { label: string; color: string; emoji: string }> = {
   normal:     { label: 'Normal',     color: '#16a34a', emoji: '🟢' },
   urgente:    { label: 'Urgente',    color: '#b07800', emoji: '🟡' },
@@ -40,6 +38,8 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (existing) return NextResponse.json({ error: 'Ese horario ya está reservado' }, { status: 409 })
+
+  const resend = new Resend(process.env.RESEND_API_KEY)
 
   const { data: appt, error } = await admin.from('appointments').insert({
     clinic_id:        pet.clinic_id,
