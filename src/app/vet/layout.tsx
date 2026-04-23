@@ -9,7 +9,7 @@ export default async function VetSegmentLayout({ children }: { children: React.R
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, clinics(name)')
+    .select('full_name, role, avatar_url, clinics(name)')
     .eq('user_id', user.id)
     .single()
 
@@ -17,7 +17,12 @@ export default async function VetSegmentLayout({ children }: { children: React.R
   const userName = profile?.full_name ?? ''
 
   return (
-    <VetLayout clinicName={clinicName} userName={userName}>
+    <VetLayout
+      clinicName={clinicName}
+      userName={userName}
+      avatarUrl={profile?.avatar_url}
+      role={profile?.role}
+    >
       {children}
     </VetLayout>
   )

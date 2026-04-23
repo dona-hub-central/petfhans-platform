@@ -9,6 +9,11 @@ export async function POST(req: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
+    // H-10: obtener clinic_id del perfil — fuente de verdad para el scope
+    const { data: profile } = await supabase.from('profiles')
+      .select('id, role, clinic_id').eq('user_id', user.id).single()
+    if (!profile?.clinic_id) return NextResponse.json({ error: 'Sin clínica asignada' }, { status: 403 })
+
     const { invitation_id } = await req.json()
     const admin = createAdminClient()
 
@@ -16,25 +21,26 @@ export async function POST(req: NextRequest) {
     const newExpiry = new Date()
     newExpiry.setDate(newExpiry.getDate() + 7)
 
+    // H-10: filtrar por clinic_id para impedir manipular invitaciones ajenas
     const { data: inv, error } = await admin.from('invitations')
       .update({ expires_at: newExpiry.toISOString() })
       .eq('id', invitation_id)
+      .eq('clinic_id', profile.clinic_id)
+      .is('used_at', null)
       .select('*, pets(name), clinics(name)')
       .single()
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+    if (error || !inv) return NextResponse.json({ error: 'Invitación no encontrada' }, { status: 404 })
 
-    // Obtener subdominio de la clínica
     const { data: clinic } = await admin.from('clinics')
-      .select('slug, name').eq('id', inv.clinic_id).single()
+      .select('slug, name').eq('id', profile.clinic_id).single()
 
     const inviteLink = `https://${clinic?.slug}.petfhans.com/auth/invite?token=${inv.token}`
 
-    // Enviar email real
     await sendInvitationEmail({
       to:         inv.email,
       clinicName: clinic?.name ?? 'Petfhans',
-      petName:    inv.pets?.name,
+      petName:    (inv.pets as any)?.name,
       role:       inv.role,
       inviteLink,
       expiresAt:  inv.expires_at,

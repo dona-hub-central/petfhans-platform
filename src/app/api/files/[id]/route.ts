@@ -9,11 +9,36 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-  const admin = createAdminClient()
-  const { data: file } = await admin.from('pet_files').select('file_path, file_name').eq('id', id).single()
-  if (!file) return NextResponse.json({ error: 'Archivo no encontrado' }, { status: 404 })
+  const { data: profile } = await supabase.from('profiles')
+    .select('id, role, clinic_id').eq('user_id', user.id).single()
+  if (!profile) return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 403 })
 
-  const { data } = await admin.storage.from('pet-files').createSignedUrl(file.file_path, 3600)
+  const admin = createAdminClient()
+
+  // H-5: pet_files tiene clinic_id propio — no necesita join con pets
+  const { data: fileRecord } = await admin.from('pet_files')
+    .select('file_path, file_name, pet_id, clinic_id')
+    .eq('id', id)
+    .single()
+
+  if (!fileRecord) return NextResponse.json({ error: 'Archivo no encontrado' }, { status: 404 })
+
+  // Verificar que el archivo pertenece a la clínica del usuario
+  if (fileRecord.clinic_id !== profile.clinic_id) {
+    return NextResponse.json({ error: 'Archivo no encontrado' }, { status: 404 })
+  }
+
+  // Si es pet_owner, verificar además acceso explícito a esa mascota
+  if (profile.role === 'pet_owner') {
+    const { data: access } = await admin.from('pet_access')
+      .select('pet_id')
+      .eq('owner_id', profile.id)
+      .eq('pet_id', fileRecord.pet_id)
+      .single()
+    if (!access) return NextResponse.json({ error: 'Archivo no encontrado' }, { status: 404 })
+  }
+
+  const { data } = await admin.storage.from('pet-files').createSignedUrl(fileRecord.file_path, 3600)
   return NextResponse.json({ url: data?.signedUrl })
 }
 
@@ -24,11 +49,30 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-  const admin = createAdminClient()
-  const { data: file } = await admin.from('pet_files').select('file_path').eq('id', id).single()
-  if (!file) return NextResponse.json({ error: 'No encontrado' }, { status: 404 })
+  const { data: profile } = await supabase.from('profiles')
+    .select('id, role, clinic_id').eq('user_id', user.id).single()
+  if (!profile) return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 403 })
 
-  await admin.storage.from('pet-files').remove([file.file_path])
+  // Pet owners no pueden borrar archivos (solo staff de clínica)
+  if (profile.role === 'pet_owner') {
+    return NextResponse.json({ error: 'Sin permisos para eliminar archivos' }, { status: 403 })
+  }
+
+  const admin = createAdminClient()
+
+  // H-5: usar clinic_id directo de pet_files — más simple y fiable que join con pets
+  const { data: fileRecord } = await admin.from('pet_files')
+    .select('file_path, clinic_id')
+    .eq('id', id)
+    .single()
+
+  if (!fileRecord) return NextResponse.json({ error: 'No encontrado' }, { status: 404 })
+
+  if (fileRecord.clinic_id !== profile.clinic_id) {
+    return NextResponse.json({ error: 'No encontrado' }, { status: 404 })
+  }
+
+  await admin.storage.from('pet-files').remove([fileRecord.file_path])
   await admin.from('pet_files').delete().eq('id', id)
   return NextResponse.json({ ok: true })
 }

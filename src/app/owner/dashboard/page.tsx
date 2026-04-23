@@ -18,13 +18,18 @@ export default async function OwnerDashboard() {
   const { data: pets } = await admin.from('pets')
     .select('*').eq('owner_id', profile?.id).eq('is_active', true)
 
-  const petsWithInfo = await Promise.all((pets ?? []).map(async (pet) => {
-    const { data: next } = await admin.from('medical_records')
-      .select('next_visit').eq('pet_id', pet.id)
-      .gt('next_visit', new Date().toISOString().split('T')[0])
-      .order('next_visit', { ascending: true }).limit(1).single()
-    return { ...pet, nextVisit: next?.next_visit }
-  }))
+  const petIds = (pets ?? []).map(p => p.id)
+  const today = new Date().toISOString().split('T')[0]
+  const nextVisitMap: Record<string, string> = {}
+  if (petIds.length > 0) {
+    const { data: visits } = await admin.from('medical_records')
+      .select('pet_id, next_visit')
+      .in('pet_id', petIds)
+      .gt('next_visit', today)
+      .order('next_visit', { ascending: true })
+    visits?.forEach(v => { if (v.pet_id && !nextVisitMap[v.pet_id]) nextVisitMap[v.pet_id] = v.next_visit })
+  }
+  const petsWithInfo = (pets ?? []).map(pet => ({ ...pet, nextVisit: nextVisitMap[pet.id] ?? null }))
 
   const speciesLabel: Record<string, string> = { dog: 'Perro', cat: 'Gato', bird: 'Ave', rabbit: 'Conejo', other: 'Otro' }
   const clinic = (profile as any)?.clinics
@@ -37,13 +42,13 @@ export default async function OwnerDashboard() {
 
         /* MOBILE */
         .dash { min-height:100svh; }
-        .dash-header { background:linear-gradient(170deg,var(--pf-coral) 0%,#f9a394 100%); padding:48px 18px 24px; }
+        .dash-header { background:linear-gradient(170deg,var(--pf-coral) 0%,#f9a394 100%); padding:calc(env(safe-area-inset-top) + 20px) 18px 24px; }
         .dash-top { display:flex; align-items:center; justify-content:space-between; }
         .dash-greeting { color:rgba(255,255,255,.8); font-size:14px; margin:0 0 2px; font-family:var(--pf-font-body); }
         .dash-name { color:#fff; font-size:26px; font-weight:700; margin:0; font-family:var(--pf-font-display); letter-spacing:-0.01em; }
         .dash-clinic { color:rgba(255,255,255,.75); font-size:13px; margin:6px 0 0; display:flex; align-items:center; gap:5px; font-family:var(--pf-font-body); }
         .dash-avatar { width:46px; height:46px; border-radius:50%; background:rgba(255,255,255,.25); display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:700; color:#fff; text-decoration:none; font-family:var(--pf-font-display); }
-        .dash-body { padding:16px 14px 48px; }
+        .dash-body { padding:16px 14px calc(env(safe-area-inset-bottom) + 24px); }
         .section-title { font-size:20px; font-weight:700; color:var(--pf-ink); margin:0 2px 12px; letter-spacing:-0.01em; font-family:var(--pf-font-display); }
         .pet-card { background:var(--pf-white); border-radius:20px; display:flex; align-items:center; gap:14px; padding:14px 16px; margin-bottom:10px; text-decoration:none; box-shadow:var(--pf-shadow-sm); border:0.5px solid var(--pf-border); transition:border-color 0.2s, box-shadow 0.2s; }
         .pet-card:hover { border-color:var(--pf-coral-mid); box-shadow:var(--pf-shadow-card-hover); }

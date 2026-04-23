@@ -49,15 +49,13 @@ function InviteForm() {
 
       // Login automático
       const supabase = createClient()
-      await supabase.auth.signInWithPassword({ email: invitation.email, password: form.password })
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email: invitation.email, password: form.password })
+      if (signInError) { setError('Cuenta creada pero no pudo iniciar sesión automáticamente. Ve a login.'); setLoading(false); return }
 
       const role = invitation.role
-      const slug = invitation.clinics?.slug
-      const dest = ['vet_admin', 'veterinarian'].includes(role)
-        ? `https://${slug}.petfhans.com/vet/dashboard`
-        : `https://${slug}.petfhans.com/owner/dashboard`
-
-      window.location.href = dest
+      window.location.href = ['vet_admin', 'veterinarian'].includes(role)
+        ? '/vet/dashboard'
+        : '/owner/dashboard'
     } catch (err: any) {
       setError(err.message)
       setLoading(false)
@@ -75,7 +73,7 @@ function InviteForm() {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--pf-bg)' }}>
         <div className="text-center">
-          <div className="text-4xl mb-3 animate-bounce">🐾</div>
+          <div className="mb-3"><img src="/logo-icon.svg" width={48} height={48} alt="Petfhans" style={{ borderRadius: 12 }} /></div>
           <p className="text-sm" style={{ color: 'var(--pf-muted)' }}>Validando invitación...</p>
         </div>
       </div>
@@ -105,7 +103,7 @@ function InviteForm() {
           <div className="text-center mb-6">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-3"
               style={{ background: 'var(--pf-coral-soft)' }}>
-              <span className="text-2xl">🐾</span>
+              <img src="/logo-icon.svg" width={40} height={40} alt="Petfhans" />
             </div>
             <h1 className="text-xl font-bold" style={{ color: 'var(--pf-ink)' }}>
               {invitation.clinics?.name} te invita

@@ -458,7 +458,7 @@ function CitasTab({ petId, petName, clinicId, appointments }: {
 
       {/* Scheduled booking form */}
       {clinicId
-        ? <BookAppointment petId={petId} clinicId={clinicId} />
+        ? <BookAppointment petId={petId} petName={petName} clinicId={clinicId} />
         : <div className="empty-box"><p style={{ fontSize: 32, margin: '0 0 8px' }}>📅</p><p style={{ fontSize: 14, color: '#8e8e93', margin: 0 }}>Sin clínica asignada</p></div>
       }
 

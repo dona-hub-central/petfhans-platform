@@ -24,9 +24,6 @@ export default async function RecordDetailPage({ params }: { params: Promise<{ i
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: profile } = await supabase.from('profiles')
-    .select('*').eq('user_id', user.id).single()
-
   const admin = createAdminClient()
   const { data: r } = await admin.from('medical_records')
     .select('*, pets(id, name, species, breed), profiles!medical_records_vet_id_fkey(full_name)')

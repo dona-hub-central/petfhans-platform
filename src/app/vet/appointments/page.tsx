@@ -12,26 +12,31 @@ export default async function AppointmentsPage() {
   if (!user) redirect('/auth/login')
 
   const { data: profile } = await supabase.from('profiles')
-    .select('*').eq('user_id', user.id).single()
+    .select('id, role, clinic_id').eq('user_id', user.id).single()
+
+  if (!profile?.clinic_id) redirect('/auth/login')
 
   const admin = createAdminClient()
+  const isAdmin = profile.role === 'vet_admin' || profile.role === 'superadmin'
 
   // Citas del mes actual
   const now = new Date()
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
   const monthEnd   = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]
 
+  // admin/vet_admin → todas las citas de la clínica
+  // veterinarian    → mismas por ahora (vet_id en appointments requiere migración futura)
   const { data: appointments } = await admin.from('appointments')
-    .select('*, is_virtual, pets(name, species), profiles!appointments_owner_id_fkey(full_name, email)')
-    .eq('clinic_id', profile?.clinic_id)
+    .select('*, pets(name, species), profiles(full_name, email)')
+    .eq('clinic_id', profile.clinic_id)
     .gte('appointment_date', monthStart)
     .lte('appointment_date', monthEnd)
     .order('appointment_date').order('appointment_time')
 
   // Pendientes de hoy en adelante
   const { data: pending } = await admin.from('appointments')
-    .select('*, is_virtual, pets(name, species), profiles!appointments_owner_id_fkey(full_name, email)')
-    .eq('clinic_id', profile?.clinic_id)
+    .select('*, pets(name, species), profiles(full_name, email)')
+    .eq('clinic_id', profile.clinic_id)
     .eq('status', 'pending')
     .gte('appointment_date', now.toISOString().split('T')[0])
     .order('appointment_date').order('appointment_time')
@@ -56,6 +61,7 @@ export default async function AppointmentsPage() {
         pending={pending ?? []}
         year={now.getFullYear()}
         month={now.getMonth()}
+        isAdmin={isAdmin}
       />
     </>
   )
