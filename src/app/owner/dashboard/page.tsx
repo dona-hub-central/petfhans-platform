@@ -5,7 +5,7 @@ import Link from 'next/link'
 import PetAvatar from '@/components/shared/PetAvatar'
 import LogoutButton from '@/components/owner/LogoutButton'
 import { Building2, PawPrint, Calendar } from 'lucide-react'
-import type { PetWithNextVisit } from '@/types'
+import type { Pet, PetWithNextVisit } from '@/types'
 
 export default async function OwnerDashboard() {
   const supabase = await createClient()
@@ -15,11 +15,23 @@ export default async function OwnerDashboard() {
   const { data: profile } = await supabase.from('profiles')
     .select('*, clinics(id, name, slug)').eq('user_id', user.id).single()
 
-  const admin = createAdminClient()
-  const { data: pets } = await admin.from('pets')
-    .select('*').eq('owner_id', profile?.id).eq('is_active', true)
+  if (!profile) redirect('/auth/login')
 
-  const petIds = (pets ?? []).map(p => p.id)
+  const admin = createAdminClient()
+
+  // Use pet_access as authoritative source — owners only see pets explicitly granted
+  const { data: access } = await admin.from('pet_access')
+    .select('pet_id').eq('owner_id', profile.id)
+  const accessPetIds = (access ?? []).map(a => a.pet_id)
+
+  let pets: Pet[] = []
+  if (accessPetIds.length > 0) {
+    const { data } = await admin.from('pets')
+      .select('*').in('id', accessPetIds).eq('is_active', true)
+    pets = (data ?? []) as Pet[]
+  }
+
+  const petIds = pets.map(p => p.id)
   const today = new Date().toISOString().split('T')[0]
   const nextVisitMap: Record<string, string> = {}
   if (petIds.length > 0) {
@@ -30,7 +42,7 @@ export default async function OwnerDashboard() {
       .order('next_visit', { ascending: true })
     visits?.forEach(v => { if (v.pet_id && !nextVisitMap[v.pet_id]) nextVisitMap[v.pet_id] = v.next_visit })
   }
-  const petsWithInfo = (pets ?? []).map(pet => ({ ...pet, nextVisit: nextVisitMap[pet.id] ?? null }))
+  const petsWithInfo = pets.map(pet => ({ ...pet, nextVisit: nextVisitMap[pet.id] ?? null }))
 
   const speciesLabel: Record<string, string> = { dog: 'Perro', cat: 'Gato', bird: 'Ave', rabbit: 'Conejo', other: 'Otro' }
   type ProfileRow = { full_name: string | null; clinics: { id: string; name: string; slug: string } | null }

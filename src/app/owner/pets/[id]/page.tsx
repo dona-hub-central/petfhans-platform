@@ -13,7 +13,15 @@ export default async function OwnerPetPage({ params }: { params: Promise<{ id: s
   const { data: profile } = await supabase.from('profiles')
     .select('*, clinics(name, slug)').eq('user_id', user.id).single()
 
+  if (!profile) redirect('/auth/login')
+
   const admin = createAdminClient()
+
+  // Verify this owner has explicit access to the pet via pet_access
+  const { data: access } = await admin.from('pet_access')
+    .select('pet_id').eq('owner_id', profile.id).eq('pet_id', id).maybeSingle()
+  if (!access) redirect('/owner/dashboard')
+
   const { data: pet } = await admin.from('pets').select('*').eq('id', id).single()
   if (!pet) redirect('/owner/dashboard')
 
