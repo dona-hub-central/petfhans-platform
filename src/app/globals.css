@@ -223,3 +223,24 @@ body {
 }
 .btn-pf:hover    { background: var(--pf-coral-dark); }
 .btn-pf:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Page header: title + action button ── */
+/* Wraps the button below the title on narrow screens */
+.pf-page-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+@media (max-width: 767px) {
+  .pf-page-hdr {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .pf-page-hdr > a,
+  .pf-page-hdr > button,
+  .pf-page-hdr > span {
+    align-self: stretch;
+    text-align: center;
+  }
+}

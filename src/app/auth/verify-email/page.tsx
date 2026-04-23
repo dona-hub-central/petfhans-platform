@@ -10,7 +10,7 @@ function VerifyEmailContent() {
   const email = searchParams.get('email') ?? ''
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--pf-bg)' }}>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--pf-bg)', paddingTop: 'max(1rem, env(safe-area-inset-top))', paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
       <div className="w-full max-w-sm">
         <div className="bg-white rounded-2xl shadow-sm border p-8 text-center" style={{ borderColor: 'var(--pf-border)' }}>
 

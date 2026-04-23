@@ -102,6 +102,82 @@ export async function sendInvitationEmail({
 }
 
 // =============================================
+// Email: Verificación de cuenta (registro propio)
+// =============================================
+export async function sendVerificationEmail({
+  to,
+  name,
+  verifyLink,
+}: {
+  to: string
+  name: string
+  verifyLink: string
+}) {
+  const firstName = name.split(' ')[0]
+  const subject = `Verifica tu cuenta en Petfhans 🐾`
+
+  const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { margin: 0; padding: 0; background: #f7f6f4; font-family: 'Helvetica Neue', Arial, sans-serif; }
+    .wrapper { max-width: 560px; margin: 40px auto; padding: 0 20px; }
+    .card { background: #ffffff; border-radius: 16px; padding: 40px; border: 1px solid #ebebeb; }
+    .logo { text-align: center; margin-bottom: 32px; }
+    .logo-icon { display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; background: #fff0ef; border-radius: 16px; }
+    .logo-name { display: block; font-size: 20px; font-weight: 700; color: #1a1a1a; margin-top: 8px; }
+    h1 { font-size: 22px; font-weight: 700; color: #1a1a1a; margin: 0 0 12px; }
+    p { font-size: 15px; color: #555; line-height: 1.6; margin: 0 0 20px; }
+    .btn { display: block; text-align: center; background: #EE726D; color: #ffffff !important; text-decoration: none; font-weight: 700; font-size: 15px; padding: 16px 32px; border-radius: 12px; margin: 28px 0; }
+    .link-box { background: #f7f6f4; border-radius: 10px; padding: 12px 16px; font-size: 12px; color: #888; word-break: break-all; margin-bottom: 24px; }
+    .footer { text-align: center; font-size: 12px; color: #aaa; margin-top: 32px; }
+    .divider { border: none; border-top: 1px solid #ebebeb; margin: 28px 0; }
+    .steps { list-style: none; padding: 0; margin: 0; }
+    .steps li { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; font-size: 14px; color: #444; }
+    .step-num { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: #EE726D; color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="card">
+      <div class="logo">
+        <span class="logo-icon"><img src="https://petfhans.com/logo-icon.svg" width="36" height="36" alt="" /></span>
+        <span class="logo-name">Petfhans</span>
+      </div>
+
+      <h1>¡Hola, ${firstName}!</h1>
+      <p>Gracias por registrarte en Petfhans. Para activar tu cuenta haz clic en el botón de abajo.</p>
+
+      <a href="${verifyLink}" class="btn">Verificar mi cuenta →</a>
+
+      <div style="background:#f7f6f4; border-radius:12px; padding:20px; margin-bottom:24px;">
+        <p style="font-size:13px; font-weight:600; margin:0 0 12px; color:#1a1a1a;">¿Qué pasa después?</p>
+        <ul class="steps">
+          <li><span class="step-num">1</span>Verifica tu email con el botón de arriba</li>
+          <li><span class="step-num">2</span>Agrega los datos de tu mascota (opcional)</li>
+          <li><span class="step-num">3</span>Conecta con tu clínica veterinaria</li>
+        </ul>
+      </div>
+
+      <hr class="divider">
+
+      <p style="font-size:13px; color:#888;">Si el botón no funciona, copia este enlace en tu navegador:</p>
+      <div class="link-box">${verifyLink}</div>
+
+      <p style="font-size:12px; color:#aaa;">Si no creaste esta cuenta, puedes ignorar este email.</p>
+    </div>
+    <div class="footer">© ${new Date().getFullYear()} Petfhans · Plataforma veterinaria</div>
+  </div>
+</body>
+</html>`
+
+  return resend.emails.send({ from: FROM, to, subject, html })
+}
+
+// =============================================
 // Email: Bienvenida (invitación aceptada)
 // =============================================
 export async function sendWelcomeEmail({

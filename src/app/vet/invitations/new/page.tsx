@@ -44,8 +44,8 @@ export default function NewInvitationPage() {
     router.push('/vet/invitations?created=true')
   }
 
-  const inputCls = "w-full px-4 py-3 rounded-lg border text-sm outline-none transition"
-  const inputStyle = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }
+  const inputCls = "w-full px-4 py-3 rounded-lg border outline-none transition"
+  const inputStyle = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)', fontSize: 16 as const }
   const focus = { onFocus: (e: any) => e.target.style.borderColor = 'var(--pf-coral)', onBlur: (e: any) => e.target.style.borderColor = 'var(--pf-border)' }
 
   const roles = [

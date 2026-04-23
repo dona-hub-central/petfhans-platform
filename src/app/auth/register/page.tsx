@@ -3,7 +3,6 @@
 import { useState, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
 
 function RegisterForm() {
   const router = useRouter()
@@ -20,21 +19,22 @@ function RegisterForm() {
     if (form.password.length < 8)       { setError('La contraseña debe tener mínimo 8 caracteres'); return }
     setLoading(true); setError('')
 
-    const supabase = createClient()
-    const { error: signUpError } = await supabase.auth.signUp({
-      email:    form.email.trim().toLowerCase(),
-      password: form.password,
-      options: {
-        data: { role: 'pet_owner', full_name: form.full_name.trim() },
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/owner/setup`,
-      },
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email:     form.email.trim().toLowerCase(),
+        password:  form.password,
+        full_name: form.full_name.trim(),
+      }),
     })
 
-    if (signUpError) {
+    const json = await res.json()
+    if (!res.ok) {
       setError(
-        signUpError.message.includes('already registered')
+        json.error === 'already_registered'
           ? 'Ya existe una cuenta con ese email. ¿Quieres iniciar sesión?'
-          : signUpError.message
+          : (json.error ?? 'Error al crear la cuenta')
       )
       setLoading(false)
       return

@@ -50,6 +50,11 @@ export default async function VetDashboard() {
         .qa-card:hover { border-color:var(--pf-coral-mid); box-shadow:var(--pf-shadow-card-hover); }
         .recent-row { display:flex; align-items:center; gap:12px; padding:14px 20px; text-decoration:none; border-top:0.5px solid var(--pf-border); transition:background 0.15s; }
         .recent-row:hover { background:var(--pf-bg); }
+        @media (max-width:767px) {
+          .dash-actions { grid-template-columns:repeat(2,1fr) !important; }
+          .dash-stats > div { padding:12px 10px !important; }
+          .dash-stats > div > div:first-child { width:30px !important; height:30px !important; border-radius:8px !important; margin-bottom:6px !important; }
+        }
       `}</style>
 
       {/* Header */}
@@ -61,7 +66,7 @@ export default async function VetDashboard() {
       </header>
 
       {/* Stats */}
-      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 24 }}>
+      <section className="dash-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 24 }}>
         <StatCard Icon={PawPrint}       label="Pacientes activos"     value={petCount ?? 0}   tint="coral"  delay={0} />
         <StatCard Icon={ClipboardCheck} label="Consultas esta semana" value={weekRecords ?? 0} tint="mint"   delay={80} />
         <StatCard Icon={Mail}           label="Invitaciones activas"  value={invCount ?? 0}   tint="amber"  delay={160} />
@@ -69,7 +74,7 @@ export default async function VetDashboard() {
 
       {/* Quick actions */}
       <h2 style={{ font: 'var(--pf-text-h2)', color: 'var(--pf-ink)', margin: '0 0 12px' }}>Acciones rápidas</h2>
-      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 28 }}>
+      <section className="dash-actions" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 28 }}>
         <QuickAction href="/vet/pets/new"       Icon={Plus}          title="Nueva mascota"  desc="Registrar paciente" tint="coral" />
         <QuickAction href="/vet/records/new"    Icon={ClipboardList} title="Nueva consulta" desc="Registrar consulta" tint="coral" />
         <QuickAction href="/vet/invitations/new" Icon={Mail}         title="Invitar dueño"  desc="Enviar link acceso" tint="coral" />

@@ -150,15 +150,38 @@ function NewRecordForm() {
     router.push(`/vet/records/${record.id}?created=true`)
   }
 
-  const inp = "w-full px-3 py-2.5 rounded-xl border text-sm outline-none transition"
-  const inpS = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)', background: '#fff' }
+  const inp = "w-full px-3 py-2.5 rounded-xl border outline-none transition"
+  const inpS = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)', background: '#fff', fontSize: 16 as const }
   const f = { onFocus: (e: any) => e.target.style.borderColor = 'var(--pf-coral)', onBlur: (e: any) => e.target.style.borderColor = 'var(--pf-border)' }
   const selectedPet = pets.find(p => p.id === form.pet_id)
 
   return (
     <form onSubmit={handleSubmit}>
+      <style>{`
+        .rec-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+        .rec-id-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:16px; }
+        .rec-vitals-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
+        .rec-state-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px; }
+        .rec-systems-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+        .rec-diag-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+        .rec-med-grid { display:grid; grid-template-columns:2fr 1fr 1fr 1fr auto; gap:8px; margin-bottom:8px; }
+        .rec-vax-grid { display:grid; grid-template-columns:2fr 1fr 1fr auto; gap:8px; align-items:center; margin-bottom:8px; }
+        @media (max-width:767px) {
+          .rec-hdr { flex-direction:column; align-items:flex-start; gap:12px; }
+          .rec-hdr button[type="submit"] { width:100%; }
+          .rec-id-grid { grid-template-columns:1fr; }
+          .rec-vitals-grid { grid-template-columns:repeat(2,1fr); }
+          .rec-state-grid { grid-template-columns:1fr; }
+          .rec-systems-grid { grid-template-columns:1fr; }
+          .rec-diag-grid { grid-template-columns:1fr; }
+          .rec-med-grid { grid-template-columns:1fr 1fr; }
+          .rec-med-grid > *:nth-child(3), .rec-med-grid > *:nth-child(4) { display:none; }
+          .rec-vax-grid { grid-template-columns:1fr 1fr; }
+          .rec-vax-grid > *:nth-child(2) { display:none; }
+        }
+      `}</style>
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="rec-hdr" style={{ gap: 12 }}>
           <div>
             <div className="flex items-center gap-2 mb-1">
               <Link href="/vet/pets" className="text-xs" style={{ color: 'var(--pf-muted)' }}>Mascotas</Link>
@@ -189,7 +212,7 @@ function NewRecordForm() {
 
           {/* ── 1. IDENTIFICACIÓN ── */}
           <Section title="Identificación" Icon={ClipboardList}>
-            <div className="grid grid-cols-3 gap-4 mb-4">
+            <div className="rec-id-grid">
               <Field label="Paciente" required>
                 <PetSearch pets={pets} value={form.pet_id} onChange={v => set('pet_id', v)} />
               </Field>
@@ -223,7 +246,7 @@ function NewRecordForm() {
           <Section title="Exploración física" Icon={Stethoscope}>
             {/* Constantes vitales */}
             <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: 'var(--pf-muted)' }}>Constantes vitales</p>
-            <div className="grid grid-cols-4 gap-3 mb-4">
+            <div className="rec-vitals-grid">
               {[
                 { k: 'weight',           label: 'Peso (kg)',   ph: selectedPet?.weight ? String(selectedPet.weight) : '0.0' },
                 { k: 'temperature',      label: 'Temp. (°C)',  ph: '38.5' },
@@ -239,7 +262,7 @@ function NewRecordForm() {
             </div>
 
             {/* Estado general */}
-            <div className="grid grid-cols-3 gap-3 mb-4">
+            <div className="rec-state-grid" style={{ marginBottom: 16 }}>
               <Field label="Estado general">
                 <select value={exam.general_state} onChange={e => setE('general_state', e.target.value)} className={inp} style={inpS}>
                   <option value="">—</option>
@@ -262,7 +285,7 @@ function NewRecordForm() {
 
             {/* Exploración por sistemas */}
             <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: 'var(--pf-muted)' }}>Exploración por sistemas</p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="rec-systems-grid">
               {[
                 ['cardiovascular',  'Cardiovascular'],
                 ['respiratory',     'Respiratorio'],
@@ -307,7 +330,7 @@ function NewRecordForm() {
                 <input value={form.reason} onChange={e => set('reason', e.target.value)} required
                   placeholder="Describe el motivo de la visita…" className={inp} style={inpS} {...f} />
               </Field>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="rec-diag-grid">
                 <Field label="Diagnóstico">
                   <textarea value={form.diagnosis} onChange={e => set('diagnosis', e.target.value)}
                     rows={3} placeholder="Diagnóstico principal…"
@@ -355,7 +378,7 @@ function NewRecordForm() {
 
             {meds.map((med, i) => (
               <div key={i} className="rounded-xl border p-3 mb-2" style={{ borderColor: 'var(--pf-border)' }}>
-                <div className="grid grid-cols-5 gap-2 mb-2">
+                <div className="rec-med-grid" style={{ marginBottom: 8 }}>
                   <div className="col-span-2">
                     <input value={med.name} onChange={e => updateMed(i, 'name', e.target.value)}
                       placeholder="Medicamento" className={inp} style={inpS} {...f} />
@@ -397,7 +420,7 @@ function NewRecordForm() {
             )}
 
             {vaccines.map((v, i) => (
-              <div key={i} className="grid grid-cols-4 gap-2 mb-2 items-center">
+              <div key={i} className="rec-vax-grid">
                 <div className="col-span-2">
                   <input value={v.name} onChange={e => updateVaccine(i, 'name', e.target.value)}
                     placeholder="Nombre vacuna / producto" className={inp} style={inpS} {...f} />
