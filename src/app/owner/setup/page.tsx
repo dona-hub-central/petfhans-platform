@@ -38,8 +38,8 @@ export default function OwnerSetupPage() {
     router.push('/owner/dashboard')
   }
 
-  const inp = 'w-full px-4 py-3 rounded-xl border text-sm outline-none transition'
-  const inpStyle = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }
+  const inp = 'w-full px-4 py-3 rounded-xl border outline-none transition'
+  const inpStyle = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)', fontSize: 16 as const }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--pf-bg)' }}>

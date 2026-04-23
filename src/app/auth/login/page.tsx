@@ -81,7 +81,7 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--pf-bg)' }}>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--pf-bg)', paddingTop: 'max(1rem, env(safe-area-inset-top))', paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-sm border p-8" style={{ borderColor: 'var(--pf-border)' }}>
 
@@ -112,8 +112,8 @@ function LoginForm() {
                 onChange={e => setEmail(e.target.value)}
                 required
                 autoComplete="email"
-                className="w-full px-4 py-3 rounded-lg border text-sm transition outline-none"
-                style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }}
+                className="w-full px-4 py-3 rounded-lg border transition outline-none"
+                style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-ink)', fontSize: 16 }}
                 onFocus={e => e.target.style.borderColor = 'var(--pf-coral)'}
                 onBlur={e => e.target.style.borderColor = 'var(--pf-border)'}
                 placeholder="tu@email.com"
@@ -130,8 +130,8 @@ function LoginForm() {
                 onChange={e => setPassword(e.target.value)}
                 required
                 autoComplete="current-password"
-                className="w-full px-4 py-3 rounded-lg border text-sm transition outline-none"
-                style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }}
+                className="w-full px-4 py-3 rounded-lg border transition outline-none"
+                style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-ink)', fontSize: 16 }}
                 onFocus={e => e.target.style.borderColor = 'var(--pf-coral)'}
                 onBlur={e => e.target.style.borderColor = 'var(--pf-border)'}
                 placeholder="••••••••"
