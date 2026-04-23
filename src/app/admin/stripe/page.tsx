@@ -17,7 +17,7 @@ export default async function StripePage() {
 
   return (
     <AdminLayout userName={profile?.full_name ?? 'Admin'}>
-      <div className="px-8 py-8">
+      <div className="adm-pg">
         <div className="mb-8">
           <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Configuración Stripe</h1>
           <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>
@@ -26,7 +26,7 @@ export default async function StripePage() {
         </div>
 
         {/* Estado actual */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
           <StatusCard
             icon="🔑"
             label="Clave secreta (STRIPE_SECRET_KEY)"
@@ -50,7 +50,7 @@ export default async function StripePage() {
             Configura este endpoint en tu dashboard de Stripe para recibir eventos de pago:
           </p>
           <div className="flex items-center gap-3 rounded-xl p-3" style={{ background: 'var(--pf-bg)' }}>
-            <code className="text-sm flex-1" style={{ color: 'var(--pf-ink)' }}>
+            <code className="text-sm flex-1" style={{ color: 'var(--pf-ink)', wordBreak: 'break-all' }}>
               https://petfhans.com/api/stripe/webhook
             </code>
             <CopyButton text="https://petfhans.com/api/stripe/webhook" />

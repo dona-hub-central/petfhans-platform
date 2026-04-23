@@ -28,7 +28,7 @@ export default async function InvitationsPage() {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-8">
+      <div className="pf-page-hdr mb-8">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Invitaciones</h1>
           <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>{active.length} activas</p>

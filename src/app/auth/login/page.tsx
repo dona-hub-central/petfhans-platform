@@ -23,8 +23,10 @@ function LoginForm() {
   const searchParams = useSearchParams()
   const next = safeNext(searchParams.get('next'))
   const verificationError = searchParams.get('error') === 'verification'
+  const justVerified      = searchParams.get('verified') === 'true'
+  const emailParam        = searchParams.get('email') ?? ''
 
-  const [email, setEmail]       = useState('')
+  const [email, setEmail]       = useState(emailParam)
   const [password, setPassword] = useState('')
   const [loading, setLoading]   = useState(false)
   const [checking, setChecking] = useState(true)
@@ -81,7 +83,7 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--pf-bg)' }}>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--pf-bg)', paddingTop: 'max(1rem, env(safe-area-inset-top))', paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-sm border p-8" style={{ borderColor: 'var(--pf-border)' }}>
 
@@ -94,6 +96,14 @@ function LoginForm() {
             <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Petfhans</h1>
             <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>Plataforma veterinaria</p>
           </div>
+
+          {justVerified && (
+            <div className="text-sm p-3 rounded-lg mb-4 flex items-center gap-2"
+              style={{ background: '#edfaf1', color: '#1a7a3c', border: '1px solid #b2f0c9' }}>
+              <span style={{ fontSize: 16 }}>✓</span>
+              Cuenta verificada. Ingresa tu contraseña para continuar.
+            </div>
+          )}
 
           {verificationError && (
             <div className="text-sm p-3 rounded-lg mb-4" style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral-dark)' }}>
@@ -112,8 +122,8 @@ function LoginForm() {
                 onChange={e => setEmail(e.target.value)}
                 required
                 autoComplete="email"
-                className="w-full px-4 py-3 rounded-lg border text-sm transition outline-none"
-                style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }}
+                className="w-full px-4 py-3 rounded-lg border transition outline-none"
+                style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-ink)', fontSize: 16 }}
                 onFocus={e => e.target.style.borderColor = 'var(--pf-coral)'}
                 onBlur={e => e.target.style.borderColor = 'var(--pf-border)'}
                 placeholder="tu@email.com"
@@ -130,8 +140,8 @@ function LoginForm() {
                 onChange={e => setPassword(e.target.value)}
                 required
                 autoComplete="current-password"
-                className="w-full px-4 py-3 rounded-lg border text-sm transition outline-none"
-                style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }}
+                className="w-full px-4 py-3 rounded-lg border transition outline-none"
+                style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-ink)', fontSize: 16 }}
                 onFocus={e => e.target.style.borderColor = 'var(--pf-coral)'}
                 onBlur={e => e.target.style.borderColor = 'var(--pf-border)'}
                 placeholder="••••••••"

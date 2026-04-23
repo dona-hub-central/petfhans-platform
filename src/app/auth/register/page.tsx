@@ -3,7 +3,6 @@
 import { useState, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
 
 function RegisterForm() {
   const router = useRouter()
@@ -20,21 +19,22 @@ function RegisterForm() {
     if (form.password.length < 8)       { setError('La contraseña debe tener mínimo 8 caracteres'); return }
     setLoading(true); setError('')
 
-    const supabase = createClient()
-    const { error: signUpError } = await supabase.auth.signUp({
-      email:    form.email.trim().toLowerCase(),
-      password: form.password,
-      options: {
-        data: { role: 'pet_owner', full_name: form.full_name.trim() },
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/owner/setup`,
-      },
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email:     form.email.trim().toLowerCase(),
+        password:  form.password,
+        full_name: form.full_name.trim(),
+      }),
     })
 
-    if (signUpError) {
+    const json = await res.json()
+    if (!res.ok) {
       setError(
-        signUpError.message.includes('already registered')
+        json.error === 'already_registered'
           ? 'Ya existe una cuenta con ese email. ¿Quieres iniciar sesión?'
-          : signUpError.message
+          : (json.error ?? 'Error al crear la cuenta')
       )
       setLoading(false)
       return
@@ -43,15 +43,15 @@ function RegisterForm() {
     router.push(`/auth/verify-email?email=${encodeURIComponent(form.email.trim().toLowerCase())}`)
   }
 
-  const inp = 'w-full px-4 py-3 rounded-lg border text-sm transition outline-none'
-  const inpStyle = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }
+  const inp = 'w-full px-4 py-3 rounded-lg border transition outline-none'
+  const inpStyle = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)', fontSize: 16 as const }
   const focus = {
     onFocus: (e: React.FocusEvent<HTMLInputElement>) => e.target.style.borderColor = 'var(--pf-coral)',
     onBlur:  (e: React.FocusEvent<HTMLInputElement>) => e.target.style.borderColor = 'var(--pf-border)',
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--pf-bg)' }}>
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--pf-bg)', paddingTop: 'max(1rem, env(safe-area-inset-top))', paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-sm border p-8" style={{ borderColor: 'var(--pf-border)' }}>
 

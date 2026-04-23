@@ -59,7 +59,7 @@ export default async function OwnerProfilePage({
       <style>{`
         html, body { margin:0; padding:0; background:#f2f2f7; font-family:var(--pf-font-body); }
         .prof { min-height:100svh; max-width:600px; margin:0 auto; }
-        .prof-header { background:linear-gradient(160deg,#EE726D 0%,#f9a394 100%); padding:52px 20px 28px; }
+        .prof-header { background:linear-gradient(160deg,#EE726D 0%,#f9a394 100%); padding:calc(env(safe-area-inset-top) + 20px) 20px 28px; }
         .prof-header-inner { display:flex; align-items:center; gap:4px; margin-bottom:20px; }
         .prof-back { color:rgba(255,255,255,.85); font-size:22px; text-decoration:none; line-height:1; padding:4px 8px 4px 0; }
         .prof-title { color:#fff; font-size:20px; font-weight:800; margin:0; font-family:var(--pf-font-display); }
@@ -67,12 +67,12 @@ export default async function OwnerProfilePage({
         .prof-name { color:#fff; font-size:22px; font-weight:700; margin:0 0 3px; font-family:var(--pf-font-display); }
         .prof-email { color:rgba(255,255,255,.75); font-size:13px; margin:0; }
         .prof-clinic { display:inline-flex; align-items:center; gap:5px; margin-top:6px; background:rgba(255,255,255,.2); color:#fff; font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; }
-        .prof-body { padding:16px 16px 64px; }
+        .prof-body { padding:16px 16px calc(env(safe-area-inset-bottom) + 32px); }
         .card { background:#fff; border-radius:20px; padding:20px; margin-bottom:14px; box-shadow:0 1px 3px rgba(0,0,0,.06); }
         .card-title { font-size:14px; font-weight:700; color:#1c1c1e; margin:0 0 16px; }
         .field { margin-bottom:14px; }
         .field label { display:block; font-size:12px; font-weight:600; color:#8e8e93; margin-bottom:5px; text-transform:uppercase; letter-spacing:.4px; }
-        .field input { width:100%; padding:11px 14px; border-radius:12px; border:1.5px solid #e5e5ea; font-size:14px; color:#1c1c1e; background:#fff; box-sizing:border-box; outline:none; font-family:inherit; }
+        .field input { width:100%; padding:11px 14px; border-radius:12px; border:1.5px solid #e5e5ea; font-size:16px; color:#1c1c1e; background:#fff; box-sizing:border-box; outline:none; font-family:inherit; }
         .field input:focus { border-color:#EE726D; }
         .field input:disabled { background:#f9f9f9; color:#8e8e93; }
         .btn-save { width:100%; padding:13px; border-radius:14px; background:#EE726D; color:#fff; font-size:15px; font-weight:700; border:none; cursor:pointer; font-family:inherit; }

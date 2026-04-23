@@ -27,7 +27,7 @@ export default async function TeamPage() {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-8">
+      <div className="pf-page-hdr mb-8">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Equipo</h1>
           <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>{team?.length ?? 0} miembros</p>

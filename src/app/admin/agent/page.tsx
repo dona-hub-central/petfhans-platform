@@ -24,7 +24,7 @@ export default async function AgentPage() {
 
   return (
     <AdminLayout userName={profile?.full_name ?? 'Admin'}>
-      <div className="px-8 py-8">
+      <div className="adm-pg">
         <div className="flex items-center gap-4 mb-8">
           <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
             style={{ background: 'var(--pf-info)', color: 'var(--pf-info-fg)' }}>
@@ -50,7 +50,7 @@ export default async function AgentPage() {
         </div>
 
         {/* Stats de acceso a BD */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           {([
             { Icon: PawPrint,      label: 'Mascotas en BD',  value: totalPets ?? 0 },
             { Icon: ClipboardList, label: 'Consultas en BD', value: totalRecords ?? 0 },

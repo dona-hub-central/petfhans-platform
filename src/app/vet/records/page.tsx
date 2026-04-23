@@ -30,7 +30,7 @@ export default async function RecordsPage() {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-6">
+      <div className="pf-page-hdr mb-6">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Consultas</h1>
           <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>{records?.length ?? 0} registros</p>

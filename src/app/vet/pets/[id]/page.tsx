@@ -61,7 +61,15 @@ export default async function PetDetailPage({
         <span className="text-xs font-medium" style={{ color: 'var(--pf-ink)' }}>{pet.name}</span>
       </div>
 
-      <div className="flex items-start justify-between mb-6">
+      <style>{`
+        .pet-hdr { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:24px; }
+        @media (max-width:767px) {
+          .pet-hdr { flex-direction:column; gap:12px; }
+          .pet-hdr > a { align-self:stretch; text-align:center; }
+        }
+      `}</style>
+
+      <div className="pet-hdr">
         <div className="flex items-center gap-4">
           <PetAvatar petId={id} species={pet.species} photoUrl={pet.photo_url} size={64} editable={true} />
           <div>
@@ -131,16 +139,6 @@ export default async function PetDetailPage({
           )}
         </div>
 
-        {/* Archivos */}
-        <div className="lg:col-span-3">
-          <PetFiles
-            petId={id}
-            initialFiles={(petFiles ?? []).map((f: any) => ({ ...f, uploader: f.profiles?.full_name }))}
-            canUpload={true}
-            canDelete={true}
-          />
-        </div>
-
         {/* Historial médico */}
         <div className="lg:col-span-2">
           <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
@@ -194,6 +192,16 @@ export default async function PetDetailPage({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Archivos — full width */}
+      <div className="mt-6">
+        <PetFiles
+          petId={id}
+          initialFiles={(petFiles ?? []).map((f: any) => ({ ...f, uploader: f.profiles?.full_name }))}
+          canUpload={true}
+          canDelete={true}
+        />
       </div>
     </>
   )

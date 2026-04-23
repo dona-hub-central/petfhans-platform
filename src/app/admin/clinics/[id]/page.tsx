@@ -49,12 +49,14 @@ export default async function ClinicDetailPage({
   return (
     <AdminLayout userName={authProfile?.full_name ?? 'Admin'}>
     <div>
-      <div className="px-8 pt-6 pb-2 flex items-center gap-2">
-        <Link href="/admin/clinics" className="text-xs" style={{ color: 'var(--pf-muted)' }}>Clínicas</Link>
-        <span className="text-xs" style={{ color: 'var(--pf-border)' }}>/</span>
-        <span className="text-xs font-medium" style={{ color: 'var(--pf-ink)' }}>{clinic.name}</span>
+      <div className="adm-pg" style={{ paddingBottom: 8, paddingTop: 24 }}>
+        <div className="flex items-center gap-2">
+          <Link href="/admin/clinics" className="text-xs" style={{ color: 'var(--pf-muted)' }}>Clínicas</Link>
+          <span className="text-xs" style={{ color: 'var(--pf-border)' }}>/</span>
+          <span className="text-xs font-medium" style={{ color: 'var(--pf-ink)' }}>{clinic.name}</span>
+        </div>
       </div>
-      <main className="px-8 py-4 max-w-4xl">
+      <main className="adm-pg" style={{ paddingTop: 8, maxWidth: 896 }}>
         {created && (
           <div className="rounded-xl p-4 mb-6 flex items-center gap-3"
             style={{ background: '#edfaf1', border: '1px solid #b2f0c9' }}>
@@ -71,9 +73,17 @@ export default async function ClinicDetailPage({
 
         {/* Info clínica */}
         <div className="bg-white rounded-2xl border p-6 mb-6" style={{ borderColor: 'var(--pf-border)' }}>
-          <div className="flex items-start justify-between">
+          <style>{`
+            .clinic-det-hdr { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+            .clinic-det-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:24px; padding-top:24px; border-top: 1px solid var(--pf-border); }
+            @media (max-width:767px) {
+              .clinic-det-hdr { flex-direction:column; }
+              .clinic-det-stats { grid-template-columns:repeat(3,1fr); gap:8px; }
+            }
+          `}</style>
+          <div className="clinic-det-hdr">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl flex items-center justify-center"
+              <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
                 style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)' }}>
                 <Building2 size={24} strokeWidth={1.75} />
               </div>
@@ -85,7 +95,7 @@ export default async function ClinicDetailPage({
                 </a>
               </div>
             </div>
-            <span className="text-sm px-3 py-1 rounded-full font-medium"
+            <span className="text-sm px-3 py-1 rounded-full font-medium flex-shrink-0"
               style={{
                 background: clinic.subscription_status === 'active' ? '#edfaf1' : clinic.subscription_status === 'trial' ? '#fff8e6' : '#fee2e2',
                 color: clinic.subscription_status === 'active' ? '#1a7a3c' : clinic.subscription_status === 'trial' ? '#b07800' : '#dc2626',
@@ -94,7 +104,7 @@ export default async function ClinicDetailPage({
             </span>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t" style={{ borderColor: 'var(--pf-border)' }}>
+          <div className="clinic-det-stats">
             <div className="text-center">
               <p className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>{petCount ?? 0}</p>
               <p className="text-xs mt-0.5" style={{ color: 'var(--pf-muted)' }}>Mascotas / {clinic.max_patients} máx</p>

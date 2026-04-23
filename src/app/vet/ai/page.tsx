@@ -57,19 +57,30 @@ export default function AIPage() {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-6">
+      <style>{`
+        /* ai-header uses pf-page-hdr from globals.css */ .ai-header { margin-bottom:16px; }
+        .ai-pet-wrap { width:260px; flex-shrink:0; }
+        .ai-chat { height:calc(100vh - 220px); }
+        @media (max-width:767px) {
+          .ai-header { flex-direction:column; align-items:flex-start; gap:10px; }
+          .ai-pet-wrap { width:100%; }
+          .ai-chat { height:calc(100svh - 280px); min-height:360px; }
+        }
+      `}</style>
+
+      <div className="pf-page-hdr ai-header">
         <div>
           <h1 style={{ fontFamily: 'var(--pf-font-display)', fontWeight: 700, fontSize: 24, color: 'var(--pf-ink)', margin: 0 }}>IA Clínica</h1>
           <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>Consulta el historial y analiza casos</p>
         </div>
         {pets.length > 0 && (
-          <div style={{ width: 260 }}>
+          <div className="ai-pet-wrap">
             <PetSearch pets={pets} value={selectedPet} onChange={setSelectedPet} />
           </div>
         )}
       </div>
 
-      <div className="bg-white rounded-2xl border overflow-hidden flex flex-col" style={{ borderColor: 'var(--pf-border)', height: 'calc(100vh - 220px)' }}>
+      <div className="ai-chat bg-white rounded-2xl border overflow-hidden flex flex-col" style={{ borderColor: 'var(--pf-border)' }}>
         {/* Chat */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {messages.length === 0 && (
@@ -132,8 +143,8 @@ export default function AIPage() {
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
             placeholder="Escribe tu consulta clínica..."
-            className="flex-1 px-4 py-3 rounded-xl border text-sm outline-none"
-            style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }}
+            className="flex-1 px-4 py-3 rounded-xl border outline-none"
+            style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-ink)', fontSize: 16 }}
             onFocus={e => e.target.style.borderColor = 'var(--pf-coral)'}
             onBlur={e => e.target.style.borderColor = 'var(--pf-border)'}
           />
