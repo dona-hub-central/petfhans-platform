@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { sendVerificationEmail } from '@/lib/email'
+import { sendOtpEmail } from '@/lib/email'
+import { generateCode, createOtpToken } from '@/lib/otp'
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,34 +15,50 @@ export async function POST(req: NextRequest) {
     }
 
     const admin = createAdminClient()
-    const redirectTo = `${req.nextUrl.origin}/auth/callback?next=/owner/setup`
+    const normalizedEmail = email.trim().toLowerCase()
+    const normalizedName = full_name.trim()
 
-    const { data, error } = await admin.auth.admin.generateLink({
-      type: 'signup',
-      email: email.trim().toLowerCase(),
+    const { data: userData, error: createError } = await admin.auth.admin.createUser({
+      email: normalizedEmail,
       password,
-      options: {
-        data: { role: 'pet_owner', full_name: full_name.trim() },
-        redirectTo,
-      },
+      user_metadata: { role: 'pet_owner', full_name: normalizedName },
+      email_confirm: false,
     })
 
-    if (error) {
-      const msg = error.message.toLowerCase()
-      if (msg.includes('already registered') || msg.includes('already been registered') || msg.includes('user already registered')) {
+    if (createError) {
+      const msg = createError.message.toLowerCase()
+      if (msg.includes('already') || msg.includes('registered') || msg.includes('unique')) {
         return NextResponse.json({ error: 'already_registered' }, { status: 409 })
       }
-      return NextResponse.json({ error: error.message }, { status: 400 })
+      console.error('[register] createUser error:', createError.message)
+      return NextResponse.json({ error: createError.message }, { status: 400 })
     }
 
-    await sendVerificationEmail({
-      to: email.trim().toLowerCase(),
-      name: full_name.trim(),
-      verifyLink: data.properties.action_link,
-    })
+    const code = generateCode()
+    const token = createOtpToken(userData.user.id, normalizedEmail, normalizedName, code)
 
-    return NextResponse.json({ success: true })
-  } catch {
+    const { error: emailError } = await sendOtpEmail({ to: normalizedEmail, name: normalizedName, code })
+
+    if (emailError) {
+      console.error('[register] sendOtpEmail error:', emailError)
+      await admin.auth.admin.deleteUser(userData.user.id)
+      return NextResponse.json(
+        { error: 'No se pudo enviar el email de verificación. Revisa tu dirección e intenta de nuevo.' },
+        { status: 500 }
+      )
+    }
+
+    const res = NextResponse.json({ success: true })
+    res.cookies.set('pf_otp', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 15 * 60,
+      path: '/',
+    })
+    return res
+  } catch (e) {
+    console.error('[register] unexpected error:', e)
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

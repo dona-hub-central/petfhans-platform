@@ -23,8 +23,10 @@ function LoginForm() {
   const searchParams = useSearchParams()
   const next = safeNext(searchParams.get('next'))
   const verificationError = searchParams.get('error') === 'verification'
+  const justVerified      = searchParams.get('verified') === 'true'
+  const emailParam        = searchParams.get('email') ?? ''
 
-  const [email, setEmail]       = useState('')
+  const [email, setEmail]       = useState(emailParam)
   const [password, setPassword] = useState('')
   const [loading, setLoading]   = useState(false)
   const [checking, setChecking] = useState(true)
@@ -94,6 +96,14 @@ function LoginForm() {
             <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Petfhans</h1>
             <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>Plataforma veterinaria</p>
           </div>
+
+          {justVerified && (
+            <div className="text-sm p-3 rounded-lg mb-4 flex items-center gap-2"
+              style={{ background: '#edfaf1', color: '#1a7a3c', border: '1px solid #b2f0c9' }}>
+              <span style={{ fontSize: 16 }}>✓</span>
+              Cuenta verificada. Ingresa tu contraseña para continuar.
+            </div>
+          )}
 
           {verificationError && (
             <div className="text-sm p-3 rounded-lg mb-4" style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral-dark)' }}>
