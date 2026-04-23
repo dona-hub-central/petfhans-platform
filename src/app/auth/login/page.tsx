@@ -22,6 +22,7 @@ function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const next = safeNext(searchParams.get('next'))
+  const verificationError = searchParams.get('error') === 'verification'
 
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
@@ -94,6 +95,12 @@ function LoginForm() {
             <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>Plataforma veterinaria</p>
           </div>
 
+          {verificationError && (
+            <div className="text-sm p-3 rounded-lg mb-4" style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral-dark)' }}>
+              No se pudo verificar el enlace. Intenta iniciar sesión directamente.
+            </div>
+          )}
+
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--pf-ink)' }}>
@@ -142,12 +149,20 @@ function LoginForm() {
             </button>
           </form>
 
-          <p className="text-center text-xs mt-6" style={{ color: 'var(--pf-muted)' }}>
-            ¿Acceso por invitación?{' '}
-            <a href="/auth/invite" className="font-medium" style={{ color: 'var(--pf-coral)' }}>
-              Usar link de invitación
-            </a>
-          </p>
+          <div className="mt-6 space-y-3 text-center">
+            <p className="text-xs" style={{ color: 'var(--pf-muted)' }}>
+              ¿No tienes cuenta?{' '}
+              <a href="/auth/register" className="font-medium" style={{ color: 'var(--pf-coral)' }}>
+                Crear cuenta
+              </a>
+            </p>
+            <p className="text-xs" style={{ color: 'var(--pf-muted)' }}>
+              ¿Acceso por invitación?{' '}
+              <a href="/auth/invite" className="font-medium" style={{ color: 'var(--pf-coral)' }}>
+                Usar link de invitación
+              </a>
+            </p>
+          </div>
         </div>
       </div>
     </div>
