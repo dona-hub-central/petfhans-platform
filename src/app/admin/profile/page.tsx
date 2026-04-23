@@ -56,7 +56,7 @@ export default async function AdminProfilePage({
 
   return (
     <AdminLayout userName={userName}>
-      <div className="px-8 py-8 max-w-xl">
+      <div className="adm-pg" style={{ maxWidth: 560 }}>
         <h1 className="text-2xl font-bold mb-6" style={{ color: 'var(--pf-ink)' }}>Mi perfil</h1>
 
         {success === 'profile'  && <Alert ok msg="Perfil actualizado correctamente." />}

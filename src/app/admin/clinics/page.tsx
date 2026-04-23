@@ -21,8 +21,8 @@ export default async function ClinicsPage() {
 
   return (
     <AdminLayout userName={profile?.full_name ?? 'Admin'}>
-      <div className="px-8 py-8">
-        <div className="flex items-center justify-between mb-8">
+      <div className="adm-pg">
+        <div className="pf-page-hdr mb-8">
           <div>
             <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Clínicas</h1>
             <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>{clinics?.length ?? 0} registradas</p>
@@ -35,9 +35,9 @@ export default async function ClinicsPage() {
         <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
           <div className="divide-y" style={{ borderColor: 'var(--pf-border)' }}>
             {clinics && clinics.length > 0 ? clinics.map((clinic: any) => (
-              <div key={clinic.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition">
+              <div key={clinic.id} className="adm-clinic-row">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                     style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)' }}>
                     <Building2 size={18} strokeWidth={1.75} />
                   </div>
@@ -46,7 +46,7 @@ export default async function ClinicsPage() {
                     <p className="text-xs mt-0.5" style={{ color: 'var(--pf-muted)' }}>{clinic.slug}.petfhans.com</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="adm-clinic-row-right">
                   <PlanBadge plan={clinic.subscription_plan} />
                   <StatusBadge status={clinic.subscription_status} />
                   <Link href={`/admin/clinics/${clinic.id}`}

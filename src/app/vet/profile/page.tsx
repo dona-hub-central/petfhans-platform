@@ -83,7 +83,7 @@ export default async function VetProfilePage({
       )}
 
       {/* Cabecera de perfil — ancho completo */}
-      <div className="bg-white rounded-2xl border p-6 mb-4 flex items-center gap-5"
+      <div className="bg-white rounded-2xl border p-6 mb-4 flex items-center gap-5 flex-wrap"
         style={{ borderColor: 'var(--pf-border)' }}>
         <AvatarUpload currentUrl={profile?.avatar_url} name={profile?.full_name} size={72} />
         <div className="flex-1 min-w-0">
