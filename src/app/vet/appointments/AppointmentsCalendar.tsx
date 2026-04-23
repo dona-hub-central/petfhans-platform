@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { PawPrint, Calendar, Clock, ClipboardList, Video } from 'lucide-react'
+import Link from 'next/link'
+import { PawPrint, Calendar, Clock, ClipboardList, Video, X, ExternalLink } from 'lucide-react'
 import { VetVideoJoinButton } from '@/components/owner/VideoCallRoom'
 
 const DAYS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
@@ -21,33 +22,147 @@ type Appt = {
   profiles: { full_name: string; email: string } | null
 }
 
+function AppointmentModal({
+  appt, onClose, onUpdate, actionLoading,
+}: {
+  appt: Appt
+  onClose: () => void
+  onUpdate: (id: string, status: string, extra?: object) => Promise<void>
+  actionLoading: boolean
+}) {
+  const [cancelReason, setCancelReason] = useState('')
+  const [vetNotes, setVetNotes] = useState('')
+  const cfg = STATUS_CFG[appt.status as keyof typeof STATUS_CFG] ?? STATUS_CFG.pending
+
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+      onClick={onClose}>
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)' }} />
+      <div
+        style={{ position: 'relative', background: '#fff', borderRadius: 20, width: '100%', maxWidth: 440, boxShadow: '0 20px 60px rgba(0,0,0,0.18)', overflow: 'hidden' }}
+        onClick={e => e.stopPropagation()}>
+
+        {/* Header */}
+        <div style={{ padding: '16px 20px', borderBottom: '0.5px solid var(--pf-border)', background: 'var(--pf-bg)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 12, background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <PawPrint size={17} strokeWidth={1.75} />
+            </div>
+            <div>
+              <p style={{ fontWeight: 700, fontSize: 15, color: 'var(--pf-ink)', margin: 0 }}>{appt.pets?.name ?? 'Mascota'}</p>
+              <p style={{ fontSize: 12, color: 'var(--pf-muted)', margin: 0 }}>{appt.profiles?.full_name}</p>
+            </div>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--pf-muted)', padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8 }}>
+            <X size={18} strokeWidth={2} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+          {/* Info grid */}
+          <div style={{ background: 'var(--pf-bg)', borderRadius: 12, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--pf-ink)' }}>
+              <Calendar size={13} strokeWidth={2} style={{ color: 'var(--pf-muted)', flexShrink: 0 }} />
+              {new Date(appt.appointment_date + 'T12:00').toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--pf-ink)' }}>
+              <Clock size={13} strokeWidth={2} style={{ color: 'var(--pf-muted)', flexShrink: 0 }} />
+              {appt.appointment_time.slice(0, 5)} · {appt.duration} min
+            </div>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 13, color: 'var(--pf-ink)' }}>
+              <ClipboardList size={13} strokeWidth={2} style={{ color: 'var(--pf-muted)', flexShrink: 0, marginTop: 1 }} />
+              {appt.reason}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--pf-ink)' }}>
+              <Video size={13} strokeWidth={2} style={{ color: 'var(--pf-muted)', flexShrink: 0 }} />
+              {appt.is_virtual ? 'Videollamada' : 'Presencial'}
+              {appt.is_virtual && (
+                <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 20, background: '#ede9fe', color: '#6d28d9' }}>Video</span>
+              )}
+            </div>
+          </div>
+
+          {/* Status + video button */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 12, fontWeight: 600, padding: '4px 10px', borderRadius: 20, background: cfg.bg, color: cfg.color }}>
+              {cfg.label}
+            </span>
+            {appt.is_virtual && appt.status === 'confirmed' && (
+              <VetVideoJoinButton appointmentId={appt.id} petName={appt.pets?.name ?? ''} />
+            )}
+          </div>
+
+          {/* Actions by status */}
+          {appt.status === 'pending' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <input value={vetNotes} onChange={e => setVetNotes(e.target.value)}
+                placeholder="Nota para el dueño (opcional)…"
+                style={{ width: '100%', padding: '8px 12px', fontSize: 12, border: '1px solid var(--pf-border)', borderRadius: 10, outline: 'none', boxSizing: 'border-box' }} />
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={() => onUpdate(appt.id, 'confirmed', { notes: vetNotes || null })}
+                  disabled={actionLoading}
+                  style={{ flex: 1, padding: '8px 0', fontSize: 12, fontWeight: 700, borderRadius: 10, border: '1px solid #bbf7d0', background: '#edfaf1', color: '#1a7a3c', cursor: 'pointer' }}>
+                  ✓ Confirmar
+                </button>
+                <button onClick={() => onUpdate(appt.id, 'cancelled', { cancellation_reason: cancelReason || 'Cancelada por la clínica' })}
+                  disabled={actionLoading}
+                  style={{ flex: 1, padding: '8px 0', fontSize: 12, fontWeight: 700, borderRadius: 10, border: '1px solid #fecaca', background: '#fee2e2', color: '#dc2626', cursor: 'pointer' }}>
+                  ✕ Rechazar
+                </button>
+              </div>
+              <input value={cancelReason} onChange={e => setCancelReason(e.target.value)}
+                placeholder="Motivo de cancelación (si rechaza)…"
+                style={{ width: '100%', padding: '8px 12px', fontSize: 12, border: '1px solid var(--pf-border)', borderRadius: 10, outline: 'none', boxSizing: 'border-box' }} />
+            </div>
+          )}
+          {appt.status === 'confirmed' && (
+            <button onClick={() => onUpdate(appt.id, 'completed')} disabled={actionLoading}
+              style={{ width: '100%', padding: '9px 0', fontSize: 12, fontWeight: 700, borderRadius: 10, border: '1px solid #bfdbfe', background: '#eff6ff', color: '#2563eb', cursor: 'pointer' }}>
+              ✓ Marcar como completada
+            </button>
+          )}
+        </div>
+
+        {/* Footer: link to full detail */}
+        <div style={{ padding: '12px 20px', borderTop: '0.5px solid var(--pf-border)', background: 'var(--pf-bg)' }}>
+          <Link href={`/vet/appointments/${appt.id}`}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'var(--pf-coral)', textDecoration: 'none' }}>
+            Ver información completa
+            <ExternalLink size={13} strokeWidth={2} />
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function AppointmentsCalendar({
   appointments, pending, year, month, isAdmin: _isAdmin = true,
 }: { appointments: Appt[]; pending: Appt[]; year: number; month: number; isAdmin?: boolean }) {
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
-  const [selectedAppt, setSelectedAppt] = useState<Appt | null>(null)
+  const [modalAppt, setModalAppt] = useState<Appt | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
-  const [cancelReason, setCancelReason] = useState('')
-  const [vetNotes, setVetNotes] = useState('')
   const [apptList, setApptList] = useState(appointments)
   const [pendingList, setPendingList] = useState(pending)
 
-  // Agrupar por fecha
+  // Group by date
   const byDate: Record<string, Appt[]> = {}
   apptList.forEach(a => {
     if (!byDate[a.appointment_date]) byDate[a.appointment_date] = []
     byDate[a.appointment_date].push(a)
   })
 
-  // Generar calendario
+  // Build calendar grid
   const firstDay = new Date(year, month, 1).getDay()
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   const cells: (number | null)[] = [...Array(firstDay).fill(null), ...Array.from({length: daysInMonth}, (_,i) => i+1)]
   const today = new Date().toISOString().split('T')[0]
 
   const dateStr = (d: number) => `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`
-
   const dayAppts = selectedDate ? (byDate[selectedDate] ?? []) : []
 
   const updateAppt = async (id: string, status: string, extra: object = {}) => {
@@ -58,15 +173,15 @@ export default function AppointmentsCalendar({
       body: JSON.stringify({ status, ...extra }),
     })
     if (res.ok) {
-      setApptList(prev => prev.map(a => a.id === id ? { ...a, status, ...extra } : a))
+      const updated = { status, ...(extra as Partial<Appt>) }
+      setApptList(prev => prev.map(a => a.id === id ? { ...a, ...updated } : a))
       setPendingList(prev => prev.filter(a => a.id !== id))
-      if (selectedAppt?.id === id) setSelectedAppt(prev => prev ? { ...prev, status, ...(extra as Partial<Appt>) } : null)
+      setModalAppt(prev => prev?.id === id ? { ...prev, ...updated } : prev)
     }
     setActionLoading(false)
-    setCancelReason(''); setVetNotes('')
   }
 
-  // Sorted list of all appointments for mobile view
+  // Sorted appointments for mobile list view
   const sortedAppts = [...apptList].sort((a, b) =>
     (a.appointment_date + a.appointment_time).localeCompare(b.appointment_date + b.appointment_time)
   )
@@ -76,13 +191,27 @@ export default function AppointmentsCalendar({
     groupedByDate[a.appointment_date].push(a)
   })
 
+  const openModal = (a: Appt, date?: string) => {
+    setModalAppt(a)
+    if (date) setSelectedDate(date)
+  }
+
   return (
     <>
+    {/* Modal */}
+    {modalAppt && (
+      <AppointmentModal
+        appt={modalAppt}
+        onClose={() => setModalAppt(null)}
+        onUpdate={updateAppt}
+        actionLoading={actionLoading}
+      />
+    )}
+
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-      {/* Columna izquierda: pendientes */}
-      <div className="lg:col-span-1 space-y-4">
-        {/* Pendientes */}
+      {/* Left column: pending list */}
+      <div className="lg:col-span-1">
         <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
           <div className="px-5 py-3 border-b flex items-center justify-between" style={{ borderColor: 'var(--pf-border)', background: 'var(--pf-bg)' }}>
             <h3 className="font-semibold text-sm" style={{ color: 'var(--pf-ink)' }}>⏳ Por confirmar</h3>
@@ -97,7 +226,7 @@ export default function AppointmentsCalendar({
               <p className="px-5 py-8 text-sm text-center" style={{ color: 'var(--pf-muted)' }}>Sin citas pendientes</p>
             ) : pendingList.map(a => (
               <div key={a.id} className="px-4 py-3 cursor-pointer hover:bg-gray-50 transition"
-                onClick={() => { setSelectedAppt(a); setSelectedDate(a.appointment_date) }}>
+                onClick={() => openModal(a, a.appointment_date)}>
                 <div className="flex items-center gap-2 mb-1">
                   <PawPrint size={14} strokeWidth={1.75} style={{ color: 'var(--pf-coral)', flexShrink: 0 }} />
                   <span className="text-sm font-semibold" style={{ color: 'var(--pf-ink)' }}>{a.pets?.name}</span>
@@ -118,87 +247,12 @@ export default function AppointmentsCalendar({
             ))}
           </div>
         </div>
-
-        {/* Detalle cita seleccionada */}
-        {selectedAppt && (
-          <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
-            <div className="px-5 py-3 border-b flex items-center justify-between" style={{ borderColor: 'var(--pf-border)', background: 'var(--pf-bg)' }}>
-              <h3 className="font-semibold text-sm" style={{ color: 'var(--pf-ink)' }}>Detalle de cita</h3>
-              <button onClick={() => setSelectedAppt(null)} style={{ color: 'var(--pf-muted)', fontSize: 18 }}>×</button>
-            </div>
-            <div className="p-5 space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)' }}>
-                  <PawPrint size={18} strokeWidth={1.75} />
-                </div>
-                <div>
-                  <p className="font-bold text-sm" style={{ color: 'var(--pf-ink)' }}>{selectedAppt.pets?.name}</p>
-                  <p className="text-xs" style={{ color: 'var(--pf-muted)' }}>{selectedAppt.profiles?.full_name} · {selectedAppt.profiles?.email}</p>
-                </div>
-              </div>
-              <div className="rounded-xl p-3 space-y-1.5" style={{ background: 'var(--pf-bg)' }}>
-                <p className="text-xs flex items-center gap-1.5"><Calendar size={12} strokeWidth={2} style={{ color: 'var(--pf-muted)', flexShrink: 0 }} /> {new Date(selectedAppt.appointment_date + 'T12:00').toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' })}</p>
-                <p className="text-xs flex items-center gap-1.5"><Clock size={12} strokeWidth={2} style={{ color: 'var(--pf-muted)', flexShrink: 0 }} /> {selectedAppt.appointment_time.slice(0,5)}</p>
-                <p className="text-xs flex items-center gap-1.5"><ClipboardList size={12} strokeWidth={2} style={{ color: 'var(--pf-muted)', flexShrink: 0 }} /> {selectedAppt.reason}</p>
-                <p className="text-xs flex items-center gap-1.5">
-                  <Video size={12} strokeWidth={2} style={{ color: 'var(--pf-muted)', flexShrink: 0 }} />
-                  {selectedAppt.is_virtual ? 'Videollamada' : 'Presencial'}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-full"
-                  style={{ background: STATUS_CFG[selectedAppt.status as keyof typeof STATUS_CFG]?.bg, color: STATUS_CFG[selectedAppt.status as keyof typeof STATUS_CFG]?.color }}>
-                  {STATUS_CFG[selectedAppt.status as keyof typeof STATUS_CFG]?.label}
-                </span>
-                {selectedAppt.is_virtual && selectedAppt.status === 'confirmed' && (
-                  <VetVideoJoinButton appointmentId={selectedAppt.id} petName={selectedAppt.pets?.name ?? ''} />
-                )}
-              </div>
-
-              {/* Acciones según estado */}
-              {selectedAppt.status === 'pending' && (
-                <div className="space-y-2 pt-1">
-                  <input value={vetNotes} onChange={e => setVetNotes(e.target.value)}
-                    placeholder="Nota para el dueño (opcional)…"
-                    className="w-full px-3 py-2 text-xs border rounded-xl outline-none"
-                    style={{ borderColor: 'var(--pf-border)' }} />
-                  <div className="flex gap-2">
-                    <button onClick={() => updateAppt(selectedAppt.id, 'confirmed', { notes: vetNotes || null })}
-                      disabled={actionLoading}
-                      className="flex-1 py-2 text-xs font-bold rounded-xl transition"
-                      style={{ background: '#edfaf1', color: '#1a7a3c', border: '1px solid #bbf7d0' }}>
-                      ✓ Confirmar
-                    </button>
-                    <button onClick={() => updateAppt(selectedAppt.id, 'cancelled', { cancellation_reason: cancelReason || 'Cancelada por la clínica' })}
-                      disabled={actionLoading}
-                      className="flex-1 py-2 text-xs font-bold rounded-xl transition"
-                      style={{ background: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca' }}>
-                      ✕ Rechazar
-                    </button>
-                  </div>
-                  <input value={cancelReason} onChange={e => setCancelReason(e.target.value)}
-                    placeholder="Motivo de cancelación (si rechaza)…"
-                    className="w-full px-3 py-2 text-xs border rounded-xl outline-none"
-                    style={{ borderColor: 'var(--pf-border)' }} />
-                </div>
-              )}
-              {selectedAppt.status === 'confirmed' && (
-                <button onClick={() => updateAppt(selectedAppt.id, 'completed')} disabled={actionLoading}
-                  className="w-full py-2 text-xs font-bold rounded-xl"
-                  style={{ background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe' }}>
-                  ✓ Marcar como completada
-                </button>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Columna derecha: calendario (desktop) / lista cronológica (mobile) */}
+      {/* Right column: calendar (desktop) / chronological list (mobile) */}
       <div className="lg:col-span-2">
 
-        {/* Mobile: lista cronológica de citas del mes */}
+        {/* Mobile: chronological list */}
         <div className="appt-mob-list">
           <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
             <div className="px-5 py-3 border-b" style={{ borderColor: 'var(--pf-border)', background: 'var(--pf-bg)' }}>
@@ -220,8 +274,8 @@ export default function AppointmentsCalendar({
                       const cfg = STATUS_CFG[a.status as keyof typeof STATUS_CFG] ?? STATUS_CFG.pending
                       return (
                         <div key={a.id} className="px-4 py-3 flex items-center gap-3 cursor-pointer"
-                          style={{ background: selectedAppt?.id === a.id ? 'var(--pf-coral-soft)' : 'transparent' }}
-                          onClick={() => { setSelectedAppt(a); setSelectedDate(date) }}>
+                          style={{ background: 'transparent' }}
+                          onClick={() => openModal(a, date)}>
                           <span className="text-sm font-bold flex-shrink-0" style={{ color: 'var(--pf-ink)', width: 40 }}>{a.appointment_time.slice(0,5)}</span>
                           <PawPrint size={15} strokeWidth={1.75} style={{ color: 'var(--pf-coral)', flexShrink: 0 }} />
                           <div className="flex-1 min-w-0">
@@ -239,9 +293,9 @@ export default function AppointmentsCalendar({
             )}
           </div>
         </div>
+
         {/* Desktop calendar grid */}
         <div className="appt-desk-cal bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
-          {/* Cabecera mes */}
           <div className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--pf-border)' }}>
             <h3 className="font-semibold" style={{ color: 'var(--pf-ink)' }}>{MONTHS[month]} {year}</h3>
             <div className="flex gap-3">
@@ -254,7 +308,6 @@ export default function AppointmentsCalendar({
             </div>
           </div>
 
-          {/* Grid días semana */}
           <div className="grid grid-cols-7 border-b" style={{ borderColor: 'var(--pf-border)' }}>
             {DAYS.map(d => (
               <div key={d} className="py-2 text-center text-xs font-semibold uppercase tracking-wide"
@@ -264,7 +317,6 @@ export default function AppointmentsCalendar({
             ))}
           </div>
 
-          {/* Grid celdas */}
           <div className="grid grid-cols-7">
             {cells.map((day, i) => {
               if (!day) return <div key={i} style={{ borderRight: '1px solid var(--pf-border)', borderBottom: '1px solid var(--pf-border)', minHeight: 80 }} />
@@ -273,7 +325,7 @@ export default function AppointmentsCalendar({
               const isToday = ds === today
               const isSelected = ds === selectedDate
               return (
-                <div key={i} onClick={() => { setSelectedDate(ds); setSelectedAppt(null) }}
+                <div key={i} onClick={() => { setSelectedDate(ds) }}
                   className="cursor-pointer transition"
                   style={{
                     borderRight: '1px solid var(--pf-border)',
@@ -295,7 +347,7 @@ export default function AppointmentsCalendar({
                       const cfg = STATUS_CFG[a.status as keyof typeof STATUS_CFG] ?? STATUS_CFG.pending
                       return (
                         <div key={a.id}
-                          onClick={e => { e.stopPropagation(); setSelectedAppt(a); setSelectedDate(ds) }}
+                          onClick={e => { e.stopPropagation(); openModal(a, ds) }}
                           className="text-xs rounded px-1 py-0.5 truncate cursor-pointer"
                           style={{ background: cfg.bg, color: cfg.color }}>
                           {a.appointment_time.slice(0,5)} {a.pets?.name}
@@ -312,7 +364,7 @@ export default function AppointmentsCalendar({
           </div>
         </div>
 
-        {/* Lista del día seleccionado */}
+        {/* Day appointment list (desktop) */}
         {selectedDate && dayAppts.length > 0 && (
           <div className="bg-white rounded-2xl border mt-4 overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
             <div className="px-5 py-3 border-b" style={{ borderColor: 'var(--pf-border)', background: 'var(--pf-bg)' }}>
@@ -326,7 +378,7 @@ export default function AppointmentsCalendar({
                 const cfg = STATUS_CFG[a.status as keyof typeof STATUS_CFG] ?? STATUS_CFG.pending
                 return (
                   <div key={a.id} className="px-5 py-3 flex items-center gap-4 cursor-pointer hover:bg-gray-50"
-                    onClick={() => setSelectedAppt(a)}>
+                    onClick={() => openModal(a, selectedDate)}>
                     <span className="text-sm font-bold w-12 flex-shrink-0" style={{ color: 'var(--pf-ink)' }}>{a.appointment_time.slice(0,5)}</span>
                     <PawPrint size={16} strokeWidth={1.75} style={{ color: 'var(--pf-coral)', flexShrink: 0 }} />
                     <div className="flex-1 min-w-0">
