@@ -60,7 +60,7 @@ export default function AppointmentsCalendar({
     if (res.ok) {
       setApptList(prev => prev.map(a => a.id === id ? { ...a, status, ...extra } : a))
       setPendingList(prev => prev.filter(a => a.id !== id))
-      if (selectedAppt?.id === id) setSelectedAppt(prev => prev ? { ...prev, status, ...extra as any } : null)
+      if (selectedAppt?.id === id) setSelectedAppt(prev => prev ? { ...prev, status, ...(extra as Partial<Appt>) } : null)
     }
     setActionLoading(false)
     setCancelReason(''); setVetNotes('')

@@ -68,18 +68,19 @@ export default function PetFiles({
     fd.append('file_type', form.file_type)
     fd.append('notes', form.notes)
 
-    let res: Response, data: any
+    type UploadResult = { file?: PetFile; error?: string }
+    let res: Response, data: UploadResult
     try {
       res = await fetch('/api/files/upload', { method: 'POST', body: fd, credentials: 'include' })
       const text = await res.text()
-      try { data = JSON.parse(text) } catch { data = { error: `Respuesta inesperada (${res.status}): ${text.slice(0, 120)}` } }
-    } catch (fetchErr: any) {
-      setError('Error de red: ' + fetchErr.message)
+      try { data = JSON.parse(text) as UploadResult } catch { data = { error: `Respuesta inesperada (${res.status}): ${text.slice(0, 120)}` } }
+    } catch (fetchErr) {
+      setError('Error de red: ' + (fetchErr instanceof Error ? fetchErr.message : String(fetchErr)))
       setUploading(false); return
     }
     if (!res!.ok) { setError(data.error || `Error ${res!.status} al subir`); setUploading(false); return }
 
-    setFiles(prev => [data.file, ...prev])
+    if (data.file) setFiles(prev => [data.file!, ...prev])
     setShowForm(false)
     setSelectedFile(null)
     setForm({ file_type: 'prescription', notes: '' })

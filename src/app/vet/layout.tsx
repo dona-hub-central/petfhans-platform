@@ -13,7 +13,8 @@ export default async function VetSegmentLayout({ children }: { children: React.R
     .eq('user_id', user.id)
     .single()
 
-  const clinicName = (profile as any)?.clinics?.name ?? ''
+  type ProfileRow = { full_name: string | null; role: string; avatar_url: string | null; clinics: { name: string } | null }
+  const clinicName = (profile as ProfileRow | null)?.clinics?.name ?? ''
   const userName = profile?.full_name ?? ''
 
   return (

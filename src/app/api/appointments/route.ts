@@ -3,8 +3,6 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 const URGENCY_LABELS: Record<string, { label: string; color: string; emoji: string }> = {
   normal:     { label: 'Normal',     color: '#16a34a', emoji: '🟢' },
   urgente:    { label: 'Urgente',    color: '#b07800', emoji: '🟡' },
@@ -41,6 +39,8 @@ export async function POST(req: NextRequest) {
 
   if (existing) return NextResponse.json({ error: 'Ese horario ya está reservado' }, { status: 409 })
 
+  const resend = new Resend(process.env.RESEND_API_KEY)
+
   const { data: appt, error } = await admin.from('appointments').insert({
     clinic_id:        pet.clinic_id,
     pet_id,
@@ -53,8 +53,9 @@ export async function POST(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
-  const clinicName = (pet as any).clinics?.name ?? 'la clínica'
-  const slug = (pet as any).clinics?.slug
+  type PetRow = typeof pet & { clinics?: { name: string; slug: string } | null }
+  const clinicName = (pet as PetRow).clinics?.name ?? 'la clínica'
+  const slug = (pet as PetRow).clinics?.slug
   const urg = URGENCY_LABELS[urgency] ?? URGENCY_LABELS.normal
   const dateFormatted = new Date(appointment_date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   const timeFormatted = appointment_time.slice(0, 5)

@@ -73,7 +73,8 @@ export async function middleware(request: NextRequest) {
       .single()
 
     const role = profile?.role
-    const clinicSlug = (profile as any)?.clinics?.slug
+    type ProfileRow = { role: string; clinic_id: string | null; clinics: { slug: string } | null }
+    const clinicSlug = (profile as ProfileRow | null)?.clinics?.slug
 
     // Super admin → solo puede entrar a admin.*
     if (subdomain === 'admin' && role !== 'superadmin') {

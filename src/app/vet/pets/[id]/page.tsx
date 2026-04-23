@@ -6,6 +6,7 @@ import Link from 'next/link'
 import PetFiles from '@/components/shared/PetFiles'
 import PetAvatar from '@/components/shared/PetAvatar'
 import { CheckCircle } from 'lucide-react'
+import type { RecordListItem, PetWithOwner } from '@/types'
 
 const speciesLabel: Record<string, string> = { dog: 'Perro', cat: 'Gato', bird: 'Ave', rabbit: 'Conejo', other: 'Otro' }
 
@@ -24,16 +25,18 @@ export default async function PetDetailPage({
   if (!user) redirect('/auth/login')
 
   const admin = createAdminClient()
-  const { data: pet } = await admin.from('pets')
+  const { data: petData } = await admin.from('pets')
     .select('*, profiles!pets_owner_id_fkey(full_name, email, phone)')
     .eq('id', id).single()
 
-  if (!pet) redirect('/vet/pets')
+  if (!petData) redirect('/vet/pets')
+  const pet = petData as PetWithOwner
 
-  const { data: records } = await admin.from('medical_records')
+  const { data: recordsData } = await admin.from('medical_records')
     .select('*, profiles!medical_records_vet_id_fkey(full_name)')
     .eq('pet_id', id)
     .order('visit_date', { ascending: false })
+  const records = (recordsData ?? []) as RecordListItem[]
 
   const { data: petFiles } = await admin.from('pet_files')
     .select('id, file_name, file_type, file_size, mime_type, notes, created_at, profiles(full_name)')
@@ -117,11 +120,11 @@ export default async function PetDetailPage({
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
                     style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)' }}>
-                    {(pet.profiles as any).full_name?.[0]}
+                    {pet.profiles.full_name?.[0]}
                   </div>
                   <div>
-                    <p className="text-sm font-medium" style={{ color: 'var(--pf-ink)' }}>{(pet.profiles as any).full_name}</p>
-                    <p className="text-xs" style={{ color: 'var(--pf-muted)' }}>{(pet.profiles as any).email}</p>
+                    <p className="text-sm font-medium" style={{ color: 'var(--pf-ink)' }}>{pet.profiles.full_name}</p>
+                    <p className="text-xs" style={{ color: 'var(--pf-muted)' }}>{pet.profiles.email}</p>
                   </div>
                 </div>
               </div>
@@ -154,7 +157,7 @@ export default async function PetDetailPage({
             </div>
 
             <div className="divide-y" style={{ borderColor: 'var(--pf-border)' }}>
-              {records && records.length > 0 ? records.map((r: any) => (
+              {records && records.length > 0 ? records.map((r) => (
                 <Link key={r.id} href={`/vet/records/${r.id}`}
                   className="px-6 py-4 block hover:bg-gray-50 transition">
                   <div className="flex items-start justify-between gap-4">
@@ -166,7 +169,7 @@ export default async function PetDetailPage({
                         </span>
                         {r.profiles && (
                           <span className="text-xs" style={{ color: 'var(--pf-muted)' }}>
-                            · Dr. {(r.profiles as any).full_name?.split(' ')[0]}
+                            · Dr. {r.profiles?.full_name?.split(' ')[0]}
                           </span>
                         )}
                       </div>
@@ -198,7 +201,10 @@ export default async function PetDetailPage({
       <div className="mt-6">
         <PetFiles
           petId={id}
-          initialFiles={(petFiles ?? []).map((f: any) => ({ ...f, uploader: f.profiles?.full_name }))}
+          initialFiles={(petFiles ?? []).map((f) => {
+            const row = f as typeof f & { profiles?: { full_name: string } | null }
+            return { ...f, uploader: row.profiles?.full_name }
+          })}
           canUpload={true}
           canDelete={true}
         />

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 type Plan = {
@@ -66,7 +66,10 @@ export default function PlansEditor({ plans: initial }: { plans: Plan[] }) {
 
   const inp = "w-full px-3 py-2 text-sm border rounded-xl outline-none"
   const inpS = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }
-  const f = { onFocus: (e: any) => e.target.style.borderColor = 'var(--pf-coral)', onBlur: (e: any) => e.target.style.borderColor = 'var(--pf-border)' }
+  const f = {
+    onFocus: (e: React.FocusEvent<HTMLElement>) => { e.currentTarget.style.borderColor = 'var(--pf-coral)' },
+    onBlur:  (e: React.FocusEvent<HTMLElement>) => { e.currentTarget.style.borderColor = 'var(--pf-border)' },
+  }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">

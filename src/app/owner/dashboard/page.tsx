@@ -5,6 +5,7 @@ import Link from 'next/link'
 import PetAvatar from '@/components/shared/PetAvatar'
 import LogoutButton from '@/components/owner/LogoutButton'
 import { Building2, PawPrint, Calendar } from 'lucide-react'
+import type { PetWithNextVisit } from '@/types'
 
 export default async function OwnerDashboard() {
   const supabase = await createClient()
@@ -32,7 +33,8 @@ export default async function OwnerDashboard() {
   const petsWithInfo = (pets ?? []).map(pet => ({ ...pet, nextVisit: nextVisitMap[pet.id] ?? null }))
 
   const speciesLabel: Record<string, string> = { dog: 'Perro', cat: 'Gato', bird: 'Ave', rabbit: 'Conejo', other: 'Otro' }
-  const clinic = (profile as any)?.clinics
+  type ProfileRow = { full_name: string | null; clinics: { id: string; name: string; slug: string } | null }
+  const clinic = (profile as ProfileRow | null)?.clinics
   const firstName = profile?.full_name?.split(' ')[0] ?? ''
 
   return (
@@ -108,7 +110,7 @@ export default async function OwnerDashboard() {
             </div>
           ) : (
             <div className="dash-grid">
-              {petsWithInfo.map((pet: any) => (
+              {(petsWithInfo as PetWithNextVisit[]).map((pet) => (
                 <Link key={pet.id} href={`/owner/pets/${pet.id}`} className="pet-card">
                   <PetAvatar petId={pet.id} species={pet.species} photoUrl={pet.photo_url} size={62} editable={false} />
                   <div style={{ flex:1, minWidth:0 }}>

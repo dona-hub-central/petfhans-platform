@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import AdminLayout from '@/components/admin/AdminLayout'
 import { Building2, CheckCircle } from 'lucide-react'
+import type { Profile } from '@/types'
 
 export default async function ClinicDetailPage({
   params,
@@ -126,7 +127,7 @@ export default async function ClinicDetailPage({
             <h3 className="font-semibold text-sm" style={{ color: 'var(--pf-ink)' }}>Equipo veterinario</h3>
           </div>
           <div className="divide-y" style={{ borderColor: 'var(--pf-border)' }}>
-            {team && team.length > 0 ? team.map((member: any) => (
+            {team && team.length > 0 ? (team as Profile[]).map((member) => (
               <div key={member.id} className="px-6 py-4 flex items-center gap-4">
                 <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold"
                   style={{ background: 'var(--pf-coral-soft)', color: 'var(--pf-coral)' }}>

@@ -45,13 +45,16 @@ export default function PetAvatar({
         method: 'POST', body: fd, credentials: 'include'
       })
       const text = await res.text()
-      let data: any
-      try { data = JSON.parse(text) } catch { data = { error: text.slice(0, 100) } }
+      type UploadResult = { photo_url?: string; error?: string }
+      let data: UploadResult
+      try { data = JSON.parse(text) as UploadResult } catch { data = { error: text.slice(0, 100) } }
       if (!res.ok) { setError(data.error || 'Error al subir'); setUploading(false); return }
-      setPreview(data.photo_url)
-      onUploaded?.(data.photo_url)
-    } catch (err: any) {
-      setError('Error: ' + err.message)
+      if (data.photo_url) {
+        setPreview(data.photo_url)
+        onUploaded?.(data.photo_url)
+      }
+    } catch (err) {
+      setError('Error: ' + (err instanceof Error ? err.message : String(err)))
     }
     setUploading(false)
   }

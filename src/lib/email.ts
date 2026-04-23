@@ -1,7 +1,10 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM = process.env.EMAIL_FROM ?? 'Petfhans <onboarding@resend.dev>'
+
+function resend() {
+  return new Resend(process.env.RESEND_API_KEY)
+}
 
 // =============================================
 // Email: Invitación a dueño de mascota
@@ -98,7 +101,7 @@ export async function sendInvitationEmail({
 </body>
 </html>`
 
-  return resend.emails.send({ from: FROM, to, subject, html })
+  return resend().emails.send({ from: FROM, to, subject, html })
 }
 
 // =============================================
@@ -160,7 +163,7 @@ export async function sendOtpEmail({
 </body>
 </html>`
 
-  return resend.emails.send({
+  return resend().emails.send({
     from: FROM,
     to,
     subject: `${code} es tu código de Petfhans`,
@@ -182,7 +185,7 @@ export async function sendWelcomeEmail({
   clinicName: string
   loginUrl: string
 }) {
-  return resend.emails.send({
+  return resend().emails.send({
     from: FROM,
     to,
     subject: `¡Bienvenido/a a ${clinicName}! 🐾`,

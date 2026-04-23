@@ -67,16 +67,18 @@ export async function POST(req: NextRequest) {
       .eq('id', inv.id)
 
     // Email de bienvenida usando el email de la BD
-    const slug = (inv as any).clinics?.slug
+    type InvRow = typeof inv & { clinics?: { name: string; slug: string } | null }
+    const invRow = inv as InvRow
+    const slug = invRow.clinics?.slug
     await sendWelcomeEmail({
       to:         inv.email,
       name:       full_name,
-      clinicName: (inv as any).clinics?.name ?? 'Petfhans',
+      clinicName: invRow.clinics?.name ?? 'Petfhans',
       loginUrl:   `https://${slug}.petfhans.com/auth/login`,
     })
 
     return NextResponse.json({ success: true })
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+  } catch (err) {
+    return NextResponse.json({ error: err instanceof Error ? err.message : 'Error interno' }, { status: 500 })
   }
 }

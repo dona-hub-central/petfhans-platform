@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
       message: `Admin creado: ${email}`,
     })
 
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+  } catch (err) {
+    return NextResponse.json({ error: err instanceof Error ? err.message : 'Error interno' }, { status: 500 })
   }
 }

@@ -8,6 +8,8 @@ export interface Clinic {
   subscription_plan: 'free' | 'basic' | 'pro'
   subscription_status: 'active' | 'inactive' | 'trial'
   max_patients: number
+  stripe_customer_id?: string | null
+  stripe_subscription_id?: string | null
   created_at: string
 }
 
@@ -23,12 +25,14 @@ export interface Profile {
   created_at: string
 }
 
+export type PetSpecies = 'dog' | 'cat' | 'bird' | 'rabbit' | 'other'
+
 export interface Pet {
   id: string
   clinic_id: string
   owner_id: string
   name: string
-  species: 'dog' | 'cat' | 'bird' | 'rabbit' | 'other'
+  species: PetSpecies
   breed: string | null
   birth_date: string | null
   weight: number | null
@@ -37,7 +41,39 @@ export interface Pet {
   microchip: string | null
   photo_url: string | null
   notes: string | null
+  is_active?: boolean
   created_at: string
+}
+
+export interface Medication {
+  name: string
+  dose: string
+  route?: string
+  frequency: string
+  duration: string
+}
+
+export interface Vaccine {
+  name: string
+  lot: string
+  next_date: string
+}
+
+export interface PhysicalExam {
+  weight: string
+  temperature: string
+  heart_rate: string
+  respiratory_rate: string
+  general_state: string
+  mucous: string
+  hydration: string
+  lymph_nodes: string
+  cardiovascular: string
+  respiratory: string
+  digestive: string
+  musculoskeletal: string
+  skin: string
+  other: string
 }
 
 export interface MedicalRecord {
@@ -46,20 +82,54 @@ export interface MedicalRecord {
   clinic_id: string
   vet_id: string
   visit_date: string
+  visit_type?: string
   reason: string
   diagnosis: string | null
+  prognosis?: string | null
   treatment: string | null
   medications: Medication[]
+  vaccines?: Vaccine[]
+  physical_exam?: PhysicalExam | null
   notes: string | null
   next_visit: string | null
   created_at: string
 }
 
-export interface Medication {
-  name: string
-  dose: string
-  frequency: string
-  duration: string
+export interface PetFile {
+  id: string
+  pet_id: string
+  clinic_id?: string
+  file_name: string
+  file_type: string
+  file_size: number
+  mime_type: string
+  file_path?: string
+  notes: string | null
+  created_at: string
+}
+
+export interface PetFileWithUrl extends Omit<PetFile, 'file_path'> {
+  file_path: string
+  publicUrl: string
+}
+
+export type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed'
+
+export interface Appointment {
+  id: string
+  clinic_id: string
+  pet_id: string
+  owner_id: string
+  vet_id: string | null
+  appointment_date: string
+  appointment_time: string
+  reason: string
+  status: AppointmentStatus
+  duration: number
+  notes: string | null
+  cancellation_reason: string | null
+  is_virtual: boolean
+  created_at: string
 }
 
 export interface Invitation {
@@ -82,4 +152,70 @@ export interface HabitLog {
   value: string
   notes: string | null
   created_at: string
+}
+
+// ── Query result shapes (Supabase join returns) ────────────────────────────
+
+/** Pet summary for search dropdowns */
+export type PetSummary = Pick<Pet, 'id' | 'name' | 'species' | 'breed' | 'weight'>
+
+/** Pet with owner profile, used in vet pet lists */
+export interface PetWithOwner extends Pet {
+  profiles: { full_name: string; email: string; phone?: string | null } | null
+}
+
+/** Medical record with pet and vet info, used in vet lists */
+export interface RecordListItem {
+  id: string
+  pet_id: string
+  clinic_id: string
+  vet_id: string
+  visit_date: string
+  visit_type: string
+  reason: string
+  diagnosis: string | null
+  next_visit: string | null
+  created_at: string
+  pets: { id: string; name: string; species: string } | null
+  profiles: { full_name: string } | null
+}
+
+/** Medical record with vet info, used in owner history view */
+export interface RecordWithVet {
+  id: string
+  visit_date: string
+  visit_type: string
+  reason: string
+  diagnosis: string | null
+  treatment: string | null
+  next_visit: string | null
+  profiles: { full_name: string } | null
+}
+
+/** Appointment with limited fields for owner view */
+export type AppointmentSummary = Pick<
+  Appointment,
+  'id' | 'appointment_date' | 'appointment_time' | 'reason' |
+  'status' | 'is_virtual' | 'notes' | 'cancellation_reason'
+>
+
+/** Appointment with pet and owner relations, used in vet calendar */
+export interface AppointmentWithRelations extends Appointment {
+  pets: { name: string; species: string } | null
+  profiles: { full_name: string; email: string } | null
+}
+
+/** Invitation with optional pet reference */
+export interface InvitationWithPet extends Invitation {
+  pets?: { name: string } | null
+}
+
+/** Clinic with owner admin profile, used in admin panel */
+export interface ClinicWithAdmin extends Clinic {
+  profiles: { full_name: string; email: string } | null
+}
+
+/** Pet with next scheduled visit, used in owner dashboard */
+export interface PetWithNextVisit extends Pet {
+  nextVisit: string | null
 }

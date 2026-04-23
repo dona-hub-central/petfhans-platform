@@ -37,18 +37,19 @@ export async function POST(req: NextRequest) {
 
     const inviteLink = `https://${clinic?.slug}.petfhans.com/auth/invite?token=${inv.token}`
 
+    type InvWithPet = typeof inv & { pets: { name: string } | null }
     await sendInvitationEmail({
       to:         inv.email,
       clinicName: clinic?.name ?? 'Petfhans',
-      petName:    (inv.pets as any)?.name,
+      petName:    (inv as InvWithPet).pets?.name,
       role:       inv.role,
       inviteLink,
       expiresAt:  inv.expires_at,
     })
 
     return NextResponse.json({ success: true })
-  } catch (err: any) {
+  } catch (err) {
     console.error('Resend error:', err)
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    return NextResponse.json({ error: err instanceof Error ? err.message : 'Error interno' }, { status: 500 })
   }
 }
