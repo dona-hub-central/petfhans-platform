@@ -48,8 +48,13 @@ export default async function RecordDetailPage({ params }: { params: Promise<{ i
   return (
     <>
 
+      <style>{`
+        .exam-vitals { display:grid; grid-template-columns:repeat(2,1fr); gap:10px 24px; margin-bottom:16px; }
+        @media (max-width:767px) { .exam-vitals { grid-template-columns:1fr; } }
+      `}</style>
+
       {/* Nav + acciones */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="pf-page-hdr mb-6">
         <div className="flex items-center gap-2">
           <Link href="/vet/pets" className="text-xs" style={{ color: 'var(--pf-muted)' }}>Mascotas</Link>
           <span style={{ color: 'var(--pf-border)' }}>/</span>
@@ -99,7 +104,7 @@ export default async function RecordDetailPage({ params }: { params: Promise<{ i
           {(exam.weight || exam.temperature || exam.heart_rate || exam.respiratory_rate || exam.general_state) && (
             <div className="bg-white rounded-2xl border p-5" style={{ borderColor: 'var(--pf-border)' }}>
               <h3 className="font-semibold text-sm mb-4 flex items-center gap-1.5" style={{ color: 'var(--pf-ink)' }}><Stethoscope size={14} strokeWidth={2} /> Exploración física</h3>
-              <div className="grid grid-cols-2 gap-x-6 gap-y-2.5 mb-4">
+              <div className="exam-vitals">
                 {[
                   ['Peso', exam.weight ? `${exam.weight} kg` : null],
                   ['Temperatura', exam.temperature ? `${exam.temperature} °C` : null],

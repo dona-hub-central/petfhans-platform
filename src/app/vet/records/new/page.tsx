@@ -163,6 +163,7 @@ function NewRecordForm() {
         .rec-vitals-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
         .rec-state-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px; }
         .rec-systems-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+        .rec-obs-span { grid-column: span 2; }
         .rec-diag-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
         .rec-med-grid { display:grid; grid-template-columns:2fr 1fr 1fr 1fr auto; gap:8px; margin-bottom:8px; }
         .rec-vax-grid { display:grid; grid-template-columns:2fr 1fr 1fr auto; gap:8px; align-items:center; margin-bottom:8px; }
@@ -173,6 +174,7 @@ function NewRecordForm() {
           .rec-vitals-grid { grid-template-columns:repeat(2,1fr); }
           .rec-state-grid { grid-template-columns:1fr; }
           .rec-systems-grid { grid-template-columns:1fr; }
+          .rec-obs-span { grid-column: span 1; }
           .rec-diag-grid { grid-template-columns:1fr; }
           .rec-med-grid { grid-template-columns:1fr 1fr; }
           .rec-med-grid > *:nth-child(3), .rec-med-grid > *:nth-child(4) { display:none; }
@@ -314,7 +316,7 @@ function NewRecordForm() {
                   </div>
                 </div>
               ))}
-              <div className="col-span-2">
+              <div className="rec-obs-span">
                 <Field label="Observaciones adicionales">
                   <input value={exam.other} onChange={e => setE('other', e.target.value)}
                     placeholder="Otras observaciones…" className={inp} style={inpS} {...f} />

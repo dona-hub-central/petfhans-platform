@@ -43,6 +43,7 @@ export default function OwnerSetupPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--pf-bg)' }}>
+      <style>{`.species-grid{display:grid;gap:8px;grid-template-columns:repeat(3,1fr)}@media(min-width:420px){.species-grid{grid-template-columns:repeat(5,1fr)}}`}</style>
       <div className="w-full max-w-md">
 
         {/* Progress */}
@@ -108,7 +109,7 @@ export default function OwnerSetupPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--pf-ink)' }}>Especie</label>
-                    <div className="grid grid-cols-5 gap-2">
+                    <div className="species-grid">
                       {SPECIES.map(s => (
                         <button key={s.value} type="button" onClick={() => setSpecies(s.value)}
                           className="flex flex-col items-center gap-1 py-2.5 rounded-xl text-xs font-medium border-2 transition"

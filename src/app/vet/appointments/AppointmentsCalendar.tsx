@@ -92,7 +92,7 @@ export default function AppointmentsCalendar({
               </span>
             )}
           </div>
-          <div className="divide-y max-h-80 overflow-y-auto" style={{ borderColor: 'var(--pf-border)' }}>
+          <div className="divide-y max-h-96 overflow-y-auto" style={{ borderColor: 'var(--pf-border)' }}>
             {pendingList.length === 0 ? (
               <p className="px-5 py-8 text-sm text-center" style={{ color: 'var(--pf-muted)' }}>Sin citas pendientes</p>
             ) : pendingList.map(a => (
