@@ -48,6 +48,24 @@ const bottomNavItems = [
   { href: '/vet/pets',         Icon: PawPrint, label: 'Mascotas' },
 ]
 
+function AvatarCircle({ avatarUrl, userName, size = 30 }: { avatarUrl?: string | null; userName: string; size?: number }) {
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%', flexShrink: 0,
+      background: avatarUrl ? 'transparent' : 'var(--pf-coral-soft)',
+      color: 'var(--pf-coral)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontFamily: 'var(--pf-font-body)', fontSize: Math.round(size * 0.43), fontWeight: 700,
+      overflow: 'hidden', border: '1.5px solid var(--pf-border)',
+    }}>
+      {avatarUrl
+        ? <img src={avatarUrl} alt={userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        : userName[0]
+      }
+    </div>
+  )
+}
+
 export default function VetLayout({
   children,
   clinicName,
@@ -76,22 +94,6 @@ export default function VetLayout({
 
   const usagePct   = usage && usage.max > 0 ? Math.min((usage.count / usage.max) * 100, 100) : 0
   const usageColor = usagePct >= 100 ? 'var(--pf-danger-fg)' : usagePct >= 80 ? 'var(--pf-warning-fg)' : 'var(--pf-coral)'
-
-  const AvatarCircle = ({ size = 30 }: { size?: number }) => (
-    <div style={{
-      width: size, height: size, borderRadius: '50%', flexShrink: 0,
-      background: avatarUrl ? 'transparent' : 'var(--pf-coral-soft)',
-      color: 'var(--pf-coral)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontFamily: 'var(--pf-font-body)', fontSize: Math.round(size * 0.43), fontWeight: 700,
-      overflow: 'hidden', border: '1.5px solid var(--pf-border)',
-    }}>
-      {avatarUrl
-        ? <img src={avatarUrl} alt={userName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        : userName[0]
-      }
-    </div>
-  )
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', background: 'var(--pf-bg)' }}>
@@ -165,7 +167,7 @@ export default function VetLayout({
 
         <div style={{ borderTop: '0.5px solid var(--pf-border)', padding: '12px 14px' }}>
           <Link href="/vet/profile" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', marginBottom: 8 }}>
-            <AvatarCircle size={30} />
+            <AvatarCircle avatarUrl={avatarUrl} userName={userName} size={30} />
             <div style={{ minWidth: 0 }}>
               <span style={{ fontFamily: 'var(--pf-font-body)', fontSize: 13, fontWeight: 500, color: 'var(--pf-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 130, display: 'block' }}>
                 {userName}
@@ -193,7 +195,7 @@ export default function VetLayout({
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <Link href="/vet/profile" style={{ textDecoration: 'none' }}>
-              <AvatarCircle size={32} />
+              <AvatarCircle avatarUrl={avatarUrl} userName={userName} size={32} />
             </Link>
             <button onClick={() => setDrawerOpen(true)} className="pf-mob-menu-btn" aria-label="Abrir menú">
               <Menu size={18} strokeWidth={2} />
@@ -209,7 +211,7 @@ export default function VetLayout({
           <div className="pf-drawer">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderBottom: '0.5px solid var(--pf-border)' }}>
               <Link href="/vet/profile" onClick={() => setDrawerOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-                <AvatarCircle size={38} />
+                <AvatarCircle avatarUrl={avatarUrl} userName={userName} size={38} />
                 <div style={{ minWidth: 0 }}>
                   <p style={{ fontFamily: 'var(--pf-font-body)', fontSize: 14, fontWeight: 600, color: 'var(--pf-ink)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 160 }}>{userName}</p>
                   {role && <p style={{ fontFamily: 'var(--pf-font-body)', fontSize: 11, color: 'var(--pf-muted)', margin: 0 }}>{role === 'vet_admin' ? 'Admin de clínica' : role === 'veterinarian' ? 'Veterinario/a' : role}</p>}

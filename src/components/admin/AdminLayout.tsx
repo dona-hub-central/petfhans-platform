@@ -17,29 +17,10 @@ const nav = [
   { href: '/admin/profile',       Icon: User,       label: 'Mi perfil',      exact: false },
 ]
 
-export default function AdminLayout({
-  children,
-  userName,
-}: {
-  children: React.ReactNode
-  userName: string
-}) {
-  const path = usePathname()
-  const router = useRouter()
-  const [drawerOpen, setDrawerOpen] = useState(false)
-
-  useEffect(() => { setDrawerOpen(false) }, [path])
-
-  const logout = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/auth/login')
-  }
-
+function NavLinks({ path, onClick }: { path: string; onClick?: () => void }) {
   const isActive = (item: typeof nav[0]) =>
     item.exact ? path === item.href : path.startsWith(item.href)
-
-  const NavLinks = ({ onClick }: { onClick?: () => void }) => (
+  return (
     <>
       {nav.map(item => {
         const active = isActive(item)
@@ -64,8 +45,10 @@ export default function AdminLayout({
       })}
     </>
   )
+}
 
-  const UserFooter = ({ onClick }: { onClick?: () => void }) => (
+function UserFooter({ userName, onLogout, onClick }: { userName: string; onLogout: () => void; onClick?: () => void }) {
+  return (
     <div style={{ borderTop: '0.5px solid var(--pf-border)', padding: '14px 16px' }}>
       <Link href="/admin/profile" onClick={onClick}
         style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', marginBottom: 8 }}>
@@ -81,7 +64,7 @@ export default function AdminLayout({
           {userName}
         </span>
       </Link>
-      <button onClick={() => { onClick?.(); logout() }} style={{
+      <button onClick={() => { onClick?.(); onLogout() }} style={{
         width: '100%', fontSize: 12, padding: '6px 8px', borderRadius: 8,
         border: '0.5px solid var(--pf-border)', color: 'var(--pf-muted)',
         background: 'transparent', cursor: 'pointer', textAlign: 'left',
@@ -91,6 +74,26 @@ export default function AdminLayout({
       </button>
     </div>
   )
+}
+
+export default function AdminLayout({
+  children,
+  userName,
+}: {
+  children: React.ReactNode
+  userName: string
+}) {
+  const path = usePathname()
+  const router = useRouter()
+  const [drawerOpen, setDrawerOpen] = useState(false)
+
+  useEffect(() => { setDrawerOpen(false) }, [path])
+
+  const logout = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/auth/login')
+  }
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', background: 'var(--pf-bg)' }}>
@@ -105,9 +108,9 @@ export default function AdminLayout({
           </div>
         </div>
         <nav style={{ flex: 1, padding: '12px 10px', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto' }}>
-          <NavLinks />
+          <NavLinks path={path} />
         </nav>
-        <UserFooter />
+        <UserFooter userName={userName} onLogout={logout} />
       </aside>
 
       {/* ── Mobile top header ── */}
@@ -143,9 +146,9 @@ export default function AdminLayout({
           </button>
         </div>
         <nav style={{ flex: 1, padding: '12px 10px', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto' }}>
-          <NavLinks onClick={() => setDrawerOpen(false)} />
+          <NavLinks path={path} onClick={() => setDrawerOpen(false)} />
         </nav>
-        <UserFooter onClick={() => setDrawerOpen(false)} />
+        <UserFooter userName={userName} onLogout={logout} onClick={() => setDrawerOpen(false)} />
       </div>
 
       {/* ── Main content ── */}
