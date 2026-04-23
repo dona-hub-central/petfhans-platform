@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     vet_id:           vet.id,
     appointment_date: date,
     appointment_time: time,
-    reason:           `[EMERGENCIA] Consulta virtual inmediata — ${(pet as any).name}`,
+    reason:           `[EMERGENCIA] Consulta virtual inmediata — ${pet.name}`,
     status:           'confirmed',   // immediately confirmed, no approval needed
     is_virtual:       true,
   }).select().single()

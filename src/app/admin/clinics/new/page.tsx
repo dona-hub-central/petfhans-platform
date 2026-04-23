@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Building2 } from 'lucide-react'
@@ -47,8 +47,8 @@ export default function NewClinicPage() {
 
       await supabase.from('clinics').update({ owner_id: result.user_id }).eq('id', clinicData.id)
       router.push(`/admin/clinics/${clinicData.id}?created=true`)
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error inesperado')
       setLoading(false)
     }
   }
@@ -110,8 +110,8 @@ export default function NewClinicPage() {
                     <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--pf-ink)' }}>Máx. pacientes</label>
                     <input name="max_patients" type="number" value={clinic.max_patients} onChange={handleClinicChange}
                       className={inputClass} style={inputStyle}
-                      onFocus={e => e.target.style.borderColor = 'var(--pf-coral)'}
-                      onBlur={e => e.target.style.borderColor = 'var(--pf-border)'} />
+                      onFocus={e => { e.currentTarget.style.borderColor = 'var(--pf-coral)' }}
+                      onBlur={e => { e.currentTarget.style.borderColor = 'var(--pf-border)' }} />
                   </div>
                 </div>
               </>
@@ -130,12 +130,12 @@ export default function NewClinicPage() {
                     </label>
                     <input
                       type={field === 'password' ? 'password' : field === 'email' ? 'email' : 'text'}
-                      value={(admin as any)[field]}
+                      value={admin[field as keyof typeof admin]}
                       onChange={e => setAdmin(p => ({ ...p, [field]: e.target.value }))}
                       required minLength={field === 'password' ? 8 : undefined}
                       className={inputClass} style={inputStyle}
-                      onFocus={e => e.target.style.borderColor = 'var(--pf-coral)'}
-                      onBlur={e => e.target.style.borderColor = 'var(--pf-border)'}
+                      onFocus={e => { e.currentTarget.style.borderColor = 'var(--pf-coral)' }}
+                      onBlur={e => { e.currentTarget.style.borderColor = 'var(--pf-border)' }}
                       placeholder={field === 'full_name' ? 'Dr. Juan García' : field === 'email' ? 'dr@clinica.com' : 'mínimo 8 caracteres'}
                     />
                   </div>

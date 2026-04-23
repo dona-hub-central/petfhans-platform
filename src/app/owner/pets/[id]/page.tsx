@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import OwnerPetView from '@/components/owner/OwnerPetView'
+import type { Pet, PetFile, PetFileWithUrl, RecordWithVet, AppointmentSummary } from '@/types'
 
 export default async function OwnerPetPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -41,15 +42,16 @@ export default async function OwnerPetPage({ params }: { params: Promise<{ id: s
     return { ...f, publicUrl: data?.signedUrl || '' }
   }))
 
-  const clinicName = (profile as any)?.clinics?.name ?? ''
+  type ProfileRow = { clinics: { name: string; slug: string } | null }
+  const clinicName = (profile as ProfileRow | null)?.clinics?.name ?? ''
 
   return (
     <OwnerPetView
-      pet={pet}
-      records={records ?? []}
-      photos={photosWithUrls}
-      docs={docFiles}
-      appointments={appointments ?? []}
+      pet={pet as Pet}
+      records={(records ?? []) as RecordWithVet[]}
+      photos={photosWithUrls as PetFileWithUrl[]}
+      docs={docFiles as PetFile[]}
+      appointments={(appointments ?? []) as AppointmentSummary[]}
       clinicName={clinicName}
       clinicId={pet.clinic_id}
     />

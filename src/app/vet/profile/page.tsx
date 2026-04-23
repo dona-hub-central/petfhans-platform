@@ -30,7 +30,8 @@ export default async function VetProfilePage({
     .eq('user_id', user.id).single()
 
   const isVetAdmin = profile?.role === 'vet_admin'
-  const clinic = (profile as any)?.clinics
+  type ProfileRow = { role: string; full_name: string | null; phone: string | null; avatar_url: string | null; clinics: { name: string; slug: string; subscription_plan: string } | null }
+  const clinic = (profile as ProfileRow | null)?.clinics
   const roleTag = ROLE_LABELS[profile?.role ?? '']
 
   async function saveProfile(formData: FormData) {

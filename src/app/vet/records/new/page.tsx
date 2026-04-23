@@ -1,21 +1,14 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
 import PetSearch from '@/components/shared/PetSearch'
 import { ClipboardList, Stethoscope, FileText, Pill, Syringe, StickyNote, type LucideIcon } from 'lucide-react'
+import type { PetSummary, Medication, Vaccine, PhysicalExam } from '@/types'
 
-// ── Tipos ──────────────────────────────────────────────────────────────
-type Medication = { name: string; dose: string; route: string; frequency: string; duration: string }
-type Vaccine    = { name: string; lot: string; next_date: string }
-type PhysicalExam = {
-  weight: string; temperature: string; heart_rate: string; respiratory_rate: string
-  general_state: string; mucous: string; hydration: string; lymph_nodes: string
-  cardiovascular: string; respiratory: string; digestive: string; musculoskeletal: string; skin: string; other: string
-}
 
 const VISIT_TYPES = [
   { value: 'consultation', label: 'Consulta',    color: '#2563eb' },
@@ -69,9 +62,15 @@ function NewRecordForm() {
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [pets, setPets] = useState<any[]>([])
+  const [pets, setPets] = useState<PetSummary[]>([])
 
-  const [form, setForm] = useState({
+  type RecordForm = {
+    pet_id: string; visit_date: string; visit_type: string
+    reason: string; diagnosis: string; prognosis: string
+    treatment: string; notes: string; next_visit: string
+  }
+
+  const [form, setForm] = useState<RecordForm>({
     pet_id:     petId ?? '',
     visit_date: new Date().toISOString().split('T')[0],
     visit_type: 'consultation',
@@ -107,7 +106,7 @@ function NewRecordForm() {
     load()
   }, [petId])
 
-  const set  = (k: string, v: any) => setForm(p => ({ ...p, [k]: v }))
+  const set = <K extends keyof RecordForm>(k: K, v: RecordForm[K]) => setForm(p => ({ ...p, [k]: v }))
   const setE = (k: keyof PhysicalExam, v: string) => setExam(e => ({ ...e, [k]: v }))
 
   const addMed     = () => setMeds(m => [...m, { name: '', dose: '', route: 'Oral', frequency: '', duration: '' }])
@@ -152,7 +151,10 @@ function NewRecordForm() {
 
   const inp = "w-full px-3 py-2.5 rounded-xl border outline-none transition"
   const inpS = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)', background: '#fff', fontSize: 16 as const }
-  const f = { onFocus: (e: any) => e.target.style.borderColor = 'var(--pf-coral)', onBlur: (e: any) => e.target.style.borderColor = 'var(--pf-border)' }
+  const f = {
+    onFocus: (e: React.FocusEvent<HTMLElement>) => { e.currentTarget.style.borderColor = 'var(--pf-coral)' },
+    onBlur:  (e: React.FocusEvent<HTMLElement>) => { e.currentTarget.style.borderColor = 'var(--pf-border)' },
+  }
   const selectedPet = pets.find(p => p.id === form.pet_id)
 
   return (
@@ -256,7 +258,7 @@ function NewRecordForm() {
                 { k: 'respiratory_rate', label: 'FR (rpm)',    ph: '20' },
               ].map(({ k, label, ph }) => (
                 <Field key={k} label={label}>
-                  <input type="number" step="0.1" value={(exam as any)[k]}
+                  <input type="number" step="0.1" value={exam[k as keyof PhysicalExam]}
                     onChange={e => setE(k as keyof PhysicalExam, e.target.value)}
                     placeholder={ph} className={inp} style={inpS} {...f} />
                 </Field>
@@ -301,7 +303,7 @@ function NewRecordForm() {
                   <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' as const }}>
                     {['Normal', 'Leve', 'Moderado', 'Grave', 'N/E'].map(opt => {
                       const colors: Record<string, string> = { Normal: '#16a34a', Leve: '#d97706', Moderado: '#ea580c', Grave: '#dc2626', 'N/E': '#64748b' }
-                      const active = (exam as any)[k] === opt
+                      const active = exam[k as keyof PhysicalExam] === opt
                       return (
                         <button key={opt} type="button" onClick={() => setE(k as keyof PhysicalExam, active ? '' : opt)}
                           style={{

@@ -37,10 +37,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
+  type ApptRow = typeof appt & {
+    profiles: { full_name: string; email: string } | null
+    pets:     { name: string } | null
+    clinics:  { name: string; slug: string } | null
+  }
+  const row = appt as ApptRow
   // Email al dueño según estado
-  const owner = appt.profiles as any
-  const pet   = appt.pets as any
-  const clinic = appt.clinics as any
+  const owner  = row.profiles
+  const pet    = row.pets
+  const clinic = row.clinics
   const dateStr = new Date(appt.appointment_date).toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' })
   const timeStr = appt.appointment_time.slice(0,5)
 

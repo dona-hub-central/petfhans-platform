@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 
 import { PawPrint, User, XCircle, AlertTriangle } from 'lucide-react'
+import type { PetWithOwner } from '@/types'
 
 const speciesLabel: Record<string, string> = {
   dog: 'Perro', cat: 'Gato', bird: 'Ave', rabbit: 'Conejo', other: 'Otro'
@@ -91,7 +92,7 @@ export default async function PetsPage() {
 
       {pets && pets.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {pets.map((pet: any) => (
+          {(pets as PetWithOwner[]).map((pet) => (
             <Link key={pet.id} href={`/vet/pets/${pet.id}`}
               className="bg-white rounded-2xl border p-5 hover:shadow-sm transition block"
               style={{ borderColor: 'var(--pf-border)' }}>

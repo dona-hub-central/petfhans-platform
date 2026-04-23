@@ -24,8 +24,10 @@ export default async function SubscriptionsPage() {
       .order('full_name'),
   ])
 
+  type ClinicUser = { id: string; full_name: string; email: string; role: string; clinic_id: string | null; created_at: string }
+
   // Agrupar usuarios por clínica
-  const usersByClinic = (allUsers ?? []).reduce((acc: Record<string, any[]>, u) => {
+  const usersByClinic = (allUsers ?? []).reduce((acc: Record<string, ClinicUser[]>, u) => {
     if (u.clinic_id) {
       if (!acc[u.clinic_id]) acc[u.clinic_id] = []
       acc[u.clinic_id].push(u)

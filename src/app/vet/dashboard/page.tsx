@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 
 import { PawPrint, ClipboardCheck, Mail, Plus, ClipboardList, Sparkles, type LucideIcon } from 'lucide-react'
+import type { RecordListItem } from '@/types'
 
 export const metadata = { title: 'Dashboard · Petfhans', description: 'Panel de gestión de tu clínica veterinaria.' }
 
@@ -87,7 +88,7 @@ export default async function VetDashboard() {
           <h3 style={{ font: 'var(--pf-text-h3)', color: 'var(--pf-ink)', margin: 0 }}>Consultas recientes</h3>
           <Link href="/vet/records" style={{ font: 'var(--pf-text-accent)', color: 'var(--pf-coral)', textDecoration: 'none' }}>Ver todas →</Link>
         </header>
-        {recentRecords && recentRecords.length > 0 ? recentRecords.map((r: any) => (
+        {recentRecords && recentRecords.length > 0 ? (recentRecords as RecordListItem[]).map((r) => (
           <Link key={r.id} href={`/vet/records/${r.id}`} className="recent-row">
             <div style={{ width: 36, height: 36, borderRadius: 12, background: 'var(--pf-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>
               <PawPrint size={18} strokeWidth={1.75} style={{ color: 'var(--pf-coral)' }} />

@@ -49,14 +49,15 @@ export default function AgentConfig({ agent: initial }: { agent: Agent | null })
   const [chatInput, setChatInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
 
-  const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }))
+  type AgentForm = typeof form
+  const set = <K extends keyof AgentForm>(k: K, v: AgentForm[K]) => setForm(f => ({ ...f, [k]: v }))
 
   const addSkill = () => {
     if (!newSkill.trim()) return
     set('skills', [...form.skills, newSkill.trim()])
     setNewSkill('')
   }
-  const removeSkill = (i: number) => set('skills', form.skills.filter((_: any, idx: number) => idx !== i))
+  const removeSkill = (i: number) => set('skills', form.skills.filter((_, idx) => idx !== i))
 
   const save = async () => {
     setSaving(true); setError(''); setSaved(false)
@@ -89,8 +90,8 @@ export default function AgentConfig({ agent: initial }: { agent: Agent | null })
       })
       const data = await res.json()
       setTestResult(res.ok ? `✅ ${data.reply}` : `❌ ${data.error}`)
-    } catch (e: any) {
-      setTestResult('❌ Error de conexión: ' + e.message)
+    } catch (e) {
+      setTestResult('❌ Error de conexión: ' + (e instanceof Error ? e.message : String(e)))
     }
     setTesting(false)
   }
@@ -110,22 +111,25 @@ export default function AgentConfig({ agent: initial }: { agent: Agent | null })
       })
       const data = await res.json()
       setChatMessages(prev => [...prev, { role: 'assistant', content: data.reply || data.error || 'Error' }])
-    } catch (e: any) {
-      setChatMessages(prev => [...prev, { role: 'assistant', content: '❌ Error: ' + e.message }])
+    } catch (e) {
+      setChatMessages(prev => [...prev, { role: 'assistant', content: '❌ Error: ' + (e instanceof Error ? e.message : String(e)) }])
     }
     setChatLoading(false)
   }
 
   const inp = "w-full px-3 py-2.5 text-sm border rounded-xl outline-none transition"
   const inpS = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)', background: '#fff' }
-  const f = { onFocus: (e:any) => e.target.style.borderColor='var(--pf-coral)', onBlur: (e:any) => e.target.style.borderColor='var(--pf-border)' }
+  const f = {
+    onFocus: (e: { currentTarget: HTMLInputElement }) => { e.currentTarget.style.borderColor = 'var(--pf-coral)' },
+    onBlur:  (e: { currentTarget: HTMLInputElement }) => { e.currentTarget.style.borderColor = 'var(--pf-border)' },
+  }
 
   return (
     <div>
       {/* Tabs */}
       <div className="flex gap-1 mb-6 border-b" style={{ borderColor: 'var(--pf-border)' }}>
         {[['config','Configuración'],['chat','Probar agente']].map(([key, label]) => (
-          <button key={key} onClick={() => setActiveTab(key as any)}
+          <button key={key} onClick={() => setActiveTab(key as 'config' | 'chat')}
             className="px-5 py-2.5 text-sm font-medium border-b-2 transition"
             style={{
               borderColor: activeTab === key ? 'var(--pf-coral)' : 'transparent',

@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import AdminLayout from '@/components/admin/AdminLayout'
 import { Building2, Users, PawPrint, User, type LucideIcon } from 'lucide-react'
+import type { ClinicWithAdmin } from '@/types'
 
 export default async function AdminDashboard() {
   const supabase = await createClient()
@@ -60,7 +61,7 @@ export default async function AdminDashboard() {
           </div>
 
           <div className="divide-y" style={{ borderColor: 'var(--pf-border)' }}>
-            {clinics && clinics.length > 0 ? clinics.map((clinic: any) => (
+            {clinics && clinics.length > 0 ? (clinics as ClinicWithAdmin[]).map((clinic) => (
               <div key={clinic.id} className="adm-clinic-row">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"

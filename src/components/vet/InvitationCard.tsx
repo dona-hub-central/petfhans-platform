@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import type { InvitationWithPet } from '@/types'
 
 const roleLabel: Record<string, string> = {
   veterinarian: '👨‍⚕️ Veterinario',
@@ -13,7 +14,7 @@ export function InvitationCard({
   appUrl,
   status,
 }: {
-  inv: any
+  inv: InvitationWithPet
   appUrl: string
   status: 'active' | 'used' | 'expired'
 }) {
@@ -98,7 +99,7 @@ export function InvitationCard({
           {/* Fecha */}
           <p className="text-xs mt-2" style={{ color: 'var(--pf-muted)' }}>
             {status === 'used'
-              ? `Aceptada el ${new Date(inv.used_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}`
+              ? `Aceptada el ${new Date(inv.used_at!).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}`
               : status === 'expired'
               ? `Expiró el ${new Date(inv.expires_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}`
               : `Expira el ${new Date(inv.expires_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}`}

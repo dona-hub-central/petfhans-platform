@@ -53,8 +53,9 @@ export async function POST(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
-  const clinicName = (pet as any).clinics?.name ?? 'la clínica'
-  const slug = (pet as any).clinics?.slug
+  type PetRow = typeof pet & { clinics?: { name: string; slug: string } | null }
+  const clinicName = (pet as PetRow).clinics?.name ?? 'la clínica'
+  const slug = (pet as PetRow).clinics?.slug
   const urg = URGENCY_LABELS[urgency] ?? URGENCY_LABELS.normal
   const dateFormatted = new Date(appointment_date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   const timeFormatted = appointment_time.slice(0, 5)

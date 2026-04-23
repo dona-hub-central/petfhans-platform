@@ -8,6 +8,7 @@ import BookAppointment from '@/components/owner/BookAppointment'
 import { PawPrint, Calendar, Camera, FileText, ClipboardList, Video, MapPin, type LucideIcon } from 'lucide-react'
 import VideoCallRoom from '@/components/owner/VideoCallRoom'
 import EmergencyCall from '@/components/owner/EmergencyCall'
+import type { Pet, PetFile, PetFileWithUrl, RecordWithVet, AppointmentSummary } from '@/types'
 
 type Tab = 'info' | 'galeria' | 'docs' | 'historial' | 'citas'
 
@@ -24,7 +25,13 @@ const speciesLabel: Record<string, string> = {
 }
 
 export default function OwnerPetView({ pet, records, photos, docs, appointments, clinicName, clinicId }: {
-  pet: any; records: any[]; photos: any[]; docs: any[]; appointments: any[]; clinicName: string; clinicId?: string
+  pet: Pet
+  records: RecordWithVet[]
+  photos: PetFileWithUrl[]
+  docs: PetFile[]
+  appointments: AppointmentSummary[]
+  clinicName: string
+  clinicId?: string
 }) {
   const [tab, setTab] = useState<Tab>('info')
   const nextVisit = records.find(r => r.next_visit && new Date(r.next_visit) > new Date())
@@ -124,7 +131,7 @@ export default function OwnerPetView({ pet, records, photos, docs, appointments,
               {nextVisit && (
                 <span className="next-badge">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                  {new Date(nextVisit.next_visit).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
+                  {nextVisit.next_visit && new Date(nextVisit.next_visit).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
                 </span>
               )}
             </div>
@@ -148,7 +155,7 @@ export default function OwnerPetView({ pet, records, photos, docs, appointments,
             <div className="desk-sidebar">
               {tab === 'info' && (
                 <>
-                  <DataCard pet={pet} clinicName={clinicName} nextVisit={nextVisit} />
+                  <DataCard pet={pet} clinicName={clinicName} />
                 </>
               )}
               {tab !== 'info' && (
@@ -187,7 +194,7 @@ export default function OwnerPetView({ pet, records, photos, docs, appointments,
 
 /* ── Sub-componentes ── */
 
-function DataCard({ pet, clinicName }: any) {
+function DataCard({ pet, clinicName }: { pet: Pet; clinicName: string }) {
   return (
     <>
       <div className="card">
@@ -219,12 +226,17 @@ function DataCard({ pet, clinicName }: any) {
   )
 }
 
-function InfoDesktop({ pet, clinicName, nextVisit, records }: any) {
+function InfoDesktop({ pet, clinicName, nextVisit, records }: {
+  pet: Pet
+  clinicName: string
+  nextVisit: RecordWithVet | undefined
+  records: RecordWithVet[]
+}) {
   return (
     <>
       {/* En mobile muestra todo junto, en desktop solo complementa */}
       <div style={{ display:'none' }} className="mobile-info-extra">
-        <DataCard pet={pet} clinicName={clinicName} nextVisit={nextVisit} />
+        <DataCard pet={pet} clinicName={clinicName} />
       </div>
       {pet.notes && (
         <div className="card">
@@ -240,7 +252,7 @@ function InfoDesktop({ pet, clinicName, nextVisit, records }: any) {
           <div>
             <p style={{ fontSize:11, color:'var(--pf-coral-dark)', fontWeight:700, margin:'0 0 2px', textTransform:'uppercase', letterSpacing:'.07em' }}>Próxima visita</p>
             <p style={{ fontSize:15, fontWeight:700, color:'var(--pf-ink)', margin:0 }}>
-              {new Date(nextVisit.next_visit).toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' })}
+              {nextVisit.next_visit && new Date(nextVisit.next_visit).toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' })}
             </p>
           </div>
         </div>
@@ -263,7 +275,7 @@ function InfoDesktop({ pet, clinicName, nextVisit, records }: any) {
   )
 }
 
-function DocsTab({ petId, initialDocs }: { petId: string; initialDocs: any[] }) {
+function DocsTab({ petId, initialDocs }: { petId: string; initialDocs: PetFile[] }) {
   const [docs, setDocs] = useState(initialDocs)
   const [showForm, setShowForm] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -286,7 +298,7 @@ function DocsTab({ petId, initialDocs }: { petId: string; initialDocs: any[] }) 
       if (!res.ok) { setError(data.error || 'Error'); setUploading(false); return }
       setDocs(prev => [data.file, ...prev])
       setShowForm(false); setFile(null); setNotes('')
-    } catch (err: any) { setError(err.message) }
+    } catch (err) { setError(err instanceof Error ? err.message : 'Error') }
     setUploading(false)
   }
 
@@ -333,13 +345,13 @@ function DocsTab({ petId, initialDocs }: { petId: string; initialDocs: any[] }) 
 
       {docs.length === 0 && !showForm
         ? <div className="empty-box"><p style={{ fontSize:36, margin:'0 0 8px' }}>📎</p><p style={{ fontSize:14, color:'#8e8e93', margin:0 }}>Sin documentos aún</p></div>
-        : docs.map((d: any) => <DocCard key={d.id} doc={d} />)
+        : docs.map((d) => <DocCard key={d.id} doc={d} />)
       }
     </>
   )
 }
 
-function HistorialTab({ petId, records }: { petId: string; records: any[] }) {
+function HistorialTab({ petId, records }: { petId: string; records: RecordWithVet[] }) {
   const [showNote, setShowNote] = useState(false)
   const [note, setNote] = useState('')
   const [file, setFile] = useState<File | null>(null)
@@ -370,7 +382,7 @@ function HistorialTab({ petId, records }: { petId: string; records: any[] }) {
       {showNote && (
         <form onSubmit={submit} style={{ background:'#fff', borderRadius:18, padding:16, marginBottom:12 }}>
           <textarea placeholder="Escribe una observación sobre tu mascota…" value={note} onChange={e => setNote(e.target.value)} rows={3}
-            style={{ width:'100%', border:'none', background:'#f2f2f7', borderRadius:12, padding:'12px 14px', fontSize:14, fontFamily:'inherit', resize:'none', marginBottom:10, boxSizing:'border-box' as any }} />
+            style={{ width:'100%', border:'none', background:'#f2f2f7', borderRadius:12, padding:'12px 14px', fontSize:14, fontFamily:'inherit', resize:'none', marginBottom:10, boxSizing:'border-box' }} />
           <label style={{ display:'block', border:'2px dashed #d1d1d6', borderRadius:12, padding:'12px', textAlign:'center', cursor:'pointer', marginBottom:12, background:'#f9f9f9', fontSize:13, color: file ? '#1c1c1e' : '#8e8e93' }}>
             {file ? `✓ ${file.name}` : 'Adjuntar archivo (opcional)'}
             <input type="file" style={{ display:'none' }} onChange={e => setFile(e.target.files?.[0] || null)} />
@@ -387,7 +399,7 @@ function HistorialTab({ petId, records }: { petId: string; records: any[] }) {
 
       {records.length === 0
         ? <div className="empty-box"><p style={{ fontSize:36, margin:'0 0 8px' }}>📋</p><p style={{ fontSize:14, color:'#8e8e93', margin:0 }}>Sin consultas registradas</p></div>
-        : records.map((r: any) => (
+        : records.map((r) => (
           <div key={r.id} className="rec-card">
             <div className="rec-top">
               <span className="rec-date">{new Date(r.visit_date).toLocaleDateString('es-ES', { day:'numeric', month:'short', year:'numeric' })}</span>
@@ -404,7 +416,7 @@ function HistorialTab({ petId, records }: { petId: string; records: any[] }) {
   )
 }
 
-function DocCard({ doc }: { doc: any }) {
+function DocCard({ doc }: { doc: PetFile }) {
   const [opening, setOpening] = useState(false)
   const cfg: Record<string, [string, string, string]> = {
     prescription:['💊','Receta','#7c3aed'], exam:['🔬','Examen','#2563eb'],
@@ -446,7 +458,7 @@ const APPT_STATUS: Record<string, { label: string; bg: string; color: string }> 
 }
 
 function CitasTab({ petId, petName, clinicId, appointments }: {
-  petId: string; petName: string; clinicId?: string; appointments: any[]
+  petId: string; petName: string; clinicId?: string; appointments: AppointmentSummary[]
 }) {
   const upcoming = appointments.filter(a => a.status === 'pending' || a.status === 'confirmed')
   const past     = appointments.filter(a => a.status === 'completed' || a.status === 'cancelled')
@@ -468,7 +480,7 @@ function CitasTab({ petId, petName, clinicId, appointments }: {
           <p style={{ fontSize: 11, fontWeight: 700, color: '#8e8e93', textTransform: 'uppercase', letterSpacing: '.07em', margin: '0 2px 8px' }}>
             Próximas
           </p>
-          {upcoming.map((a: any) => {
+          {upcoming.map((a) => {
             const st = APPT_STATUS[a.status] ?? APPT_STATUS.pending
             const dateLabel = new Date(a.appointment_date + 'T12:00').toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
             return (
@@ -518,7 +530,7 @@ function CitasTab({ petId, petName, clinicId, appointments }: {
           <p style={{ fontSize: 11, fontWeight: 700, color: '#8e8e93', textTransform: 'uppercase', letterSpacing: '.07em', margin: '0 2px 8px' }}>
             Historial de citas
           </p>
-          {past.map((a: any) => {
+          {past.map((a) => {
             const st = APPT_STATUS[a.status] ?? APPT_STATUS.completed
             return (
               <div key={a.id} style={{ background: '#fff', borderRadius: 16, padding: '12px 16px', marginBottom: 8, opacity: 0.8 }}>

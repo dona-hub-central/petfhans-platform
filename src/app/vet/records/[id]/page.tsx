@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 
 import { Stethoscope, FileText, Pill, Syringe, StickyNote } from 'lucide-react'
+import type { Medication, Vaccine, PhysicalExam } from '@/types'
 
 const VISIT_TYPE: Record<string, { label: string; color: string }> = {
   consultation: { label: 'Consulta',    color: '#2563eb' },
@@ -25,15 +26,21 @@ export default async function RecordDetailPage({ params }: { params: Promise<{ i
   if (!user) redirect('/auth/login')
 
   const admin = createAdminClient()
-  const { data: r } = await admin.from('medical_records')
+  const { data: recordData } = await admin.from('medical_records')
     .select('*, pets(id, name, species, breed), profiles!medical_records_vet_id_fkey(full_name)')
     .eq('id', id).single()
 
-  if (!r) redirect('/vet/records')
+  if (!recordData) redirect('/vet/records')
 
-  const meds     = Array.isArray(r.medications) ? r.medications : []
-  const vaccines = Array.isArray(r.vaccines)    ? r.vaccines    : []
-  const exam     = r.physical_exam ?? {}
+  type RecordRow = typeof recordData & {
+    pets: { id: string; name: string; species: string; breed: string | null } | null
+    profiles: { full_name: string } | null
+  }
+  const r = recordData as RecordRow
+
+  const meds     = Array.isArray(r.medications) ? (r.medications as Medication[]) : [] as Medication[]
+  const vaccines = Array.isArray(r.vaccines)    ? (r.vaccines    as Vaccine[])    : [] as Vaccine[]
+  const exam     = (r.physical_exam ?? {}) as Partial<PhysicalExam>
   const vt       = VISIT_TYPE[r.visit_type] ?? VISIT_TYPE.consultation
 
   const SYSTEMS = [
@@ -83,7 +90,7 @@ export default async function RecordDetailPage({ params }: { params: Promise<{ i
                 </span>
               </div>
               <h2 className="text-xl font-bold" style={{ color: 'var(--pf-ink)' }}>{r.reason}</h2>
-              <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>Dr/a. {(r.profiles as any)?.full_name}</p>
+              <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>Dr/a. {r.profiles?.full_name}</p>
             </div>
             {r.next_visit && (
               <div className="text-center flex-shrink-0 px-4 py-3 rounded-xl"
@@ -122,19 +129,21 @@ export default async function RecordDetailPage({ params }: { params: Promise<{ i
               </div>
 
               {/* Sistemas */}
-              {SYSTEMS.some(([k]) => exam[k]) && (
+              {SYSTEMS.some(([k]) => exam[k as keyof PhysicalExam]) && (
                 <>
                   <p className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: 'var(--pf-muted)' }}>Sistemas</p>
                   <div className="grid grid-cols-2 gap-2">
-                    {SYSTEMS.filter(([k]) => exam[k]).map(([k, label]) => (
+                    {SYSTEMS.filter(([k]) => exam[k as keyof PhysicalExam]).map(([k, label]) => {
+                      const val = exam[k as keyof PhysicalExam] as string
+                      return (
                       <div key={k} className="flex items-center justify-between">
                         <span className="text-xs" style={{ color: 'var(--pf-muted)' }}>{label}</span>
                         <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                          style={{ background: (SYSTEM_COLORS[exam[k]] || '#64748b') + '18', color: SYSTEM_COLORS[exam[k]] || '#64748b' }}>
-                          {exam[k]}
+                          style={{ background: (SYSTEM_COLORS[val] || '#64748b') + '18', color: SYSTEM_COLORS[val] || '#64748b' }}>
+                          {val}
                         </span>
                       </div>
-                    ))}
+                    )})}
                   </div>
                 </>
               )}
@@ -173,7 +182,7 @@ export default async function RecordDetailPage({ params }: { params: Promise<{ i
           <div className="bg-white rounded-2xl border p-5" style={{ borderColor: 'var(--pf-border)' }}>
             <h3 className="font-semibold text-sm mb-4 flex items-center gap-1.5" style={{ color: 'var(--pf-ink)' }}><Pill size={14} strokeWidth={2} /> Medicamentos</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {meds.map((m: any, i: number) => (
+              {meds.map((m, i) => (
                 <div key={i} className="rounded-xl p-3 border" style={{ borderColor: 'var(--pf-border)', background: 'var(--pf-bg)' }}>
                   <p className="font-semibold text-sm" style={{ color: 'var(--pf-ink)' }}>{m.name}</p>
                   <div className="flex flex-wrap gap-2 mt-1.5">
@@ -193,7 +202,7 @@ export default async function RecordDetailPage({ params }: { params: Promise<{ i
           <div className="bg-white rounded-2xl border p-5" style={{ borderColor: 'var(--pf-border)' }}>
             <h3 className="font-semibold text-sm mb-4 flex items-center gap-1.5" style={{ color: 'var(--pf-ink)' }}><Syringe size={14} strokeWidth={2} /> Vacunación</h3>
             <div className="space-y-2">
-              {vaccines.map((v: any, i: number) => (
+              {vaccines.map((v, i) => (
                 <div key={i} className="flex items-center gap-4 p-3 rounded-xl border" style={{ borderColor: 'var(--pf-border)', background: 'var(--pf-bg)' }}>
                   <Syringe size={18} strokeWidth={1.75} style={{ color: 'var(--pf-muted)', flexShrink: 0 }} />
                   <div className="flex-1">

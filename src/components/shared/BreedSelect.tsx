@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 
 const BREEDS: Record<string, string[]> = {
   dog: [
@@ -97,8 +97,8 @@ export default function BreedSelect({
         disabled={!breeds.length}
         className="w-full px-4 py-3 rounded-lg border text-sm outline-none transition"
         style={inpS}
-        onBlur={e => (e.target as HTMLInputElement).style.borderColor = 'var(--pf-border)'}
-        onKeyDown={(e: any) => { e.target.style.borderColor = 'var(--pf-coral)' }}
+        onBlur={e => { e.currentTarget.style.borderColor = 'var(--pf-border)' }}
+        onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => { e.currentTarget.style.borderColor = 'var(--pf-coral)' }}
       />
 
       {open && filtered.length > 0 && (

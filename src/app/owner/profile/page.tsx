@@ -22,7 +22,8 @@ export default async function OwnerProfilePage({
     .select('full_name, phone, avatar_url, clinics(name)')
     .eq('user_id', user.id).single()
 
-  const clinicName = (profile as any)?.clinics?.name
+  type ProfileRow = { full_name: string | null; phone: string | null; avatar_url: string | null; clinics: { name: string } | null }
+  const clinicName = (profile as ProfileRow | null)?.clinics?.name
 
   async function saveProfile(formData: FormData) {
     'use server'

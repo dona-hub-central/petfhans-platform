@@ -25,7 +25,7 @@ export default function TiersManager({ tiers: initial }: { tiers: Tier[] }) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }))
+  const set = <K extends keyof Tier>(k: K, v: Tier[K]) => setForm(f => ({ ...f, [k]: v }))
 
   const startCreate = () => {
     setCreating(true); setEditing(null)
@@ -80,7 +80,10 @@ export default function TiersManager({ tiers: initial }: { tiers: Tier[] }) {
 
   const inp = "w-full px-3 py-2.5 text-sm border rounded-xl outline-none transition"
   const inpS = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)', background: '#fff' }
-  const f = { onFocus: (e:any) => e.target.style.borderColor='var(--pf-coral)', onBlur: (e:any) => e.target.style.borderColor='var(--pf-border)' }
+  const f = {
+    onFocus: (e: { currentTarget: HTMLInputElement }) => { e.currentTarget.style.borderColor = 'var(--pf-coral)' },
+    onBlur:  (e: { currentTarget: HTMLInputElement }) => { e.currentTarget.style.borderColor = 'var(--pf-border)' },
+  }
 
   const showForm = creating || editing !== null
 
