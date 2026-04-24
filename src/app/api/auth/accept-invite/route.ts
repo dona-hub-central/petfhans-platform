@@ -47,6 +47,15 @@ export async function POST(req: NextRequest) {
       await admin.from('pets')
         .update({ owner_id: newProfile.id })
         .eq('id', inv.pet_id)
+      // Also grant pet_access so the owner can see this pet in their portal
+      if (inv.role === 'pet_owner') {
+        await admin.from('pet_access').upsert({
+          owner_id:  newProfile.id,
+          pet_id:    inv.pet_id,
+          clinic_id: inv.clinic_id,
+          linked_by: inv.created_by ?? newProfile.id,
+        }, { onConflict: 'owner_id,pet_id' })
+      }
     }
 
     // Crear accesos explícitos en pet_access si es pet_owner con pet_ids

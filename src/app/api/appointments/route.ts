@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient()
 
-  const { data: profile } = await supabase.from('profiles').select('id, clinic_id, full_name, email').eq('user_id', user.id).single()
+  const { data: profile } = await supabase.from('profiles').select('id, role, clinic_id, full_name, email').eq('user_id', user.id).single()
   if (!profile) return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 403 })
 
   // C-2: verificar que el pet pertenece a la clínica del usuario autenticado
@@ -28,6 +28,13 @@ export async function POST(req: NextRequest) {
 
   if (!pet || pet.clinic_id !== profile.clinic_id)
     return NextResponse.json({ error: 'Mascota no encontrada' }, { status: 403 })
+
+  // Pet owners must have explicit pet_access to book appointments for this pet
+  if (profile.role === 'pet_owner') {
+    const { data: petAccess } = await admin.from('pet_access')
+      .select('pet_id').eq('owner_id', profile.id).eq('pet_id', pet_id).maybeSingle()
+    if (!petAccess) return NextResponse.json({ error: 'Sin acceso a esta mascota' }, { status: 403 })
+  }
 
   // Verificar que el slot no esté ocupado
   const { data: existing } = await admin.from('appointments')
