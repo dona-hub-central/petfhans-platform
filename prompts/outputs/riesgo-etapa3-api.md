@@ -6,6 +6,29 @@
 
 ---
 
+## ⚠ RIESGO CRÍTICO INDEPENDIENTE DE LA MIGRACIÓN
+
+> **Bug en producción. No requiere multi-clínica para explotarse. Debe cerrarse en sesión separada con `prompts/security-fix.md` antes de Fase B.**
+
+**`PATCH /api/appointments/[id]`** — IDOR (Insecure Direct Object Reference)
+
+- **Archivo:** `src/app/api/appointments/[id]/route.ts`
+- **Líneas afectadas:** 19 (fetch sin ownership), 30–35 (update sin ownership)
+- **Descripción:** La ruta obtiene la cita con `.eq('id', id)` usando `createAdminClient()` (bypasa RLS) y actualiza `status`, `notes` y `cancellation_reason` sin verificar en ningún momento que el usuario autenticado tenga relación con esa cita. Cualquier usuario autenticado con un UUID de cita puede confirmar, cancelar o completar citas de cualquier clínica.
+- **Vector de ataque:** `PATCH /api/appointments/<uuid-cualquier-cita>` con `{ "status": "cancelled" }` desde cualquier cuenta autenticada.
+- **Consecuencia:** Un dueño de mascota, vet de otra clínica, o cualquier cuenta válida puede cancelar o completar citas de otras clínicas masivamente.
+- **Fix requerido:** Añadir ownership check post-fetch:
+  ```ts
+  const { data: profile } = await supabase.from('profiles')
+    .select('role, clinic_id').eq('user_id', user.id).single()
+  if (appt.clinic_id !== profile.clinic_id && profile.role !== 'superadmin') {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+  }
+  ```
+- **Estado:** Pendiente — cerrar en `prompts/security-fix.md` junto con hallazgos C-1 a L-15.
+
+---
+
 ## Métricas
 
 | Métrica | Valor |
