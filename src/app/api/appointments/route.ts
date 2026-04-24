@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient()
 
-  const { data: profile } = await supabase.from('profiles').select('id, clinic_id, full_name, email').eq('user_id', user.id).single()
+  const { data: profile } = await supabase.from('profiles').select('id, role, clinic_id, full_name, email').eq('user_id', user.id).single()
   if (!profile) return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 403 })
 
   // C-2: verificar que el pet pertenece a la clínica del usuario autenticado
@@ -28,6 +28,13 @@ export async function POST(req: NextRequest) {
 
   if (!pet || pet.clinic_id !== profile.clinic_id)
     return NextResponse.json({ error: 'Mascota no encontrada' }, { status: 403 })
+
+  // Pet owners must have explicit pet_access to book appointments for this pet
+  if (profile.role === 'pet_owner') {
+    const { data: petAccess } = await admin.from('pet_access')
+      .select('pet_id').eq('owner_id', profile.id).eq('pet_id', pet_id).maybeSingle()
+    if (!petAccess) return NextResponse.json({ error: 'Sin acceso a esta mascota' }, { status: 403 })
+  }
 
   // Verificar que el slot no esté ocupado
   const { data: existing } = await admin.from('appointments')
@@ -91,7 +98,7 @@ export async function POST(req: NextRequest) {
         </div>
         ${urgencyBlock}
         ${virtualNote}
-        <a href="https://${slug}.petfhans.com/owner/dashboard" style="background:#EE726D;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;margin-top:8px">
+        <a href="https://petfhans.com/owner/dashboard" style="background:#EE726D;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;margin-top:8px">
           Ver mis citas
         </a>
       </div>
@@ -128,7 +135,7 @@ export async function POST(req: NextRequest) {
             <p style="margin:0 0 6px"><strong>Modalidad:</strong> ${is_virtual ? '📹 Videollamada' : '🏥 Presencial'}</p>
             <p style="margin:0"><strong>📋 Motivo / Síntomas:</strong><br>${reason}</p>
           </div>
-          <a href="https://${slug}.petfhans.com/vet/appointments" style="background:#EE726D;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;margin-top:8px">
+          <a href="https://petfhans.com/vet/appointments" style="background:#EE726D;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;margin-top:8px">
             Gestionar citas
           </a>
         </div>

@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     const { data: clinic } = await admin.from('clinics')
       .select('slug, name').eq('id', profile.clinic_id).single()
 
-    const inviteLink = `https://${clinic?.slug}.petfhans.com/auth/invite?token=${inv.token}`
+    const inviteLink = `https://petfhans.com/auth/invite?token=${inv.token}`
 
     type InvWithPet = typeof inv & { pets: { name: string } | null }
     await sendInvitationEmail({

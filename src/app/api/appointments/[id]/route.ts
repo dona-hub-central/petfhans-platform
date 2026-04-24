@@ -32,8 +32,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   if (!appt) return NextResponse.json({ error: 'Cita no encontrada' }, { status: 404 })
 
-  const resend = new Resend(process.env.RESEND_API_KEY)
-
   type ApptRow = typeof appt & {
     profiles: { full_name: string; email: string } | null
     pets:     { name: string } | null
@@ -45,6 +43,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (!appointmentClinicId || appointmentClinicId !== callerProfile.clinic_id) {
     return NextResponse.json({ error: 'Cita no encontrada' }, { status: 404 })
   }
+
+  const resend = new Resend(process.env.RESEND_API_KEY)
   const isVirtual = Boolean(appt.is_virtual)
   const room = jitsiRoom(id)
   const joinUrl = `https://meet.jit.si/${room}`
@@ -106,7 +106,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
           <p>Hola <strong>${owner.full_name}</strong>,</p>
           <p>${tpl.body}</p>
           ${virtualBlock}
-          <a href="https://${clinic?.slug}.petfhans.com/owner/dashboard" style="background:#EE726D;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;margin-top:12px">
+          <a href="https://petfhans.com/owner/dashboard" style="background:#EE726D;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;margin-top:12px">
             Ver mis citas
           </a>
         </div>
