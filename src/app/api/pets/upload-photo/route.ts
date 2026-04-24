@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   const { data: profile } = await supabase.from('profiles')
-    .select('id, role').eq('user_id', user.id).single()
+    .select('id, role, clinic_id').eq('user_id', user.id).single()
 
   const formData = await req.formData()
   const file  = formData.get('file') as File
@@ -30,6 +30,20 @@ export async function POST(req: NextRequest) {
       .eq('pet_id', petId)
       .single()
     if (!access) return NextResponse.json({ error: 'Sin acceso a esta mascota' }, { status: 403 })
+  }
+
+  // A3: para vets verificar que la mascota pertenece a su clínica
+  if (profile?.role && ['vet_admin', 'veterinarian'].includes(profile.role)) {
+    if (!profile.clinic_id) {
+      return NextResponse.json({ error: 'Sin clínica asignada' }, { status: 403 })
+    }
+    const { data: vetPet } = await admin.from('pets')
+      .select('clinic_id')
+      .eq('id', petId)
+      .single()
+    if (!vetPet || vetPet.clinic_id !== profile.clinic_id) {
+      return NextResponse.json({ error: 'Mascota no encontrada' }, { status: 404 })
+    }
   }
 
   // Borrar foto anterior si existe
