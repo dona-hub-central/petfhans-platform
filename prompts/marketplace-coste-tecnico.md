@@ -1,6 +1,8 @@
 # Documento de Riesgo Técnico — Migración Multi-Clínica + Marketplace
 
 **Fecha:** 2026-04-24  
+**Actualizado:** 2026-04-24 — números de migración Fase B desplazados +1  
+**Motivo:** `012_fix_profiles_rls.sql` fue ejecutada como fix de bug funcional (página de citas no renderizaba). Fase B arranca desde `013`.  
 **Fuente:** Outputs de Etapas 1–5A (`riesgo-etapa1-schema.md` → `riesgo-etapa5a.md`)  
 **Estado TypeScript:** `npx tsc --noEmit` — **sin errores**
 
@@ -27,11 +29,15 @@
 | A3 | Fix `pets/upload-photo` — añadir `.eq('clinic_id', active_clinic_id)` para vets | `pets/upload-photo/route.ts` | — |
 | A4 | Reemplazar 6 URLs de email con subdominio por dominio único `petfhans.com` | ver tabla en Sección 5 | — |
 | A5 | Actualizar display en admin panel — `{clinic.slug}.petfhans.com` → `petfhans.com/{slug}` | `admin/page.tsx` | 74 |
-| A6 | Crear políticas RLS para `appointments` (actualmente tiene 0 políticas) | nueva migration `011_appointments_rls.sql` | nueva |
+| A6 | Crear políticas RLS para `appointments` (actualmente tiene 0 políticas) | `011_appointments_rls.sql` ✓ | nueva |
+| A7 | Fix RLS profiles — usuario siempre puede leer su propio perfil | `012_fix_profiles_rls.sql` ✓ | nueva |
+
+**Nota:** A6 y A7 ya ejecutadas. Migraciones 011 y 012 aplicadas en producción.
 
 **Condición de salida:**  
 `PATCH /api/appointments/<uuid-de-otra-clinica>` desde cuenta autenticada sin relación → **403**.  
-`SELECT COUNT(*) FROM pg_policies WHERE tablename = 'appointments'` → **> 0**.
+`SELECT COUNT(*) FROM pg_policies WHERE tablename = 'appointments'` → **> 0**.  
+Navegación a `/vet/appointments` → carga correctamente sin redirect.
 
 ---
 
@@ -45,10 +51,10 @@
 
 | Paso | Acción | Archivo |
 |---|---|---|
-| B.1.1 | Crear `profile_clinics(user_id, clinic_id, role, created_at)` + índice `(user_id, clinic_id)` | `012_profile_clinics.sql` |
-| B.1.2 | Crear función `get_active_clinic_id(p_clinic_id UUID)` parametrizada | `013_rls_rewrite.sql` |
-| B.1.3 | Reescribir las 12 políticas RLS usando `profile_clinics` — **mantener `get_user_clinic_id()` activa** | `013_rls_rewrite.sql` |
-| B.1.4 | Script de migración de datos: poblar `profile_clinics` desde `profiles.clinic_id` existentes (rollbackable) | `014_migrate_data.sql` |
+| B.1.1 | Crear `profile_clinics(user_id, clinic_id, role, created_at)` + índice `(user_id, clinic_id)` | `013_profile_clinics.sql` |
+| B.1.2 | Crear función `get_active_clinic_id(p_clinic_id UUID)` parametrizada | `014_rls_rewrite.sql` |
+| B.1.3 | Reescribir las 12 políticas RLS usando `profile_clinics` — **mantener `get_user_clinic_id()` activa** | `014_rls_rewrite.sql` |
+| B.1.4 | Script de migración de datos: poblar `profile_clinics` desde `profiles.clinic_id` existentes (rollbackable) | `015_migrate_data.sql` |
 
 Verificar: `SELECT COUNT(*) FROM profile_clinics` debe coincidir con `SELECT COUNT(*) FROM profiles WHERE clinic_id IS NOT NULL`.
 
@@ -253,7 +259,7 @@ Tests de comportamiento que verifican el fix — no requieren framework de testi
 
 ---
 
-#### URLs de email — 6 líneas (Fase A)
+#### URLs de email — 6 líneas (Fase A) ✓ completado
 
 | Archivo | Línea | Antes | Después |
 |---|---|---|---|
@@ -274,7 +280,7 @@ Estos archivos o elementos **no deben modificarse** sin un plan explícito y sec
 
 | Elemento | Archivo(s) | Por qué no tocar prematuramente |
 |---|---|---|
-| **Migraciones existentes (001–010)** | `supabase/migrations/001–010` | Nunca editar migraciones aplicadas en producción. Solo agregar nuevas migraciones numeradas. Un cambio retroactivo rompe la cadena reproducible. |
+| **Migraciones existentes (001–012)** | `supabase/migrations/001–012` | Nunca editar migraciones aplicadas en producción. Solo agregar nuevas migraciones numeradas. Un cambio retroactivo rompe la cadena reproducible. |
 | **`get_user_clinic_id()`** | `001_initial_schema.sql:127` | 12 políticas RLS activas dependen de esta función. Dropearla antes de reescribir las políticas corta acceso a datos para todos los usuarios simultáneamente. Mantener activa hasta que `SELECT COUNT(*) FROM pg_policies WHERE qual LIKE '%get_user_clinic_id%'` = 0. |
 | **`profiles.clinic_id` columna** | `profiles` table | 9 routes + 1 trigger leen este campo. Nullificarlo antes de que todos los consumidores estén migrados produce 403 silenciosos y queries con `.eq('clinic_id', null)` que devuelven 0 filas sin error. Nullificar solo como último paso de Fase B. |
 | **Validación de subdominio en middleware** | `middleware.ts:80–89` | Actualmente es la única barrera que impide que un vet autenticado acceda al panel de otra clínica. Eliminarla antes de tener la validación de cookie activa en producción crea ventana sin restricción de clínica. Eliminar solo después de ≥48h con validación de cookie sin incidencias. |
@@ -293,18 +299,19 @@ Todas las siguientes condiciones deben cumplirse antes de aplicar cualquier migr
 
 **Condiciones de Fase A completada:**
 
-- [ ] Fix IDOR `appointments/[id]` PATCH desplegado: `PATCH /api/appointments/<uuid-otra-clinica>` → 403
-- [ ] Fix IDOR `appointments/[id]/rate` GET desplegado
-- [ ] Fix `pets/upload-photo` para vets desplegado
-- [ ] Las 6 URLs de email con subdominio reemplazadas por `petfhans.com` en producción
-- [ ] `appointments` tiene al menos 1 política RLS (`SELECT COUNT(*) FROM pg_policies WHERE tablename = 'appointments'` > 0)
-- [ ] Admin panel muestra `petfhans.com/{slug}` en lugar de subdominio
+- [x] Fix IDOR `appointments/[id]` PATCH desplegado: `PATCH /api/appointments/<uuid-otra-clinica>` → 403
+- [x] Fix IDOR `appointments/[id]/rate` GET desplegado
+- [x] Fix `pets/upload-photo` para vets desplegado
+- [x] Las 6 URLs de email con subdominio reemplazadas por `petfhans.com` en producción
+- [x] `appointments` tiene al menos 1 política RLS — `011_appointments_rls.sql` ejecutada
+- [x] Admin panel muestra `petfhans.com/{slug}` en lugar de subdominio
+- [x] RLS profiles permite leer propio perfil con clinic_id null — `012_fix_profiles_rls.sql` ejecutada
 
 **Condiciones de preparación de Fase B:**
 
-- [ ] `012_profile_clinics.sql` revisada y aprobada — tabla, índices, constraints
-- [ ] `013_rls_rewrite.sql` revisada: las 12 políticas reescritas, `get_user_clinic_id()` sigue existiendo
-- [ ] `014_migrate_data.sql` probada en staging: `COUNT(profile_clinics) = COUNT(profiles WHERE clinic_id IS NOT NULL)`
+- [ ] `013_profile_clinics.sql` revisada y aprobada — tabla, índices, constraints
+- [ ] `014_rls_rewrite.sql` revisada: las 12 políticas reescritas, `get_user_clinic_id()` sigue existiendo
+- [ ] `015_migrate_data.sql` probada en staging: `COUNT(profile_clinics) = COUNT(profiles WHERE clinic_id IS NOT NULL)`
 - [ ] `accept-invite` path de usuario existente implementado y probado en staging — no crea duplicados
 - [ ] `owner/setup` escribe en `profile_clinics` en staging — no toca `profiles.clinic_id`
 - [ ] Middleware nueva lógica (cookie → header) desplegada en staging sin errores
