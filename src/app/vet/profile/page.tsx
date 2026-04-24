@@ -36,12 +36,13 @@ export default async function VetProfilePage({
 
   async function saveProfile(formData: FormData) {
     'use server'
-    const full_name = (formData.get('full_name') as string).trim()
-    const phone = (formData.get('phone') as string).trim()
+    const full_name = ((formData.get('full_name') as string) ?? '').trim()
+    const phone = ((formData.get('phone') as string) ?? '').trim()
     const sb = await createClient()
     const { data: { user: u } } = await sb.auth.getUser()
-    if (!u) return
-    await sb.from('profiles').update({ full_name, phone: phone || null }).eq('user_id', u.id)
+    if (!u) redirect('/auth/login')
+    const { error: updateErr } = await sb.from('profiles').update({ full_name, phone: phone || null }).eq('user_id', u.id)
+    if (updateErr) redirect('/vet/profile?error=save')
     revalidatePath('/vet/profile')
     redirect('/vet/profile?success=profile')
   }
@@ -80,6 +81,7 @@ export default async function VetProfilePage({
           {error === 'short'  && <Alert msg="La contraseña debe tener mínimo 8 caracteres." />}
           {error === 'fields' && <Alert msg="Completa todos los campos." />}
           {error === 'update' && <Alert msg="No se pudo actualizar la contraseña." />}
+          {error === 'save'   && <Alert msg="No se pudo guardar el perfil. Inténtalo de nuevo." />}
         </div>
       )}
 
