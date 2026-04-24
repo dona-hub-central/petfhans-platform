@@ -15,15 +15,36 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
+  const { data: callerProfile } = await supabase
+    .from('profiles')
+    .select('role, clinic_id')
+    .eq('user_id', user.id)
+    .single()
+
+  if (!callerProfile?.clinic_id) {
+    return NextResponse.json({ error: 'Sin clínica asignada' }, { status: 403 })
+  }
+
   const { status, notes, cancellation_reason } = await req.json()
   const admin = createAdminClient()
 
   const { data: appt } = await admin.from('appointments')
-    .select('*, pets(name), profiles!appointments_owner_id_fkey(full_name, email), clinics(name, slug)')
+    .select('*, pets(name), profiles!appointments_owner_id_fkey(full_name, email), clinics(name, slug, id)')
     .eq('id', id).single()
 
   if (!appt) return NextResponse.json({ error: 'Cita no encontrada' }, { status: 404 })
 
+  type ApptRow = typeof appt & {
+    profiles: { full_name: string; email: string } | null
+    pets:     { name: string } | null
+    clinics:  { name: string; slug: string; id: string } | null
+  }
+  const row = appt as ApptRow
+
+  const appointmentClinicId = (row.clinics as { id: string } | null)?.id
+  if (!appointmentClinicId || appointmentClinicId !== callerProfile.clinic_id) {
+    return NextResponse.json({ error: 'Cita no encontrada' }, { status: 404 })
+  }
   const isVirtual = Boolean(appt.is_virtual)
   const room = jitsiRoom(id)
   const joinUrl = `https://meet.jit.si/${room}`
