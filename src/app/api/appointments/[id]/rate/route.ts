@@ -8,6 +8,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
+  const { data: callerProfile } = await supabase
+    .from('profiles')
+    .select('role, clinic_id')
+    .eq('user_id', user.id)
+    .single()
+
+  if (!callerProfile?.clinic_id) {
+    return NextResponse.json({ error: 'Sin clínica asignada' }, { status: 403 })
+  }
+
   const { rating, comment, is_anonymous, rated_by } = await req.json()
 
   if (!rating || rating < 1 || rating > 5)
@@ -23,6 +33,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     .eq('id', id).single()
 
   if (!appt) return NextResponse.json({ error: 'Cita no encontrada' }, { status: 404 })
+
+  if (appt.clinic_id !== callerProfile.clinic_id) {
+    return NextResponse.json({ error: 'Cita no encontrada' }, { status: 404 })
+  }
 
   // Only allow rating completed or confirmed appointments
   if (!['confirmed', 'completed'].includes(appt.status))
@@ -47,7 +61,26 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
+  const { data: callerProfile } = await supabase
+    .from('profiles')
+    .select('role, clinic_id')
+    .eq('user_id', user.id)
+    .single()
+
+  if (!callerProfile?.clinic_id) {
+    return NextResponse.json({ error: 'Sin clínica asignada' }, { status: 403 })
+  }
+
   const admin = createAdminClient()
+
+  const { data: appt } = await admin.from('appointments')
+    .select('id, clinic_id')
+    .eq('id', id).single()
+
+  if (!appt || appt.clinic_id !== callerProfile.clinic_id) {
+    return NextResponse.json({ error: 'Cita no encontrada' }, { status: 404 })
+  }
+
   const { data: ratings } = await admin.from('appointment_ratings')
     .select('id, rated_by, rating, comment, is_anonymous, created_at')
     .eq('appointment_id', id)
