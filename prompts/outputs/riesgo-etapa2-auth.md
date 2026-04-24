@@ -6,6 +6,22 @@
 
 ---
 
+## Decisión arquitectónica confirmada — 2026-04-24
+
+| Aspecto | Modelo actual | Modelo futuro |
+|---|---|---|
+| Acceso por clínica | Subdominio `clinica.petfhans.com` | Dominio único `petfhans.com` |
+| Subdominios existentes | Activos | Deprecados con redirect 301 |
+| Selector de clínica activa | Subdominio implícito | Cookie de sesión `active_clinic_id` |
+| Validación en middleware | `clinicSlug !== subdomain` | `activeClinicId` leído de cookie, verificado contra `profile_clinics` |
+
+**Consecuencias para la Etapa 3:**
+- Las API routes que leen `clinic_id` del perfil (`profiles.clinic_id`) deben migrar a leer `activeClinicId` del contexto de request.
+- El middleware inyectará `x-active-clinic-id` en los headers; las routes lo leerán desde ahí.
+- Las routes que hoy asumen `profile.clinic_id` escalar necesitan refactor para leer el header o la cookie.
+
+---
+
 ## Cómo fluye clinic_id hoy (paso a paso)
 
 ```
