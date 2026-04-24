@@ -2,7 +2,8 @@
 ## Sesión independiente de Claude Code
 
 **Objetivo:** Crear las rutas GET del marketplace — búsqueda y perfiles públicos.
-**Prerequisito:** Fase C.1 completada (tablas 017 ejecutadas en Supabase)
+**Rama:** Develop
+**Prerequisito:** Fase C.1 completada — tablas `care_requests`, `clinic_blocks`, `clinic_join_requests` existen en Supabase.
 
 ---
 
@@ -16,7 +17,7 @@ skills-ai/security-and-hardening/SKILL.md
 skills-ai/coding-best-practices/SKILL.md
 ```
 
-Verifica que las tablas de C.1 existen:
+Verifica el prerequisito:
 ```bash
 grep -r "care_requests" supabase/migrations/ --include="*.sql" -l
 # Debe mostrar 017_marketplace_tables.sql
@@ -26,24 +27,25 @@ grep -r "care_requests" supabase/migrations/ --include="*.sql" -l
 
 ## Reglas para todas las rutas de esta sesión
 
-1. **Auth obligatorio** — todas las rutas requieren sesión activa (spec: marketplace no es público)
-2. **Sin clinic_id como scope** — estas rutas son de descubrimiento, no de gestión
+1. **Auth obligatorio** — todas las rutas requieren sesión activa (el marketplace no es público)
+2. **Sin clinic_id como scope** — estas rutas son de descubrimiento, no de gestión por clínica
 3. **Solo lectura** — GET únicamente, sin mutaciones
 4. **Paginación** — todas las listas usan `.range(offset, offset + PAGE_SIZE - 1)`
-5. **clinic_blocks** — las clínicas donde el usuario está bloqueado no aparecen
+5. **clinic_blocks** — las clínicas donde el usuario está bloqueado no aparecen en listados
 
 ---
 
 ## Ruta 1 — `GET /api/marketplace/clinics`
 
-**Archivo:** `src/app/api/marketplace/clinics/route.ts`
+**Archivo a crear:** `src/app/api/marketplace/clinics/route.ts`
 
 Comportamiento:
-- Requiere sesión activa
+- Requiere sesión activa → 401 si no hay usuario
 - Devuelve clínicas con `verified = true` y `public_profile` no nulo
 - Excluye clínicas donde el usuario autenticado está bloqueado (`clinic_blocks`)
-- Soporta query params: `q` (búsqueda por nombre/ciudad), `page` (default 0)
+- Query params: `q` (búsqueda por nombre o ciudad), `page` (default 0)
 - PAGE_SIZE = 20
+- Orden por `rating_avg DESC`
 
 ```typescript
 import { NextRequest, NextResponse } from 'next/server'
@@ -57,7 +59,6 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
 
-  // Obtener el profile id del usuario para verificar bloqueos
   const { data: profile } = await supabase
     .from('profiles').select('id').eq('user_id', user.id).single()
 
@@ -73,7 +74,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     .select('clinic_id')
     .eq('profile_id', profile?.id ?? '')
 
-  const blockedIds = (blocked ?? []).map(b => b.clinic_id)
+  const blockedIds = (blocked ?? []).map((b: { clinic_id: string }) => b.clinic_id)
 
   let query = admin
     .from('clinics')
@@ -94,11 +95,15 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const { data: clinics, error } = await query
 
   if (error) {
-    console.error('[marketplace/clinics]', error)
+    console.error('[marketplace/clinics GET]', error)
     return NextResponse.json({ error: 'Error al obtener clínicas' }, { status: 500 })
   }
 
-  return NextResponse.json({ clinics, page, hasMore: (clinics?.length ?? 0) === PAGE_SIZE })
+  return NextResponse.json({
+    clinics: clinics ?? [],
+    page,
+    hasMore: (clinics?.length ?? 0) === PAGE_SIZE,
+  })
 }
 ```
 
@@ -106,13 +111,13 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
 ## Ruta 2 — `GET /api/marketplace/clinics/[slug]`
 
-**Archivo:** `src/app/api/marketplace/clinics/[slug]/route.ts`
+**Archivo a crear:** `src/app/api/marketplace/clinics/[slug]/route.ts`
 
 Comportamiento:
 - Requiere sesión activa
-- Devuelve el perfil público de la clínica + equipo de vets con `is_public = true`
-- Incluye si el usuario autenticado está bloqueado en esta clínica (`blocked: boolean`)
-- Devuelve 404 si la clínica no existe o no está verificada
+- Devuelve el perfil público de la clínica + equipo de vets
+- Incluye campo `blocked: boolean` — si el usuario está bloqueado en esa clínica
+- 404 si la clínica no existe o no está verificada
 
 ```typescript
 import { NextRequest, NextResponse } from 'next/server'
@@ -139,16 +144,17 @@ export async function GET(
 
   if (!clinic) return NextResponse.json({ error: 'Clínica no encontrada' }, { status: 404 })
 
-  // Verificar si el usuario está bloqueado
+  // Profile del usuario autenticado
   const { data: profile } = await supabase
     .from('profiles').select('id').eq('user_id', user.id).single()
 
+  // ¿Está el usuario bloqueado en esta clínica?
   const { data: block } = await admin
     .from('clinic_blocks')
     .select('id')
     .eq('clinic_id', clinic.id)
     .eq('profile_id', profile?.id ?? '')
-    .single()
+    .maybeSingle()
 
   // Equipo público de la clínica
   const { data: team } = await admin
@@ -169,12 +175,12 @@ export async function GET(
 
 ## Ruta 3 — `GET /api/marketplace/vets`
 
-**Archivo:** `src/app/api/marketplace/vets/route.ts`
+**Archivo a crear:** `src/app/api/marketplace/vets/route.ts`
 
 Comportamiento:
 - Requiere sesión activa
 - Devuelve veterinarios que pertenecen a al menos una clínica verificada
-- Soporta query params: `q` (búsqueda por nombre), `page` (default 0)
+- Query params: `q` (búsqueda por nombre), `page` (default 0)
 - PAGE_SIZE = 20
 
 ```typescript
@@ -210,11 +216,15 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const { data: vets, error } = await query
 
   if (error) {
-    console.error('[marketplace/vets]', error)
+    console.error('[marketplace/vets GET]', error)
     return NextResponse.json({ error: 'Error al obtener veterinarios' }, { status: 500 })
   }
 
-  return NextResponse.json({ vets: vets ?? [], page, hasMore: (vets?.length ?? 0) === PAGE_SIZE })
+  return NextResponse.json({
+    vets: vets ?? [],
+    page,
+    hasMore: (vets?.length ?? 0) === PAGE_SIZE,
+  })
 }
 ```
 
@@ -227,17 +237,15 @@ npx tsc --noEmit
 npm run build
 ```
 
-Si el build pasa, prueba las rutas con curl:
+Prueba las rutas con la app corriendo en localhost:
 ```bash
-# Obtener token de sesión activa primero
+# Deben devolver 200 con arrays vacíos (no 401 ni 500)
 curl -s http://localhost:3000/api/marketplace/clinics \
-  -H "Cookie: [sesión]" | python3 -m json.tool
+  -H "Cookie: [cookies de sesión activa]" | python3 -m json.tool
 
 curl -s http://localhost:3000/api/marketplace/vets \
-  -H "Cookie: [sesión]" | python3 -m json.tool
+  -H "Cookie: [cookies de sesión activa]" | python3 -m json.tool
 ```
-
-**Ambas deben devolver `{ clinics: [], page: 0, hasMore: false }` o similar — no 401 ni 500.**
 
 Commit:
 ```bash
@@ -250,8 +258,11 @@ git push origin Develop
 
 ## Restricciones
 
-- ❌ No crear rutas POST en esta sesión
+- ❌ No crear rutas POST en esta sesión — eso es C.4
 - ❌ No tocar archivos existentes en `src/app/api/`
 - ❌ No instalar dependencias
 - ✅ Solo crear archivos nuevos en `src/app/api/marketplace/`
 - ✅ `npx tsc --noEmit` debe pasar después de cada archivo
+- ✅ `npm run build` debe pasar antes del commit
+
+**La Fase C.3 solo puede arrancar después de que las 3 rutas devuelvan 200.**

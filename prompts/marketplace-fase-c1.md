@@ -1,9 +1,10 @@
 # Fase C.1 — Tablas nuevas del Marketplace
 ## Sesión independiente de Claude Code
 
-**Objetivo:** Crear las 4 tablas/columnas nuevas que necesita el marketplace.
-**Solo SQL — no tocar src/**  
-**Output:** `supabase/migrations/017_marketplace_tables.sql` + ejecutar en Supabase
+**Objetivo:** Crear las tablas y columnas nuevas que necesita el marketplace en Supabase.
+**Rama:** Develop
+**Solo SQL — no tocar src/**
+**Output:** `supabase/migrations/017_marketplace_tables.sql` + ejecutar en Supabase Dashboard
 
 ---
 
@@ -11,8 +12,8 @@
 
 Lee estos archivos:
 ```
-prompts/marketplace-multiclínica.md   ← spec confirmada del marketplace
-prompts/marketplace-coste-tecnico.md  ← Sección 4 FASE C
+prompts/marketplace-multiclínica.md
+prompts/marketplace-coste-tecnico.md
 ```
 
 Verifica que las migraciones anteriores existen:
@@ -25,14 +26,16 @@ ls supabase/migrations/ | sort
 
 ## Tarea — crear `supabase/migrations/017_marketplace_tables.sql`
 
+Crea el archivo con exactamente este contenido:
+
 ```sql
 -- 017_marketplace_tables.sql
 -- Tablas y columnas nuevas para el módulo marketplace
 -- No dependen de profile_clinics — pueden aplicarse antes de Fase B
 
--- ─────────────────────────────────────────────────────────────
+-- ─────────────────────────────────────────────────────────────────────
 -- 1. Columnas nuevas en clinics (perfil público del marketplace)
--- ─────────────────────────────────────────────────────────────
+-- ─────────────────────────────────────────────────────────────────────
 
 ALTER TABLE clinics
   ADD COLUMN IF NOT EXISTS verified        BOOLEAN NOT NULL DEFAULT false,
@@ -45,9 +48,9 @@ COMMENT ON COLUMN clinics.public_profile IS 'JSON con descripción, especialidad
 COMMENT ON COLUMN clinics.rating_avg     IS 'Promedio calculado de valoraciones de dueños';
 COMMENT ON COLUMN clinics.rating_count   IS 'Total de valoraciones recibidas';
 
--- ─────────────────────────────────────────────────────────────
+-- ─────────────────────────────────────────────────────────────────────
 -- 2. Tabla care_requests — dueño solicita atención en una clínica
--- ─────────────────────────────────────────────────────────────
+-- ─────────────────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS care_requests (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -101,9 +104,9 @@ CREATE POLICY "superadmin_care_requests" ON care_requests
     (SELECT role FROM profiles WHERE user_id = auth.uid()) = 'superadmin'
   );
 
--- ─────────────────────────────────────────────────────────────
+-- ─────────────────────────────────────────────────────────────────────
 -- 3. Tabla clinic_blocks — bloqueos privados clínica-dueño
--- ─────────────────────────────────────────────────────────────
+-- ─────────────────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS clinic_blocks (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -135,9 +138,9 @@ CREATE POLICY "superadmin_clinic_blocks" ON clinic_blocks
     (SELECT role FROM profiles WHERE user_id = auth.uid()) = 'superadmin'
   );
 
--- ─────────────────────────────────────────────────────────────
+-- ─────────────────────────────────────────────────────────────────────
 -- 4. Tabla clinic_join_requests — vet solicita unirse a clínica
--- ─────────────────────────────────────────────────────────────
+-- ─────────────────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS clinic_join_requests (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -191,36 +194,33 @@ CREATE POLICY "superadmin_join_requests" ON clinic_join_requests
 
 ---
 
-## Después de crear el archivo
+## Pasos después de crear el archivo
 
-**1. Verifica sintaxis:**
+### 1. Verifica que TypeScript no fue afectado
 ```bash
 npx tsc --noEmit
-# El SQL no afecta TypeScript — debe pasar sin cambios
+# Debe pasar sin cambios — el SQL no toca src/
 ```
 
-**2. Ejecuta en Supabase Dashboard → SQL Editor**
-Copia y pega el contenido completo del archivo. Verifica que no hay errores.
+### 2. Ejecuta la migración en Supabase Dashboard → SQL Editor
+Copia y pega el contenido completo. Verifica que no hay errores.
 
-**3. Confirma que las tablas existen:**
+### 3. Confirma que las tablas existen
+Ejecuta en el SQL Editor de Supabase:
 ```sql
 SELECT table_name FROM information_schema.tables
 WHERE table_schema = 'public'
-AND table_name IN (
-  'care_requests',
-  'clinic_blocks',
-  'clinic_join_requests'
-)
+AND table_name IN ('care_requests', 'clinic_blocks', 'clinic_join_requests')
 ORDER BY table_name;
 -- Debe devolver 3 filas
 
 SELECT column_name FROM information_schema.columns
 WHERE table_name = 'clinics'
-AND column_name IN ('verified','public_profile','rating_avg','rating_count');
+AND column_name IN ('verified', 'public_profile', 'rating_avg', 'rating_count');
 -- Debe devolver 4 filas
 ```
 
-**4. Commit:**
+### 4. Commit y push
 ```bash
 git add supabase/migrations/017_marketplace_tables.sql
 git commit -m "feat(C1): marketplace tables — care_requests, clinic_blocks, clinic_join_requests"
@@ -235,4 +235,7 @@ git push origin Develop
 - ❌ No modificar migraciones 001–013
 - ❌ No instalar dependencias
 - ✅ Solo crear `supabase/migrations/017_marketplace_tables.sql`
-- ✅ Ejecutar en Supabase y confirmar que las 3 tablas existen
+- ✅ Ejecutar en Supabase y confirmar que las 3 tablas y 4 columnas existen
+- ✅ `npx tsc --noEmit` debe pasar sin errores
+
+**La Fase C.2 solo puede arrancar después de confirmar que las tablas existen en Supabase.**
