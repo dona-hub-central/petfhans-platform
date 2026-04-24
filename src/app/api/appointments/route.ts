@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
         </div>
         ${urgencyBlock}
         ${virtualNote}
-        <a href="https://${slug}.petfhans.com/owner/dashboard" style="background:#EE726D;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;margin-top:8px">
+        <a href="https://petfhans.com/owner/dashboard" style="background:#EE726D;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;margin-top:8px">
           Ver mis citas
         </a>
       </div>
@@ -135,7 +135,7 @@ export async function POST(req: NextRequest) {
             <p style="margin:0 0 6px"><strong>Modalidad:</strong> ${is_virtual ? '📹 Videollamada' : '🏥 Presencial'}</p>
             <p style="margin:0"><strong>📋 Motivo / Síntomas:</strong><br>${reason}</p>
           </div>
-          <a href="https://${slug}.petfhans.com/vet/appointments" style="background:#EE726D;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;margin-top:8px">
+          <a href="https://petfhans.com/vet/appointments" style="background:#EE726D;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;margin-top:8px">
             Gestionar citas
           </a>
         </div>

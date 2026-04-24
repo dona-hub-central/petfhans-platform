@@ -71,7 +71,7 @@ export default async function AdminDashboard() {
                   <div>
                     <p className="font-medium text-sm" style={{ color: 'var(--pf-ink)' }}>{clinic.name}</p>
                     <p className="text-xs mt-0.5" style={{ color: 'var(--pf-muted)' }}>
-                      {clinic.slug}.petfhans.com
+                      petfhans.com/{clinic.slug}
                     </p>
                   </div>
                 </div>

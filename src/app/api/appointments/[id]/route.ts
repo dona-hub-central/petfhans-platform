@@ -106,7 +106,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
           <p>Hola <strong>${owner.full_name}</strong>,</p>
           <p>${tpl.body}</p>
           ${virtualBlock}
-          <a href="https://${clinic?.slug}.petfhans.com/owner/dashboard" style="background:#EE726D;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;margin-top:12px">
+          <a href="https://petfhans.com/owner/dashboard" style="background:#EE726D;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;margin-top:12px">
             Ver mis citas
           </a>
         </div>

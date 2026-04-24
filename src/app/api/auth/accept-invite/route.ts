@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
       to:         inv.email,
       name:       full_name,
       clinicName: invRow.clinics?.name ?? 'Petfhans',
-      loginUrl:   `https://${slug}.petfhans.com/auth/login`,
+      loginUrl:   `https://petfhans.com/auth/login`,
     })
 
     return NextResponse.json({ success: true })
