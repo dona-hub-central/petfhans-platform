@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import Link from 'next/link'
@@ -18,7 +19,8 @@ export default async function OwnerProfilePage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: profile } = await supabase.from('profiles')
+  const admin = createAdminClient()
+  const { data: profile } = await admin.from('profiles')
     .select('full_name, phone, avatar_url, clinics(name)')
     .eq('user_id', user.id).single()
 
@@ -27,13 +29,18 @@ export default async function OwnerProfilePage({
 
   async function saveProfile(formData: FormData) {
     'use server'
-    const full_name = (formData.get('full_name') as string).trim()
-    const phone = (formData.get('phone') as string).trim()
+    const full_name = ((formData.get('full_name') as string) ?? '').trim()
+    const phone = ((formData.get('phone') as string) ?? '').trim()
     const sb = await createClient()
     const { data: { user: u } } = await sb.auth.getUser()
-    if (!u) return
-    await sb.from('profiles').update({ full_name, phone: phone || null }).eq('user_id', u.id)
+    if (!u) redirect('/auth/login')
+    const adminSb = createAdminClient()
+    const { error: updateErr } = await adminSb.from('profiles')
+      .update({ full_name, phone: phone || null })
+      .eq('user_id', u.id)
+    if (updateErr) redirect('/owner/profile?error=save')
     revalidatePath('/owner/profile')
+    revalidatePath('/owner/dashboard')
     redirect('/owner/profile?success=profile')
   }
 
@@ -113,6 +120,7 @@ export default async function OwnerProfilePage({
         <div className="prof-body">
           {success === 'profile'  && <div className="alert alert-ok">✓ Perfil actualizado correctamente.</div>}
           {success === 'password' && <div className="alert alert-ok">✓ Contraseña cambiada correctamente.</div>}
+          {error === 'save'   && <div className="alert alert-err">No se pudo guardar el perfil. Inténtalo de nuevo.</div>}
           {error === 'match'  && <div className="alert alert-err">Las contraseñas no coinciden.</div>}
           {error === 'wrong'  && <div className="alert alert-err">Contraseña actual incorrecta.</div>}
           {error === 'short'  && <div className="alert alert-err">La contraseña debe tener mínimo 8 caracteres.</div>}
