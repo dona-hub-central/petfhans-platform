@@ -43,6 +43,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (!appointmentClinicId || appointmentClinicId !== callerProfile.clinic_id) {
     return NextResponse.json({ error: 'Cita no encontrada' }, { status: 404 })
   }
+
+  const resend = new Resend(process.env.RESEND_API_KEY)
   const isVirtual = Boolean(appt.is_virtual)
   const room = jitsiRoom(id)
   const joinUrl = `https://meet.jit.si/${room}`
