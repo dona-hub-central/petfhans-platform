@@ -11,12 +11,21 @@ export default async function AppointmentsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: profile } = await supabase.from('profiles')
+  const admin = createAdminClient()
+  const { data: profile } = await admin.from('profiles')
     .select('id, role, clinic_id').eq('user_id', user.id).single()
 
-  if (!profile?.clinic_id) redirect('/auth/login')
+  if (!profile?.clinic_id) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+        <p className="text-lg font-semibold" style={{ color: 'var(--pf-ink)' }}>Sin clínica asignada</p>
+        <p className="text-sm mt-2" style={{ color: 'var(--pf-muted)' }}>
+          Tu cuenta no está vinculada a ninguna clínica. Contacta con el administrador.
+        </p>
+      </div>
+    )
+  }
 
-  const admin = createAdminClient()
   const isAdmin = profile.role === 'vet_admin' || profile.role === 'superadmin'
 
   // Citas del mes actual
