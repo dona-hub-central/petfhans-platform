@@ -159,7 +159,7 @@ VALUES (
 
 | Hallazgo | Por qué es ambiguo | Cómo resolver |
 |---|---|---|
-| `appointments` sin CREATE TABLE | La tabla existe en producción pero no en migraciones | Consultar `information_schema.columns WHERE table_name = 'appointments'` |
+| `appointments` sin CREATE TABLE | La tabla existe en producción pero no en migraciones. **Confirmado:** no tiene RLS propio — el aislamiento depende exclusivamente de `pets.clinic_id` via FK transitiva | La ausencia de RLS en `appointments` es un riesgo: si se añaden columnas sensibles en el futuro, no hay política que las proteja |
 | `medical_records.clinic_id` sin ON DELETE | La migración no declara ON DELETE; comportamiento depende del default de Postgres (RESTRICT) | Verificar con `\d medical_records` en psql |
 | `pet_files` storage policies | Las policies de `storage.objects` usan `auth.role() = 'authenticated'` sin filtro de clínica | Confirmar si Supabase Storage tiene RLS separada o si el bucket es privado |
 
@@ -174,4 +174,4 @@ VALUES (
 | `profiles.clinic_id` | Deprecar como campo; mantener transitoriamente para compatibilidad | **ALTO** |
 | Trigger `002_auth_trigger` | Dejar de escribir `clinic_id` escalar; gestionar vinculaciones via `profile_clinics` | **ALTO** |
 | Índice `idx_profiles_clinic_id` | Reemplazar por índice en `profile_clinics(user_id, clinic_id)` | Medio |
-| `appointments` (gap) | Documentar schema real antes de cualquier migración | Medio |
+| `appointments` (sin RLS) | Añadir políticas RLS antes de la migración — actualmente no tiene ninguna | **ALTO** — riesgo latente que se activa con multi-clínica |
