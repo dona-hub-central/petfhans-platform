@@ -6,7 +6,7 @@
 
 **Rama:** Develop  
 
-**Sesiones requeridas:** 5 (una por etapa)  
+**Sesiones requeridas:** 6 (Etapa 5 dividida en 5A y 5B)  
 
 **Contexto base:** `prompts/marketplace-multiclínica.md`
 
@@ -46,7 +46,11 @@ ETAPA 4 → prompts/outputs/riesgo-etapa4-ui.md
 
    ↓
 
-ETAPA 5 → prompts/marketplace-coste-tecnico.md  ← documento final
+ETAPA 5A → prompts/outputs/riesgo-etapa5a.md   (Secciones 1-3)
+
+   ↓
+
+ETAPA 5B → prompts/marketplace-coste-tecnico.md  ← documento final
 
 ```
 
@@ -900,15 +904,15 @@ grep "Depende de Capa 1" prompts/outputs/riesgo-etapa4-ui.md | wc -l
 
 
 
-# ETAPA 5 — Documento final de coste técnico
+# ETAPA 5A — Síntesis: resumen ejecutivo y riesgos
 
 
 
-**Input:** outputs de etapas 1-4 + spec del marketplace  
+**Input:** outputs de etapas 1-4  
 
-**Output:** `prompts/marketplace-coste-tecnico.md`  
+**Output:** `prompts/outputs/riesgo-etapa5a.md` (Secciones 1, 2 y 3 del documento final)  
 
-**Duración estimada:** 15-20 minutos
+**Duración estimada:** 8-10 minutos
 
 
 
@@ -916,21 +920,17 @@ grep "Depende de Capa 1" prompts/outputs/riesgo-etapa4-ui.md | wc -l
 
 
 
-Eres un arquitecto de software redactando el documento de coste técnico
+Eres un arquitecto de software sintetizando el análisis de riesgo del marketplace.
 
-que un equipo usará para planificar la implementación del marketplace.
-
-**Solo lees outputs anteriores y creas un documento. No tocas src/.**
+**Solo lees los 4 outputs. No tocas src/. No haces commits.**
 
 
 
-Lee todos los outputs en orden:
+Lee estos archivos en orden:
 
 
 
 ```
-
-prompts/marketplace-multiclínica.md
 
 prompts/outputs/riesgo-etapa1-schema.md
 
@@ -944,27 +944,21 @@ prompts/outputs/riesgo-etapa4-ui.md
 
 
 
-Ejecuta el estado actual de TypeScript:
+## Qué extraer de cada output
 
 
 
-```bash
+- **Etapa 1:** número de tablas con clinic_id, número de RLS policies, función get_user_clinic_id()
 
-npx tsc --noEmit 2>&1 | tail -10
+- **Etapa 2:** flujo de auth, decisión de dominio único, riesgos de JWT stale y accept-invite
 
-```
+- **Etapa 3:** conteo ROJO/AMARILLO/VERDE, el IDOR crítico, las 9 routes que necesitan active_clinic_id, las 6 URLs de email deprecadas
 
-
-
-Incluye el resultado en la introducción del documento.
+- **Etapa 4:** componentes bloqueados vs independientes de Capa 1, cambios en VetLayout
 
 
 
-## Documento a generar
-
-
-
-Crea `prompts/marketplace-coste-tecnico.md` con estas secciones:
+## Secciones a escribir en el output
 
 
 
@@ -972,11 +966,11 @@ Crea `prompts/marketplace-coste-tecnico.md` con estas secciones:
 
 
 
-Números concretos extraídos de los outputs:
+Tabla con números concretos extraídos de los outputs:
 
 - Total archivos afectados por el cambio de modelo
 
-- Total API routes que necesitan cambios
+- Total API routes que necesitan cambios (ROJO + AMARILLO)
 
 - Total políticas RLS a reescribir
 
@@ -984,13 +978,15 @@ Números concretos extraídos de los outputs:
 
 - Cambios clasificados ROJO / AMARILLO / VERDE
 
+- Estado de TypeScript: `npx tsc --noEmit 2>&1 | tail -5`
+
 
 
 ### Sección 2 — Los 5 cambios más peligrosos
 
 
 
-Para cada uno, usando hallazgos reales de las etapas anteriores:
+Para cada uno, con datos reales de los outputs:
 
 
 
@@ -998,19 +994,25 @@ Para cada uno, usando hallazgos reales de las etapas anteriores:
 
 ## [RIESGO CRÍTICO/ALTO] Título
 
+Archivo(s): [rutas exactas del output correspondiente]
 
+Por qué es peligroso: [una oración con el hallazgo real]
 
-Archivo(s): [rutas exactas]
+Consecuencia si se hace mal: [específica y concreta]
 
-Por qué es peligroso: [basado en hallazgos reales]
+Cómo manejarlo: [estrategia de 2-3 pasos]
 
-Consecuencia si se hace mal: [específica]
-
-Cómo manejarlo: [estrategia concreta]
-
-Condición para considerarlo seguro: [verificable]
+Condición para considerarlo seguro: [verificable con un comando o test]
 
 ```
+
+
+
+Los 5 cambios deben cubrir: IDOR en appointments, get_user_clinic_id(),
+
+eliminación de validación de subdominio, deprecación de profiles.clinic_id,
+
+y accept-invite sin path para usuario existente.
 
 
 
@@ -1018,19 +1020,91 @@ Condición para considerarlo seguro: [verificable]
 
 
 
+Tabla con cada feature del marketplace indicando si depende de Capa 1
+
+(profile_clinics + RLS rewrite) o puede construirse ya.
+
+Incluir al menos 12 filas con features reales del spec.
+
+
+
+## Output a generar
+
+
+
+Crea `prompts/outputs/riesgo-etapa5a.md` con las 3 secciones.
+
+
+
+## Verificación antes de cerrar la sesión
+
+
+
+```bash
+
+cat prompts/outputs/riesgo-etapa5a.md | wc -l
+
+# Debe ser > 50 líneas
+
+
+
+grep "^### Sección" prompts/outputs/riesgo-etapa5a.md | wc -l
+
+# Debe ser 3
+
 ```
 
-| Feature del marketplace | Depende de Capa 1 | Puede construirse ya |
 
-|------------------------|-------------------|---------------------|
 
-| /marketplace/clinicas  | No                | Sí                  |
+**La Etapa 5B solo puede ejecutarse si este archivo existe con las 3 secciones completas.**
 
-| Selector clínica activa | Sí               | No                  |
 
-| ...                    | ...               | ...                 |
+
+---
+
+---
+
+
+
+# ETAPA 5B — Síntesis: plan de implementación y condiciones de arranque
+
+
+
+**Input:** `prompts/outputs/riesgo-etapa5a.md` + `riesgo-etapa3-api.md` + `riesgo-etapa4-ui.md`  
+
+**Output:** `prompts/marketplace-coste-tecnico.md` (documento final completo)  
+
+**Duración estimada:** 8-10 minutos
+
+
+
+## Instrucciones
+
+
+
+Eres un arquitecto de software cerrando el documento de coste técnico.
+
+**Solo lees los 3 archivos listados. No tocas src/. No haces commits.**
+
+
+
+Lee estos archivos en orden:
+
+
 
 ```
+
+prompts/outputs/riesgo-etapa5a.md
+
+prompts/outputs/riesgo-etapa3-api.md
+
+prompts/outputs/riesgo-etapa4-ui.md
+
+```
+
+
+
+## Secciones a escribir
 
 
 
@@ -1038,51 +1112,83 @@ Condición para considerarlo seguro: [verificable]
 
 
 
+Cuatro fases con checklists detallados usando archivos reales de los outputs:
+
+
+
 ```
 
 FASE A — Preparación (sin tocar código existente)
 
-  [ ] Tests mínimos para las routes ROJO identificadas
+  [ ] Fix IDOR appointments/[id] via prompts/security-fix.md (antes de todo lo demás)
 
-  [ ] Migración profile_clinics (crear tabla, no migrar datos aún)
+  [ ] Tests de regresión para las 10 routes ROJO
 
-  [ ] Feature flag ENABLE_MULTI_CLINIC=false
+  [ ] Migración SQL: CREATE TABLE profile_clinics (...) — sin migrar datos aún
 
+  [ ] Migraciones SQL: care_requests, clinic_blocks, clinic_join_requests
 
-
-FASE B — Capa 1: modelo de datos
-
-  [ ] Migrar datos de profiles.clinic_id a profile_clinics
-
-  [ ] Actualizar RLS policies (listadas en Etapa 1)
-
-  [ ] Actualizar middleware (hallazgos de Etapa 2)
-
-  [ ] Actualizar API routes ROJO (listadas en Etapa 3)
-
-  [ ] Verificación: todos los tests pasan, 0 errores TypeScript
+  [ ] Feature flag ENABLE_MULTI_CLINIC=false en .env
 
 
 
-FASE C — Capa 2: módulo marketplace (bloqueado hasta que B pase)
+FASE B — Capa 1: modelo de datos (bloqueada hasta que A esté completa)
 
-  [ ] Rutas /marketplace/** (nuevas, autocontenidas)
+  [ ] Reescribir get_user_clinic_id() o reemplazar por active_clinic_id header
 
-  [ ] Tablas nuevas: care_requests, clinic_blocks, clinic_join_requests
+  [ ] Reescribir las 12 RLS policies (listadas en riesgo-etapa1-schema.md)
 
-  [ ] Handshake flows A, B y C
+  [ ] Data migration: profiles.clinic_id → profile_clinics (backfill)
 
-  [ ] Selector de clínica activa en VetLayout
+  [ ] Actualizar middleware.ts: eliminar validación de subdominio, leer cookie active_clinic_id
 
-  [ ] Owner dashboard agrupado por clínica
+  [ ] Actualizar vet/layout.tsx: join a profile_clinics en lugar de profiles.clinic_id
+
+  [ ] Actualizar las 9 API routes que necesitan active_clinic_id (listadas en etapa3)
+
+  [ ] Actualizar accept-invite: añadir path para usuario existente
+
+  [ ] Actualizar owner/setup: escribir profile_clinics en lugar de profiles.clinic_id
+
+  [ ] Actualizar VetLayout: prop clinicName → clinics[] + activeClinicId
+
+  [ ] Actualizar vet/dashboard: leer active_clinic_id de cookies()
+
+  [ ] Reemplazar 6 URLs de email con subdominio (listadas en etapa3)
+
+  [ ] Verificación: npx tsc --noEmit pasa, todos los tests de regresión pasan
 
 
 
-FASE D — Exportación PDF
+FASE C — Capa 2: módulo marketplace (bloqueada hasta que B esté completa)
 
-  [ ] Generador bajo demanda
+  [ ] Páginas /marketplace/clinicas y /marketplace/veterinarios
 
-  [ ] Sin atribución de clínica o profesional
+  [ ] Perfiles públicos /marketplace/clinicas/[slug] y /veterinarios/[id]
+
+  [ ] CareRequestForm + handshake flow A (owner solicita atención)
+
+  [ ] Extensión de accept-invite para handshake flow B (clínica invita)
+
+  [ ] ClinicJoinRequestForm + handshake flow C (vet solicita unirse)
+
+  [ ] ClinicSelector en VetLayout
+
+  [ ] Owner dashboard agrupado por clínica con OwnerClinicGroup
+
+  [ ] Sistema de valoraciones (solo tras primera cita completada)
+
+  [ ] Badge verified en marketplace (gestionado por superadmin)
+
+
+
+FASE D — Exportación PDF (paralela a Fase C, sin dependencias cruzadas)
+
+  [ ] Generador bajo demanda (sin almacenamiento)
+
+  [ ] Timeline cronológico: vacunas, medicamentos, notas, recetas
+
+  [ ] Sin atribución: ningún nombre de clínica ni veterinario en el PDF
 
 ```
 
@@ -1092,19 +1198,29 @@ FASE D — Exportación PDF
 
 
 
-Lista de tests específicos basados en los archivos ROJO de Etapa 3:
+Basarse en los detalles de las routes ROJO de riesgo-etapa3-api.md.
+
+Para cada una de las 10 routes ROJO, escribir al menos 1 test específico:
 
 
 
 ```
 
-Para [nombre de route ROJO]:
+Route: appointments/[id] PATCH (IDOR)
 
-- it('usuario con clínica A no ve datos de clínica B')
+- it('returns 403 when authenticated user has no relation to the appointment')
 
-- it('selector de clínica activa cambia el scope de las queries')
+- it('vet_admin from clinic A cannot change appointment of clinic B')
 
-- [tests específicos según hallazgos reales]
+
+
+Route: appointments POST
+
+- it('returns 403 when profile.clinic_id is null after migration')
+
+- it('uses active_clinic_id from header, not profile.clinic_id')
+
+[... continuar para las 10 routes ROJO]
 
 ```
 
@@ -1114,7 +1230,9 @@ Para [nombre de route ROJO]:
 
 
 
-Lista de archivos con justificación, extraída de los hallazgos anteriores.
+Lista de archivos con justificación basada en los hallazgos de etapa3 y etapa4.
+
+Para cada archivo: ruta exacta + razón + qué rompe si se toca antes.
 
 
 
@@ -1124,17 +1242,51 @@ Lista de archivos con justificación, extraída de los hallazgos anteriores.
 
 ```markdown
 
-- [ ] Los tests de la Sección 5 existen y pasan en el estado actual
+- [ ] El IDOR de appointments/[id] está cerrado y en producción
 
-- [ ] La tabla profile_clinics existe en migración separada (sin datos)
+- [ ] Los tests de la Sección 5 existen y pasan en el estado actual del código
 
-- [ ] Feature flag ENABLE_MULTI_CLINIC está en false en producción
+- [ ] La migración SQL de profile_clinics existe (sin datos migrados aún)
 
-- [ ] Todos los archivos ROJO tienen un test de regresión
+- [ ] Feature flag ENABLE_MULTI_CLINIC=false está en .env de producción
 
-- [ ] npx tsc --noEmit pasa sin errores en Develop
+- [ ] npx tsc --noEmit pasa sin errores en la rama Develop
 
-- [ ] [condiciones adicionales que emerjan del análisis real]
+- [ ] Las 6 URLs de email con subdominio están identificadas y tienen ticket
+
+- [ ] Los 3 redirects 301 de subdominios están configurados o planificados
+
+```
+
+
+
+## Cómo generar el documento final
+
+
+
+El archivo `prompts/marketplace-coste-tecnico.md` debe contener las 7 secciones completas.
+
+Escribe primero las Secciones 4-7 en el archivo, luego prepend el contenido de
+
+`prompts/outputs/riesgo-etapa5a.md` al inicio del archivo.
+
+
+
+Estructura final del documento:
+
+```
+
+# Plan Técnico de Coste — Marketplace Multi-Clínica
+
+[fecha, TypeScript status]
+
+### Sección 1 — Resumen ejecutivo       ← de riesgo-etapa5a.md
+### Sección 2 — Los 5 cambios más peligrosos  ← de riesgo-etapa5a.md
+### Sección 3 — Capa 1 vs Capa 2       ← de riesgo-etapa5a.md
+### Sección 4 — Orden de implementación ← escrita en esta sesión
+### Sección 5 — Tests mínimos antes de Fase B ← escrita en esta sesión
+### Sección 6 — Lo que NO debe tocarse  ← escrita en esta sesión
+### Sección 7 — Condiciones para empezar Fase B ← escrita en esta sesión
 
 ```
 
@@ -1148,7 +1300,7 @@ Lista de archivos con justificación, extraída de los hallazgos anteriores.
 
 cat prompts/marketplace-coste-tecnico.md | wc -l
 
-# Debe ser > 80 líneas
+# Debe ser > 100 líneas
 
 
 
@@ -1158,7 +1310,7 @@ grep "^### Sección" prompts/marketplace-coste-tecnico.md | wc -l
 
 
 
-npx tsc --noEmit
+npx tsc --noEmit 2>&1 | tail -3
 
 # Debe pasar sin errores
 
@@ -1168,7 +1320,7 @@ npx tsc --noEmit
 
 **El análisis está completo cuando `prompts/marketplace-coste-tecnico.md` existe
 
-y las 7 secciones están presentes con datos reales del repositorio.**
+con las 7 secciones y datos reales del repositorio.**
 
 
 
