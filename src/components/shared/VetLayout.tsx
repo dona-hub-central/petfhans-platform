@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Home, Calendar, PawPrint, ClipboardList, Mail, Sparkles, Users, CreditCard, LogOut, Menu, X } from 'lucide-react'
+import { Home, Calendar, PawPrint, ClipboardList, Mail, Sparkles, Users, CreditCard, LogOut, Menu, X, Store } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import AvailabilityToggle from '@/components/vet/AvailabilityToggle'
 
@@ -32,14 +32,15 @@ function LogoutSidebarButton() {
 }
 
 const nav = [
-  { href: '/vet/dashboard',    Icon: Home,          label: 'Inicio' },
-  { href: '/vet/appointments', Icon: Calendar,      label: 'Citas' },
-  { href: '/vet/pets',         Icon: PawPrint,      label: 'Mascotas' },
-  { href: '/vet/records',      Icon: ClipboardList, label: 'Consultas' },
-  { href: '/vet/invitations',  Icon: Mail,          label: 'Invitaciones' },
-  { href: '/vet/ai',           Icon: Sparkles,      label: 'IA Clínica', tint: 'purple' as const },
-  { href: '/vet/team',         Icon: Users,         label: 'Equipo' },
-  { href: '/vet/billing',      Icon: CreditCard,    label: 'Facturación' },
+  { href: '/vet/dashboard',        Icon: Home,          label: 'Inicio' },
+  { href: '/vet/appointments',     Icon: Calendar,      label: 'Citas' },
+  { href: '/vet/pets',             Icon: PawPrint,      label: 'Mascotas' },
+  { href: '/vet/records',          Icon: ClipboardList, label: 'Consultas' },
+  { href: '/vet/invitations',      Icon: Mail,          label: 'Invitaciones' },
+  { href: '/vet/ai',               Icon: Sparkles,      label: 'IA Clínica', tint: 'purple' as const },
+  { href: '/marketplace/clinicas', Icon: Store,         label: 'Marketplace' },
+  { href: '/vet/team',             Icon: Users,         label: 'Equipo' },
+  { href: '/vet/billing',          Icon: CreditCard,    label: 'Facturación' },
 ]
 
 const bottomNavItems = [

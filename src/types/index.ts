@@ -154,6 +154,70 @@ export interface HabitLog {
   created_at: string
 }
 
+// ── Marketplace ───────────────────────────────────────────────────────────
+
+export type CareRequestStatus = 'pending' | 'accepted' | 'rejected' | 'blocked'
+export type ClinicJoinRequestStatus = 'pending' | 'accepted' | 'rejected'
+
+export interface ClinicPublicProfile {
+  description?: string
+  city?: string
+  address?: string
+  phone?: string
+  cover_url?: string
+  specialties?: string[]
+  species?: PetSpecies[]
+  hours?: string
+}
+
+export interface MarketplaceClinic {
+  id: string
+  name: string
+  slug: string
+  verified: boolean
+  public_profile: ClinicPublicProfile | null
+}
+
+export interface MarketplaceVet {
+  id: string
+  full_name: string
+  avatar_url: string | null
+  clinic_id: string | null
+  clinics: { id: string; name: string; slug: string } | null
+}
+
+export interface CareRequest {
+  id: string
+  requester_id: string
+  clinic_id: string
+  pet_name: string | null
+  pet_species: string | null
+  reason: string | null
+  preferred_vet_id: string | null
+  status: CareRequestStatus
+  rejection_note: string | null
+  created_at: string
+  responded_at: string | null
+  retry_after: string | null
+}
+
+export interface ClinicBlock {
+  id: string
+  clinic_id: string
+  owner_id: string
+  created_at: string
+}
+
+export interface ClinicJoinRequest {
+  id: string
+  vet_id: string
+  clinic_id: string
+  message: string | null
+  status: ClinicJoinRequestStatus
+  created_at: string
+  responded_at: string | null
+}
+
 // ── Query result shapes (Supabase join returns) ────────────────────────────
 
 /** Pet summary for search dropdowns */
