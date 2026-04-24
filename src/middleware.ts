@@ -78,13 +78,13 @@ export async function middleware(request: NextRequest) {
 
     // Super admin → solo puede entrar a admin.*
     if (subdomain === 'admin' && role !== 'superadmin') {
-      return NextResponse.redirect(new URL('/auth/login', request.url))
+      return NextResponse.redirect(new URL('/auth/login', `https://${baseDomain}`))
     }
 
     // Veterinaria → validar que el subdominio corresponde a su clínica
     if (subdomain !== 'admin' && role !== 'superadmin') {
       if (clinicSlug && clinicSlug !== subdomain) {
-        return NextResponse.redirect(new URL('/auth/login', request.url))
+        return NextResponse.redirect(new URL('/auth/login', `https://${baseDomain}`))
       }
     }
   }
