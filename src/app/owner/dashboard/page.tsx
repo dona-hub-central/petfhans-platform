@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import PetAvatar from '@/components/shared/PetAvatar'
 import LogoutButton from '@/components/owner/LogoutButton'
-import { Building2, PawPrint, Calendar } from 'lucide-react'
+import { Building2, PawPrint, Calendar, Store } from 'lucide-react'
 import type { Pet, PetWithNextVisit } from '@/types'
 
 export default async function OwnerDashboard() {
@@ -110,6 +110,22 @@ export default async function OwnerDashboard() {
         </div>
 
         <div className="dash-body">
+          {/* Marketplace link */}
+          <Link
+            href="/marketplace/clinicas"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '8px 14px', borderRadius: 10,
+              border: '1px solid var(--pf-border)', background: '#fff',
+              color: 'var(--pf-ink)', textDecoration: 'none',
+              fontSize: 13, fontWeight: 500, marginBottom: 20,
+              boxShadow: 'var(--pf-shadow-sm)',
+            }}
+          >
+            <Store size={14} strokeWidth={2} style={{ color: 'var(--pf-coral)' }} />
+            Buscar clínicas
+          </Link>
+
           <p className="section-title">Mis mascotas</p>
 
           {petsWithInfo.length === 0 ? (
