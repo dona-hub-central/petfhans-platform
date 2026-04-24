@@ -26,7 +26,8 @@ export default async function VetProfilePage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: profile } = await supabase.from('profiles')
+  const admin = createAdminClient()
+  const { data: profile } = await admin.from('profiles')
     .select('role, full_name, phone, avatar_url, clinics(name, slug, subscription_plan)')
     .eq('user_id', user.id).single()
 
