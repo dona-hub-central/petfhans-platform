@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import Link from 'next/link'
@@ -41,7 +42,10 @@ export default async function VetProfilePage({
     const sb = await createClient()
     const { data: { user: u } } = await sb.auth.getUser()
     if (!u) redirect('/auth/login')
-    const { error: updateErr } = await sb.from('profiles').update({ full_name, phone: phone || null }).eq('user_id', u.id)
+    // Use admin client to bypass RLS on UPDATE — safe because user identity
+    // is verified via auth.getUser() above and scoped to their own user_id.
+    const adminSb = createAdminClient()
+    const { error: updateErr } = await adminSb.from('profiles').update({ full_name, phone: phone || null }).eq('user_id', u.id)
     if (updateErr) redirect('/vet/profile?error=save')
     revalidatePath('/vet/profile')
     redirect('/vet/profile?success=profile')
