@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 
 import { Users } from 'lucide-react'
+import type { Profile } from '@/types'
 
 const roleLabel: Record<string, { label: string; color: string; bg: string }> = {
   vet_admin:    { label: 'Admin',        color: '#6d28d9', bg: '#f3e8ff' },
@@ -27,7 +28,7 @@ export default async function TeamPage() {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-8">
+      <div className="pf-page-hdr mb-8">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Equipo</h1>
           <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>{team?.length ?? 0} miembros</p>
@@ -39,7 +40,7 @@ export default async function TeamPage() {
 
       <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
         <div className="divide-y" style={{ borderColor: 'var(--pf-border)' }}>
-          {team && team.length > 0 ? team.map((member: any) => {
+          {team && team.length > 0 ? (team as Profile[]).map((member) => {
             const rs = roleLabel[member.role] ?? roleLabel.veterinarian
             return (
               <div key={member.id} className="px-6 py-5 flex items-center gap-4">

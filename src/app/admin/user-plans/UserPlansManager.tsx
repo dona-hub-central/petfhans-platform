@@ -38,7 +38,7 @@ export default function UserPlansManager({ plans: initial }: { plans: UserPlan[]
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }))
+  const set = <K extends keyof UserPlan>(k: K, v: UserPlan[K]) => setForm(f => ({ ...f, [k]: v }))
   const togglePerm = (key: string) => setForm(f => ({
     ...f, permissions: { ...(f.permissions ?? {}), [key]: !(f.permissions ?? {})[key] }
   }))

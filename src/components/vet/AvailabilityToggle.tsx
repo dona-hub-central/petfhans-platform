@@ -62,18 +62,21 @@ export default function AvailabilityToggle() {
       }
     })
 
+    type InsertPayload = { new: { id: string; is_virtual: boolean } }
+    type ApptRow = { id: string; reason: string; pets: { name: string } | null; profiles: { full_name: string } | null }
+
     // 2. Listen for emergency appointments assigned to this vet
     const changes = supabase
       .channel(`vet-emergencies:${profile.id}`)
       .on(
-        'postgres_changes' as any,
+        'postgres_changes',
         {
           event:  'INSERT',
           schema: 'public',
           table:  'appointments',
           filter: `vet_id=eq.${profile.id}`,
         },
-        async (payload: any) => {
+        async (payload: InsertPayload) => {
           if (!payload.new?.is_virtual) return
           // Enrich with pet + owner names
           const { data: appt } = await supabase
@@ -81,12 +84,13 @@ export default function AvailabilityToggle() {
             .select('id, reason, pets(name), profiles!appointments_owner_id_fkey(full_name)')
             .eq('id', payload.new.id)
             .single()
-          if (appt) {
+          const row = appt as ApptRow | null
+          if (row) {
             setIncoming({
-              appointment_id: appt.id,
-              pet_name:   (appt.pets as any)?.name ?? '—',
-              owner_name: (appt.profiles as any)?.full_name ?? '—',
-              reason:     appt.reason,
+              appointment_id: row.id,
+              pet_name:   row.pets?.name ?? '—',
+              owner_name: row.profiles?.full_name ?? '—',
+              reason:     row.reason,
             })
           }
         }

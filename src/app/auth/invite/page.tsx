@@ -4,12 +4,19 @@ import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
+type InvitationData = {
+  email: string
+  role: string
+  clinics?: { name: string } | null
+  pets?: { name: string } | null
+}
+
 function InviteForm() {
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
 
   const [step, setStep] = useState<'loading' | 'register' | 'error'>('loading')
-  const [invitation, setInvitation] = useState<any>(null)
+  const [invitation, setInvitation] = useState<InvitationData | null>(null)
   const [form, setForm] = useState({ full_name: '', password: '', confirm: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -41,7 +48,7 @@ function InviteForm() {
           token,
           full_name: form.full_name,
           password: form.password,
-          email: invitation.email,
+          email: invitation!.email,
         }),
       })
       const result = await res.json()
@@ -49,17 +56,15 @@ function InviteForm() {
 
       // Login automático
       const supabase = createClient()
-      await supabase.auth.signInWithPassword({ email: invitation.email, password: form.password })
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email: invitation!.email, password: form.password })
+      if (signInError) { setError('Cuenta creada pero no pudo iniciar sesión automáticamente. Ve a login.'); setLoading(false); return }
 
-      const role = invitation.role
-      const slug = invitation.clinics?.slug
-      const dest = ['vet_admin', 'veterinarian'].includes(role)
-        ? `https://${slug}.petfhans.com/vet/dashboard`
-        : `https://${slug}.petfhans.com/owner/dashboard`
-
-      window.location.href = dest
-    } catch (err: any) {
-      setError(err.message)
+      const role = invitation!.role
+      window.location.href = ['vet_admin', 'veterinarian'].includes(role)
+        ? '/vet/dashboard'
+        : '/owner/dashboard'
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error inesperado')
       setLoading(false)
     }
   }
@@ -67,15 +72,15 @@ function InviteForm() {
   const inputCls = "w-full px-4 py-3 rounded-lg border text-sm outline-none transition"
   const inputStyle = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }
   const focus = {
-    onFocus: (e: any) => e.target.style.borderColor = 'var(--pf-coral)',
-    onBlur:  (e: any) => e.target.style.borderColor = 'var(--pf-border)',
+    onFocus: (e: { currentTarget: HTMLInputElement }) => { e.currentTarget.style.borderColor = 'var(--pf-coral)' },
+    onBlur:  (e: { currentTarget: HTMLInputElement }) => { e.currentTarget.style.borderColor = 'var(--pf-border)' },
   }
 
   if (step === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--pf-bg)' }}>
         <div className="text-center">
-          <div className="text-4xl mb-3 animate-bounce">🐾</div>
+          <div className="mb-3"><img src="/logo-icon.svg" width={48} height={48} alt="Petfhans" style={{ borderRadius: 12 }} /></div>
           <p className="text-sm" style={{ color: 'var(--pf-muted)' }}>Validando invitación...</p>
         </div>
       </div>
@@ -105,14 +110,14 @@ function InviteForm() {
           <div className="text-center mb-6">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-3"
               style={{ background: 'var(--pf-coral-soft)' }}>
-              <span className="text-2xl">🐾</span>
+              <img src="/logo-icon.svg" width={40} height={40} alt="Petfhans" />
             </div>
             <h1 className="text-xl font-bold" style={{ color: 'var(--pf-ink)' }}>
-              {invitation.clinics?.name} te invita
+              {invitation!.clinics?.name} te invita
             </h1>
-            {invitation.pets && (
+            {invitation!.pets && (
               <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>
-                Acceso al perfil de <strong>{invitation.pets.name}</strong>
+                Acceso al perfil de <strong>{invitation!.pets!.name}</strong>
               </p>
             )}
           </div>
@@ -120,7 +125,7 @@ function InviteForm() {
           {/* Info */}
           <div className="rounded-xl p-3 mb-6 text-sm" style={{ background: 'var(--pf-coral-soft)' }}>
             <p style={{ color: 'var(--pf-coral)' }}>
-              📧 Invitación para <strong>{invitation.email}</strong>
+              📧 Invitación para <strong>{invitation!.email}</strong>
             </p>
           </div>
 

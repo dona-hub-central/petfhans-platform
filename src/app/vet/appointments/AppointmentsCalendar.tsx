@@ -22,8 +22,8 @@ type Appt = {
 }
 
 export default function AppointmentsCalendar({
-  appointments, pending, year, month
-}: { appointments: Appt[]; pending: Appt[]; year: number; month: number }) {
+  appointments, pending, year, month, isAdmin: _isAdmin = true,
+}: { appointments: Appt[]; pending: Appt[]; year: number; month: number; isAdmin?: boolean }) {
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [selectedAppt, setSelectedAppt] = useState<Appt | null>(null)
@@ -60,13 +60,24 @@ export default function AppointmentsCalendar({
     if (res.ok) {
       setApptList(prev => prev.map(a => a.id === id ? { ...a, status, ...extra } : a))
       setPendingList(prev => prev.filter(a => a.id !== id))
-      if (selectedAppt?.id === id) setSelectedAppt(prev => prev ? { ...prev, status, ...extra as any } : null)
+      if (selectedAppt?.id === id) setSelectedAppt(prev => prev ? { ...prev, status, ...(extra as Partial<Appt>) } : null)
     }
     setActionLoading(false)
     setCancelReason(''); setVetNotes('')
   }
 
+  // Sorted list of all appointments for mobile view
+  const sortedAppts = [...apptList].sort((a, b) =>
+    (a.appointment_date + a.appointment_time).localeCompare(b.appointment_date + b.appointment_time)
+  )
+  const groupedByDate: Record<string, Appt[]> = {}
+  sortedAppts.forEach(a => {
+    if (!groupedByDate[a.appointment_date]) groupedByDate[a.appointment_date] = []
+    groupedByDate[a.appointment_date].push(a)
+  })
+
   return (
+    <>
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
       {/* Columna izquierda: pendientes */}
@@ -81,7 +92,7 @@ export default function AppointmentsCalendar({
               </span>
             )}
           </div>
-          <div className="divide-y max-h-80 overflow-y-auto" style={{ borderColor: 'var(--pf-border)' }}>
+          <div className="divide-y max-h-96 overflow-y-auto" style={{ borderColor: 'var(--pf-border)' }}>
             {pendingList.length === 0 ? (
               <p className="px-5 py-8 text-sm text-center" style={{ color: 'var(--pf-muted)' }}>Sin citas pendientes</p>
             ) : pendingList.map(a => (
@@ -184,9 +195,52 @@ export default function AppointmentsCalendar({
         )}
       </div>
 
-      {/* Columna derecha: calendario */}
+      {/* Columna derecha: calendario (desktop) / lista cronológica (mobile) */}
       <div className="lg:col-span-2">
-        <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
+
+        {/* Mobile: lista cronológica de citas del mes */}
+        <div className="appt-mob-list">
+          <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
+            <div className="px-5 py-3 border-b" style={{ borderColor: 'var(--pf-border)', background: 'var(--pf-bg)' }}>
+              <h3 className="font-semibold text-sm" style={{ color: 'var(--pf-ink)' }}>{MONTHS[month]} {year}</h3>
+            </div>
+            {Object.keys(groupedByDate).length === 0 ? (
+              <p className="px-5 py-10 text-sm text-center" style={{ color: 'var(--pf-muted)' }}>Sin citas este mes</p>
+            ) : (
+              <div className="divide-y" style={{ borderColor: 'var(--pf-border)' }}>
+                {Object.entries(groupedByDate).map(([date, appts]) => (
+                  <div key={date}>
+                    <div className="px-4 py-2" style={{ background: 'var(--pf-bg)' }}>
+                      <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--pf-muted)' }}>
+                        {new Date(date + 'T12:00').toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'short' })}
+                        {date === today && <span style={{ marginLeft: 6, color: 'var(--pf-coral)', fontWeight: 700 }}>· Hoy</span>}
+                      </span>
+                    </div>
+                    {appts.map(a => {
+                      const cfg = STATUS_CFG[a.status as keyof typeof STATUS_CFG] ?? STATUS_CFG.pending
+                      return (
+                        <div key={a.id} className="px-4 py-3 flex items-center gap-3 cursor-pointer"
+                          style={{ background: selectedAppt?.id === a.id ? 'var(--pf-coral-soft)' : 'transparent' }}
+                          onClick={() => { setSelectedAppt(a); setSelectedDate(date) }}>
+                          <span className="text-sm font-bold flex-shrink-0" style={{ color: 'var(--pf-ink)', width: 40 }}>{a.appointment_time.slice(0,5)}</span>
+                          <PawPrint size={15} strokeWidth={1.75} style={{ color: 'var(--pf-coral)', flexShrink: 0 }} />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold truncate" style={{ color: 'var(--pf-ink)', margin: 0 }}>{a.pets?.name}</p>
+                            <p className="text-xs truncate" style={{ color: 'var(--pf-muted)', margin: 0 }}>{a.profiles?.full_name} · {a.reason}</p>
+                          </div>
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
+                            style={{ background: cfg.bg, color: cfg.color }}>{cfg.label}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        {/* Desktop calendar grid */}
+        <div className="appt-desk-cal bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
           {/* Cabecera mes */}
           <div className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--pf-border)' }}>
             <h3 className="font-semibold" style={{ color: 'var(--pf-ink)' }}>{MONTHS[month]} {year}</h3>
@@ -289,5 +343,14 @@ export default function AppointmentsCalendar({
         )}
       </div>
     </div>
+
+    <style>{`
+      .appt-mob-list { display: none; }
+      @media (max-width: 767px) {
+        .appt-desk-cal { display: none !important; }
+        .appt-mob-list { display: block !important; }
+      }
+    `}</style>
+    </>
   )
 }

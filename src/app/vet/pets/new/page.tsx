@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -17,7 +17,8 @@ export default function NewPetPage() {
     microchip: '', notes: '',
   })
 
-  const set = (k: string, v: any) => setForm(p => ({ ...p, [k]: v }))
+  type PetForm = typeof form
+  const set = <K extends keyof PetForm>(k: K, v: PetForm[K]) => setForm(p => ({ ...p, [k]: v }))
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -48,9 +49,12 @@ export default function NewPetPage() {
     router.push(`/vet/pets/${pet.id}?created=true`)
   }
 
-  const inputCls = "w-full px-4 py-3 rounded-lg border text-sm outline-none transition"
-  const inputStyle = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }
-  const focus = { onFocus: (e: any) => e.target.style.borderColor = 'var(--pf-coral)', onBlur: (e: any) => e.target.style.borderColor = 'var(--pf-border)' }
+  const inputCls = "w-full px-4 py-3 rounded-lg border outline-none transition"
+  const inputStyle = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)', fontSize: 16 as const }
+  const focus = {
+    onFocus: (e: React.FocusEvent<HTMLElement>) => { e.currentTarget.style.borderColor = 'var(--pf-coral)' },
+    onBlur:  (e: React.FocusEvent<HTMLElement>) => { e.currentTarget.style.borderColor = 'var(--pf-border)' },
+  }
 
   const species = [
     { value: 'dog',    label: '🐶 Perro' },
@@ -155,8 +159,8 @@ export default function NewPetPage() {
                 rows={3}
                 className="w-full px-4 py-3 rounded-lg border text-sm outline-none transition resize-none"
                 style={{ borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }}
-                onFocus={e => e.target.style.borderColor = 'var(--pf-coral)'}
-                onBlur={e => e.target.style.borderColor = 'var(--pf-border)'}
+                onFocus={e => { e.currentTarget.style.borderColor = 'var(--pf-coral)' }}
+                onBlur={e => { e.currentTarget.style.borderColor = 'var(--pf-border)' }}
                 placeholder="Alergias, condiciones previas, comportamiento..." />
             </div>
 

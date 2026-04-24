@@ -5,6 +5,7 @@ import Link from 'next/link'
 
 import { InvitationCard } from '@/components/vet/InvitationCard'
 import { Mail } from 'lucide-react'
+import type { InvitationWithPet } from '@/types'
 
 export default async function InvitationsPage() {
   const supabase = await createClient()
@@ -28,7 +29,7 @@ export default async function InvitationsPage() {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-8">
+      <div className="pf-page-hdr mb-8">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Invitaciones</h1>
           <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>{active.length} activas</p>
@@ -42,7 +43,7 @@ export default async function InvitationsPage() {
         <div className="mb-6">
           <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--pf-ink)' }}>Activas</h3>
           <div className="space-y-3">
-            {active.map((inv: any) => (
+            {(active as InvitationWithPet[]).map((inv) => (
               <InvitationCard key={inv.id} inv={inv} appUrl={appUrl} status="active" />
             ))}
           </div>
@@ -53,7 +54,7 @@ export default async function InvitationsPage() {
         <div className="mb-6">
           <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--pf-muted)' }}>Aceptadas</h3>
           <div className="space-y-2">
-            {used.map((inv: any) => (
+            {(used as InvitationWithPet[]).map((inv) => (
               <InvitationCard key={inv.id} inv={inv} appUrl={appUrl} status="used" />
             ))}
           </div>
@@ -64,7 +65,7 @@ export default async function InvitationsPage() {
         <div>
           <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--pf-muted)' }}>Expiradas</h3>
           <div className="space-y-2">
-            {expired.map((inv: any) => (
+            {(expired as InvitationWithPet[]).map((inv) => (
               <InvitationCard key={inv.id} inv={inv} appUrl={appUrl} status="expired" />
             ))}
           </div>

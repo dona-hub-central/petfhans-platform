@@ -50,14 +50,17 @@ export async function middleware(request: NextRequest) {
   const path = url.pathname
 
   // Rutas públicas (landing, auth, invitaciones)
-  const publicPaths = ['/auth/login', '/auth/register', '/auth/invite', '/api/invite/validate', '/api/auth/validate-invite', '/api/auth/accept-invite', '/webhook/']
+  const publicPaths = ['/auth/login', '/auth/register', '/auth/invite', '/auth/verify-email', '/auth/callback', '/api/invite/validate', '/api/auth/validate-invite', '/api/auth/accept-invite', '/webhook/']
   if (publicPaths.some(p => path.startsWith(p)) || subdomain === '') {
     return supabaseResponse
   }
 
-  // Redirigir a login si no autenticado
+  // Redirigir a login si no autenticado — preservar URL de destino en ?next=
   if (!user) {
     const loginUrl = new URL('/auth/login', request.url)
+    if (!path.startsWith('/auth')) {
+      loginUrl.searchParams.set('next', path)
+    }
     return NextResponse.redirect(loginUrl)
   }
 
@@ -70,7 +73,8 @@ export async function middleware(request: NextRequest) {
       .single()
 
     const role = profile?.role
-    const clinicSlug = (profile as any)?.clinics?.slug
+    type ProfileRow = { role: string; clinic_id: string | null; clinics: { slug: string } | null }
+    const clinicSlug = (profile as ProfileRow | null)?.clinics?.slug
 
     // Super admin → solo puede entrar a admin.*
     if (subdomain === 'admin' && role !== 'superadmin') {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import PetSearch from '@/components/shared/PetSearch'
@@ -44,9 +44,12 @@ export default function NewInvitationPage() {
     router.push('/vet/invitations?created=true')
   }
 
-  const inputCls = "w-full px-4 py-3 rounded-lg border text-sm outline-none transition"
-  const inputStyle = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)' }
-  const focus = { onFocus: (e: any) => e.target.style.borderColor = 'var(--pf-coral)', onBlur: (e: any) => e.target.style.borderColor = 'var(--pf-border)' }
+  const inputCls = "w-full px-4 py-3 rounded-lg border outline-none transition"
+  const inputStyle = { borderColor: 'var(--pf-border)', color: 'var(--pf-ink)', fontSize: 16 as const }
+  const focus = {
+    onFocus: (e: React.FocusEvent<HTMLElement>) => { e.currentTarget.style.borderColor = 'var(--pf-coral)' },
+    onBlur:  (e: React.FocusEvent<HTMLElement>) => { e.currentTarget.style.borderColor = 'var(--pf-border)' },
+  }
 
   const roles = [
     { value: 'pet_owner',    label: 'Dueño de mascota', desc: 'Accede al perfil de su mascota e historial' },

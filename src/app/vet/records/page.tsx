@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 
 import { PawPrint, ClipboardList } from 'lucide-react'
+import type { RecordListItem } from '@/types'
 
 const VISIT_TYPE_LABEL: Record<string, { label: string; color: string }> = {
   consultation: { label: 'Consulta',    color: '#2563eb' },
@@ -30,7 +31,7 @@ export default async function RecordsPage() {
 
   return (
     <>
-      <div className="flex items-center justify-between mb-6">
+      <div className="pf-page-hdr mb-6">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Consultas</h1>
           <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>{records?.length ?? 0} registros</p>
@@ -43,7 +44,7 @@ export default async function RecordsPage() {
       <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--pf-border)' }}>
         {records && records.length > 0 ? (
           <div className="divide-y" style={{ borderColor: 'var(--pf-border)' }}>
-            {records.map((r: any) => {
+            {(records as RecordListItem[]).map((r) => {
               const vt = VISIT_TYPE_LABEL[r.visit_type] ?? VISIT_TYPE_LABEL.consultation
               return (
                 <Link key={r.id} href={`/vet/records/${r.id}`}

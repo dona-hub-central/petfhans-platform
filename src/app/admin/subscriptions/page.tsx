@@ -24,8 +24,10 @@ export default async function SubscriptionsPage() {
       .order('full_name'),
   ])
 
+  type ClinicUser = { id: string; full_name: string; email: string; role: string; clinic_id: string | null; created_at: string }
+
   // Agrupar usuarios por clínica
-  const usersByClinic = (allUsers ?? []).reduce((acc: Record<string, any[]>, u) => {
+  const usersByClinic = (allUsers ?? []).reduce((acc: Record<string, ClinicUser[]>, u) => {
     if (u.clinic_id) {
       if (!acc[u.clinic_id]) acc[u.clinic_id] = []
       acc[u.clinic_id].push(u)
@@ -40,8 +42,8 @@ export default async function SubscriptionsPage() {
 
   return (
     <AdminLayout userName={profile?.full_name ?? 'Admin'}>
-      <div className="px-8 py-8">
-        <div className="flex items-center justify-between mb-8">
+      <div className="adm-pg">
+        <div className="pf-page-hdr mb-8">
           <div>
             <h1 className="text-2xl font-bold" style={{ color: 'var(--pf-ink)' }}>Suscripciones</h1>
             <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>Planes activos y usuarios por clínica</p>
@@ -53,7 +55,7 @@ export default async function SubscriptionsPage() {
         </div>
 
         {/* Resumen */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           {[
             { label: 'Trial', value: clinics?.filter(c => c.subscription_plan === 'trial').length ?? 0, bg: '#f3f4f6', color: '#6b7280' },
             { label: 'Basic', value: clinics?.filter(c => c.subscription_plan === 'basic').length ?? 0, bg: '#eff6ff', color: '#2563eb' },

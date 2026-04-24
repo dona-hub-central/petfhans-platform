@@ -1,7 +1,10 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM = process.env.EMAIL_FROM ?? 'Petfhans <onboarding@resend.dev>'
+
+function resend() {
+  return new Resend(process.env.RESEND_API_KEY)
+}
 
 // =============================================
 // Email: Invitación a dueño de mascota
@@ -98,7 +101,74 @@ export async function sendInvitationEmail({
 </body>
 </html>`
 
-  return resend.emails.send({ from: FROM, to, subject, html })
+  return resend().emails.send({ from: FROM, to, subject, html })
+}
+
+// =============================================
+// Email: Código OTP de verificación (registro propio)
+// =============================================
+export async function sendOtpEmail({
+  to,
+  name,
+  code,
+}: {
+  to: string
+  name: string
+  code: string
+}) {
+  const firstName = name ? name.split(' ')[0] : 'Hola'
+
+  const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { margin: 0; padding: 0; background: #f7f6f4; font-family: 'Helvetica Neue', Arial, sans-serif; }
+    .wrapper { max-width: 480px; margin: 40px auto; padding: 0 20px; }
+    .card { background: #ffffff; border-radius: 16px; padding: 40px; border: 1px solid #ebebeb; }
+    .logo { text-align: center; margin-bottom: 28px; }
+    .logo-name { font-size: 20px; font-weight: 700; color: #1a1a1a; }
+    h1 { font-size: 20px; font-weight: 700; color: #1a1a1a; margin: 0 0 8px; }
+    p { font-size: 15px; color: #555; line-height: 1.6; margin: 0 0 16px; }
+    .code-box { text-align: center; background: #fff0ef; border-radius: 16px; padding: 28px 20px; margin: 24px 0; }
+    .code { font-size: 48px; font-weight: 800; letter-spacing: 10px; color: #EE726D; font-family: 'Courier New', monospace; display: block; }
+    .code-label { font-size: 12px; color: #aaa; margin-top: 8px; }
+    .footer { text-align: center; font-size: 12px; color: #aaa; margin-top: 28px; }
+    .divider { border: none; border-top: 1px solid #ebebeb; margin: 24px 0; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="card">
+      <div class="logo">
+        <span style="font-size:32px;">🐾</span>
+        <span class="logo-name" style="display:block; margin-top:4px;">Petfhans</span>
+      </div>
+
+      <h1>¡Hola, ${firstName}!</h1>
+      <p>Usa este código para verificar tu cuenta. Es válido por <strong>15 minutos</strong>.</p>
+
+      <div class="code-box">
+        <span class="code">${code}</span>
+        <p class="code-label">Código de verificación · válido 15 min</p>
+      </div>
+
+      <hr class="divider">
+      <p style="font-size:13px; color:#aaa;">Si no creaste esta cuenta en Petfhans, ignora este email.</p>
+    </div>
+    <div class="footer">© ${new Date().getFullYear()} Petfhans · Plataforma veterinaria</div>
+  </div>
+</body>
+</html>`
+
+  return resend().emails.send({
+    from: FROM,
+    to,
+    subject: `${code} es tu código de Petfhans`,
+    html,
+  })
 }
 
 // =============================================
@@ -115,7 +185,7 @@ export async function sendWelcomeEmail({
   clinicName: string
   loginUrl: string
 }) {
-  return resend.emails.send({
+  return resend().emails.send({
     from: FROM,
     to,
     subject: `¡Bienvenido/a a ${clinicName}! 🐾`,
