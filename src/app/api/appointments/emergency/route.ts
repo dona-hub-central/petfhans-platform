@@ -21,8 +21,9 @@ export async function POST(req: NextRequest) {
     admin.from('profiles').select('id, clinic_id, full_name, role').eq('id', vet_id).single(),
   ])
 
-  if (!pet)  return NextResponse.json({ error: 'Mascota no encontrada' }, { status: 404 })
-  if (!vet)  return NextResponse.json({ error: 'Veterinario no encontrado' }, { status: 404 })
+  if (!profile) return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 403 })
+  if (!pet)     return NextResponse.json({ error: 'Mascota no encontrada' }, { status: 404 })
+  if (!vet)     return NextResponse.json({ error: 'Veterinario no encontrado' }, { status: 404 })
 
   // Security: vet must belong to the same clinic as the pet
   if (vet.clinic_id !== pet.clinic_id) {
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest) {
   const { data: appt, error } = await admin.from('appointments').insert({
     clinic_id:        pet.clinic_id,
     pet_id,
-    owner_id:         profile!.id,
+    owner_id:         profile.id,
     vet_id:           vet.id,
     appointment_date: date,
     appointment_time: time,

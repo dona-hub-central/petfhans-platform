@@ -12,6 +12,7 @@ export async function POST(req: NextRequest) {
 
   const { data: profile } = await supabase.from('profiles')
     .select('id, role, clinic_id').eq('user_id', user.id).single()
+  if (!profile) return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 403 })
 
   const formData = await req.formData()
   const file  = formData.get('file') as File
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
   const admin = createAdminClient()
 
   // H-9: para pet_owner verificar acceso explícito antes de cualquier operación
-  if (profile?.role === 'pet_owner') {
+  if (profile.role === 'pet_owner') {
     const { data: access } = await admin.from('pet_access')
       .select('pet_id')
       .eq('owner_id', profile.id)
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest) {
   }
 
   // A3: para vets verificar que la mascota pertenece a su clínica
-  if (profile?.role && ['vet_admin', 'veterinarian'].includes(profile.role)) {
+  if (['vet_admin', 'veterinarian'].includes(profile.role)) {
     if (!profile.clinic_id) {
       return NextResponse.json({ error: 'Sin clínica asignada' }, { status: 403 })
     }

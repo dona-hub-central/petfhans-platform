@@ -12,6 +12,7 @@ export async function POST(req: NextRequest) {
 
   const { data: profile } = await supabase.from('profiles')
     .select('id, role').eq('user_id', user.id).single()
+  if (!profile) return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 403 })
 
   const formData = await req.formData()
   const file      = formData.get('file') as File
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
   // Para dueños: verificar acceso explícito y usar clinic_id de la mascota
   // Para staff: usar la clínica activa del header
   let clinicId: string | null | undefined
-  if (profile?.role === 'pet_owner') {
+  if (profile.role === 'pet_owner') {
     const { data: access } = await admin.from('pet_access')
       .select('pet_id')
       .eq('owner_id', profile.id)
@@ -55,7 +56,7 @@ export async function POST(req: NextRequest) {
   const { data: fileRecord, error: dbErr } = await admin.from('pet_files').insert({
     pet_id:      petId,
     clinic_id:   clinicId,
-    uploaded_by: profile!.id,
+    uploaded_by: profile.id,
     file_type:   fileType,
     file_name:   file.name,
     file_path:   uploadData.path,
