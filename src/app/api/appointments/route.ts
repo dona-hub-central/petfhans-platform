@@ -45,9 +45,10 @@ export async function POST(req: NextRequest) {
     .eq('appointment_date', appointment_date)
     .eq('appointment_time', appointment_time)
     .in('status', ['pending', 'confirmed'])
-    .single()
+    .limit(1)
 
-  if (existing) return NextResponse.json({ error: 'Ese horario ya está reservado' }, { status: 409 })
+  if (existing && existing.length > 0)
+    return NextResponse.json({ error: 'Ese horario ya está reservado' }, { status: 409 })
 
   const resend = new Resend(process.env.RESEND_API_KEY)
 
