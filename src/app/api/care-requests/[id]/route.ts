@@ -11,18 +11,18 @@ export async function PATCH(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
 
+  const activeClinicId = req.headers.get('x-active-clinic-id')
+  if (!activeClinicId) return NextResponse.json({ error: 'Sin clínica activa' }, { status: 403 })
+
   const admin = createAdminClient()
   const { data: profile } = await admin
     .from('profiles')
-    .select('id, role, clinic_id')
+    .select('id, role')
     .eq('user_id', user.id)
     .single()
 
   if (!profile || profile.role !== 'vet_admin') {
     return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
-  }
-  if (!profile.clinic_id) {
-    return NextResponse.json({ error: 'Sin clínica asignada' }, { status: 403 })
   }
 
   const { id } = await params
@@ -33,7 +33,7 @@ export async function PATCH(
     .single()
 
   if (!careRequest) return NextResponse.json({ error: 'Solicitud no encontrada' }, { status: 404 })
-  if (careRequest.clinic_id !== profile.clinic_id) {
+  if (careRequest.clinic_id !== activeClinicId) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
   }
   if (careRequest.status !== 'pending') {
