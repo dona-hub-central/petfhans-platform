@@ -42,3 +42,6 @@ next-env.d.ts
 
 # supabase
 supabase/.temp/
+
+# claude local config (puede contener tokens MCP)
+.claude/settings.local.json
