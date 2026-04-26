@@ -12,8 +12,11 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient()
 
+  const activeClinicId = req.headers.get('x-active-clinic-id')
+  if (!activeClinicId) return NextResponse.json({ error: 'Sin clínica activa' }, { status: 403 })
+
   const [{ data: profile }, { data: pet }, { data: vet }] = await Promise.all([
-    supabase.from('profiles').select('id, clinic_id, full_name').eq('user_id', user.id).single(),
+    supabase.from('profiles').select('id, full_name').eq('user_id', user.id).single(),
     admin.from('pets').select('name, species, clinic_id, clinics(name, slug)').eq('id', pet_id).single(),
     admin.from('profiles').select('id, clinic_id, full_name, role').eq('id', vet_id).single(),
   ])
@@ -26,8 +29,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'El veterinario no pertenece a esta clínica' }, { status: 403 })
   }
 
-  // Owner's pet must belong to the same clinic
-  if (profile?.clinic_id !== pet.clinic_id) {
+  // Active clinic must match the pet's clinic
+  if (pet.clinic_id !== activeClinicId) {
     return NextResponse.json({ error: 'No autorizado para esta clínica' }, { status: 403 })
   }
 

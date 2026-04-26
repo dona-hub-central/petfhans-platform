@@ -10,8 +10,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   const { data: profile } = await supabase.from('profiles')
-    .select('id, role, clinic_id').eq('user_id', user.id).single()
+    .select('id, role').eq('user_id', user.id).single()
   if (!profile) return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 403 })
+
+  const activeClinicId = req.headers.get('x-active-clinic-id')
+  if (!activeClinicId) return NextResponse.json({ error: 'Sin clínica activa' }, { status: 403 })
 
   const admin = createAdminClient()
 
@@ -23,8 +26,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   if (!fileRecord) return NextResponse.json({ error: 'Archivo no encontrado' }, { status: 404 })
 
-  // Verificar que el archivo pertenece a la clínica del usuario
-  if (fileRecord.clinic_id !== profile.clinic_id) {
+  // Verificar que el archivo pertenece a la clínica activa
+  if (fileRecord.clinic_id !== activeClinicId) {
     return NextResponse.json({ error: 'Archivo no encontrado' }, { status: 404 })
   }
 
@@ -50,13 +53,16 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   const { data: profile } = await supabase.from('profiles')
-    .select('id, role, clinic_id').eq('user_id', user.id).single()
+    .select('id, role').eq('user_id', user.id).single()
   if (!profile) return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 403 })
 
   // Pet owners no pueden borrar archivos (solo staff de clínica)
   if (profile.role === 'pet_owner') {
     return NextResponse.json({ error: 'Sin permisos para eliminar archivos' }, { status: 403 })
   }
+
+  const activeClinicId = req.headers.get('x-active-clinic-id')
+  if (!activeClinicId) return NextResponse.json({ error: 'Sin clínica activa' }, { status: 403 })
 
   const admin = createAdminClient()
 
@@ -68,7 +74,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
   if (!fileRecord) return NextResponse.json({ error: 'No encontrado' }, { status: 404 })
 
-  if (fileRecord.clinic_id !== profile.clinic_id) {
+  if (fileRecord.clinic_id !== activeClinicId) {
     return NextResponse.json({ error: 'No encontrado' }, { status: 404 })
   }
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { Resend } from 'resend'
 
 export async function PATCH(
   req: NextRequest,
@@ -43,11 +44,60 @@ export async function PATCH(
   const { action, reason } = body
 
   if (action === 'accept') {
-    // Deferred to Fase D — requires profile_clinics.insert()
-    return NextResponse.json(
-      { error: 'La vinculación automática estará disponible en la próxima versión' },
-      { status: 501 }
-    )
+    // Resolve the requester's auth user_id (profile_clinics references auth.users)
+    const { data: requester } = await admin
+      .from('profiles')
+      .select('user_id, full_name, email')
+      .eq('id', careRequest.requester_id)
+      .single()
+
+    if (!requester) return NextResponse.json({ error: 'Solicitante no encontrado' }, { status: 404 })
+
+    // Link owner to clinic — upsert handles already-linked gracefully
+    const { error: linkError } = await admin
+      .from('profile_clinics')
+      .upsert(
+        { user_id: requester.user_id, clinic_id: careRequest.clinic_id, role: 'pet_owner' },
+        { onConflict: 'user_id,clinic_id', ignoreDuplicates: true }
+      )
+
+    if (linkError) return NextResponse.json({ error: 'Error al vincular dueño' }, { status: 500 })
+
+    // Update care request
+    const { error: updErr } = await admin
+      .from('care_requests')
+      .update({ status: 'accepted', responded_at: new Date().toISOString() })
+      .eq('id', id)
+
+    if (updErr) return NextResponse.json({ error: 'Error al actualizar solicitud' }, { status: 500 })
+
+    // Notify owner by email
+    const { data: clinic } = await admin
+      .from('clinics').select('name').eq('id', careRequest.clinic_id).single()
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://petfhans.com'
+    const resend = new Resend(process.env.RESEND_API_KEY)
+    const FROM   = process.env.EMAIL_FROM ?? 'Petfhans <noreply@petfhans.com>'
+
+    await resend.emails.send({
+      from: FROM,
+      to:   requester.email,
+      subject: `¡Solicitud aceptada! Ya puedes acceder a ${clinic?.name ?? 'la clínica'}`,
+      html: `<div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto">
+        <div style="background:#EE726D;padding:20px 28px;border-radius:12px 12px 0 0">
+          <h2 style="color:#fff;margin:0">🐾 Petfhans</h2>
+        </div>
+        <div style="background:#fff;padding:28px;border:1px solid #ebebeb;border-top:none;border-radius:0 0 12px 12px">
+          <p>Hola <strong>${requester.full_name}</strong>,</p>
+          <p><strong>${clinic?.name ?? 'La clínica'}</strong> ha aceptado tu solicitud de atención. Ya tienes acceso a la plataforma.</p>
+          <a href="${appUrl}/owner/dashboard" style="background:#EE726D;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;margin-top:8px">
+            Ver mi cuenta
+          </a>
+        </div>
+      </div>`,
+    }).catch((err: unknown) => { console.error('[care-request/accept] email:', err) })
+
+    return NextResponse.json({ success: true })
   }
 
   if (action === 'reject') {
