@@ -12,25 +12,25 @@ export async function PATCH(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
 
+  const activeClinicId = req.headers.get('x-active-clinic-id')
+  if (!activeClinicId) return NextResponse.json({ error: 'Sin clínica activa' }, { status: 403 })
+
   const admin = createAdminClient()
   const { data: profile } = await admin
     .from('profiles')
-    .select('id, role, clinic_id, full_name')
+    .select('id, role, full_name')
     .eq('user_id', user.id)
     .single()
 
   if (!profile || profile.role !== 'vet_admin') {
     return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
   }
-  if (!profile.clinic_id) {
-    return NextResponse.json({ error: 'Sin clínica asignada' }, { status: 403 })
-  }
 
   const { data: joinRequest } = await admin
     .from('clinic_join_requests')
     .select('id, vet_id, clinic_id, status')
     .eq('id', id)
-    .eq('clinic_id', profile.clinic_id)  // ownership: solo puede gestionar solicitudes de su clínica
+    .eq('clinic_id', activeClinicId)  // ownership: solo puede gestionar solicitudes de su clínica
     .single()
 
   if (!joinRequest) return NextResponse.json({ error: 'Solicitud no encontrada' }, { status: 404 })
@@ -60,12 +60,6 @@ export async function PATCH(
       )
 
     if (linkError) return NextResponse.json({ error: 'Error al vincular veterinario' }, { status: 500 })
-
-    // Phase A compat: also update profiles.clinic_id until migration 019 runs
-    await admin
-      .from('profiles')
-      .update({ clinic_id: joinRequest.clinic_id })
-      .eq('id', joinRequest.vet_id)
 
     const { error: updErr } = await admin
       .from('clinic_join_requests')

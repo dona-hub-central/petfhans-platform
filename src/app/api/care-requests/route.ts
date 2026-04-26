@@ -2,23 +2,23 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-export async function GET(_req: NextRequest) {
+export async function GET(req: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
 
+  const activeClinicId = req.headers.get('x-active-clinic-id')
+  if (!activeClinicId) return NextResponse.json({ error: 'Sin clínica activa' }, { status: 403 })
+
   const admin = createAdminClient()
   const { data: profile } = await admin
     .from('profiles')
-    .select('id, role, clinic_id')
+    .select('id, role')
     .eq('user_id', user.id)
     .single()
 
   if (!profile || profile.role !== 'vet_admin') {
     return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
-  }
-  if (!profile.clinic_id) {
-    return NextResponse.json({ error: 'Sin clínica asignada' }, { status: 403 })
   }
 
   const { data: requests, error } = await admin
@@ -28,7 +28,7 @@ export async function GET(_req: NextRequest) {
       status, rejection_note, created_at, responded_at, retry_after,
       profiles!requester_id(full_name, email, avatar_url)
     `)
-    .eq('clinic_id', profile.clinic_id)
+    .eq('clinic_id', activeClinicId)
     .eq('status', 'pending')
     .order('created_at', { ascending: false })
 
