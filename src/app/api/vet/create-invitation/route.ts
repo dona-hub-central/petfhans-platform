@@ -12,6 +12,7 @@ export async function POST(req: NextRequest) {
 
     const { data: profile } = await supabase.from('profiles')
       .select('id, role').eq('user_id', user.id).single()
+    if (!profile) return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 403 })
 
     const activeClinicId = req.headers.get('x-active-clinic-id')
     if (!activeClinicId) return NextResponse.json({ error: 'Sin clínica activa' }, { status: 403 })
