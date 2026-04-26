@@ -79,11 +79,12 @@ export async function POST(req: NextRequest) {
     type InvRow = typeof inv & { clinics?: { name: string; slug: string } | null }
     const invRow = inv as InvRow
     const slug = invRow.clinics?.slug
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://petfhans.com'
     await sendWelcomeEmail({
       to:         inv.email,
       name:       full_name,
       clinicName: invRow.clinics?.name ?? 'Petfhans',
-      loginUrl:   `https://petfhans.com/auth/login`,
+      loginUrl:   `${appUrl}/auth/login`,
     })
 
     return NextResponse.json({ success: true })

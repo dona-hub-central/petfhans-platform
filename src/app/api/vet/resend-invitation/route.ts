@@ -33,7 +33,8 @@ export async function POST(req: NextRequest) {
     const { data: clinic } = await admin.from('clinics')
       .select('slug, name').eq('id', activeClinicId).single()
 
-    const inviteLink = `https://petfhans.com/auth/invite?token=${inv.token}`
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://petfhans.com'
+    const inviteLink = `${appUrl}/auth/invite?token=${inv.token}`
 
     type InvWithPet = typeof inv & { pets: { name: string } | null }
     await sendInvitationEmail({

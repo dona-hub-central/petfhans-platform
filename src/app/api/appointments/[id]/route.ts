@@ -46,9 +46,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const resend = new Resend(process.env.RESEND_API_KEY)
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://petfhans.com'
   const isVirtual = Boolean(appt.is_virtual)
   const room = jitsiRoom(id)
-  const joinUrl = `https://meet.jit.si/${room}`
+  const joinUrl = `${process.env.JITSI_BASE_URL ?? 'https://meet.jit.si'}/${room}`
 
   const { error } = await admin.from('appointments').update({
     status,
@@ -107,7 +108,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
           <p>Hola <strong>${owner.full_name}</strong>,</p>
           <p>${tpl.body}</p>
           ${virtualBlock}
-          <a href="https://petfhans.com/owner/dashboard" style="background:#EE726D;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;margin-top:12px">
+          <a href="${appUrl}/owner/dashboard" style="background:#EE726D;color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:bold;display:inline-block;margin-top:12px">
             Ver mis citas
           </a>
         </div>
