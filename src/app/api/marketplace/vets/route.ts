@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
   if (q) query = query.ilike('full_name', `%${q}%`)
   if (clinicId) query = query.eq('clinic_id', clinicId)
 
-  const { data: vets, error } = await query
+  const { data: vets, error } = await query.limit(100)
   if (error) return NextResponse.json({ error: 'Error al buscar veterinarios' }, { status: 500 })
 
   return NextResponse.json({ data: vets ?? [] })

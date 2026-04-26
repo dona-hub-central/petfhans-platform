@@ -45,9 +45,10 @@ export async function POST(req: NextRequest) {
     .eq('appointment_date', appointment_date)
     .eq('appointment_time', appointment_time)
     .in('status', ['pending', 'confirmed'])
-    .single()
+    .limit(1)
 
-  if (existing) return NextResponse.json({ error: 'Ese horario ya está reservado' }, { status: 409 })
+  if (existing && existing.length > 0)
+    return NextResponse.json({ error: 'Ese horario ya está reservado' }, { status: 409 })
 
   const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -119,8 +120,8 @@ export async function POST(req: NextRequest) {
     const vetEmails = clinicVets.map(v => v.email).filter(Boolean) as string[]
     await resend.emails.send({
       from: 'Petfhans <noreply@petfhans.com>',
-      to: vetEmails.length === 1 ? vetEmails[0] : vetEmails[0],
-      cc: vetEmails.slice(1).length ? vetEmails.slice(1) : undefined,
+      to: vetEmails[0],
+      cc: vetEmails.length > 1 ? vetEmails.slice(1) : undefined,
       subject: `${urg.emoji} Nueva solicitud de cita — ${pet.name} (${urg.label})`,
       html: `<div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto">
         <div style="background:#EE726D;padding:20px 28px;border-radius:12px 12px 0 0">

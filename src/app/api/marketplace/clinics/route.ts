@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
     query = query.not('id', 'in', `(${excludeIds.join(',')})`)
   }
 
-  const { data: clinics, error } = await query
+  const { data: clinics, error } = await query.limit(50)
   if (error) return NextResponse.json({ error: 'Error al buscar clínicas' }, { status: 500 })
 
   return NextResponse.json({ data: clinics ?? [] })
