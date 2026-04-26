@@ -1,16 +1,8 @@
 {
   "mcpServers": {
     "supabase": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@supabase/mcp-server-supabase@latest",
-        "--project-ref",
-        "owoszanuthrijsptvmfr"
-      ],
-      "env": {
-        "SUPABASE_ACCESS_TOKEN": "sbp_d16c07de0cdab6bfc8a667986044a504ac143b3d"
-      }
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=owoszanuthrijsptvmfr&features=database%2Cfunctions%2Cdocs"
     }
   }
 }
