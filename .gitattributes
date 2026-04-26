@@ -22,6 +22,9 @@ frontend.md                 merge=ours
 # main tiene sus propios prompts para producción
 prompts/**                  merge=ours
 
+# Configuración de MCP — contiene referencias a proyectos, no va a producción
+.mcp.json                   merge=ours
+
 # ─────────────────────────────────────────────────────────────────────────────
 # NOTA sobre skills-ai/ y CLAUDE.md
 # ─────────────────────────────────────────────────────────────────────────────
