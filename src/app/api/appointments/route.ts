@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   const { data: profile } = await supabase.from('profiles').select('id, role, full_name, email').eq('user_id', user.id).single()
   if (!profile) return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 403 })
 
-  const activeClinicId = request.headers.get('x-active-clinic-id')
+  const activeClinicId = req.headers.get('x-active-clinic-id')
   if (!activeClinicId) return NextResponse.json({ error: 'Sin clínica activa' }, { status: 403 })
 
   // C-2: verificar que el pet pertenece a la clínica activa

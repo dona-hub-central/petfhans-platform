@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient()
 
-  const activeClinicId = request.headers.get('x-active-clinic-id')
+  const activeClinicId = req.headers.get('x-active-clinic-id')
   if (!activeClinicId) return NextResponse.json({ error: 'Sin clínica activa' }, { status: 403 })
 
   const [{ data: profile }, { data: pet }, { data: vet }] = await Promise.all([
