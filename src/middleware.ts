@@ -25,6 +25,12 @@ export async function middleware(request: NextRequest) {
   requestHeaders.set('x-subdomain', subdomain)
   requestHeaders.set('x-hostname', hostname)
 
+  // Propagar cookie active_clinic_id como header para que las API routes lo lean
+  const activeClinicId = request.cookies.get('active_clinic_id')?.value
+  if (activeClinicId) {
+    requestHeaders.set('x-active-clinic-id', activeClinicId)
+  }
+
   let supabaseResponse = NextResponse.next({
     request: { headers: requestHeaders },
   })
