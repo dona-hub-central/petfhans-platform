@@ -19,7 +19,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     .eq('user_id', user.id)
     .single()
 
-  if (!callerProfile?.clinic_id) {
+  const activeClinicId = callerProfile?.clinic_id
+  if (!activeClinicId) {
     return NextResponse.json({ error: 'Sin clínica asignada' }, { status: 403 })
   }
 
@@ -40,7 +41,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const row = appt as ApptRow
 
   const appointmentClinicId = (row.clinics as { id: string } | null)?.id
-  if (!appointmentClinicId || appointmentClinicId !== callerProfile.clinic_id) {
+  if (!appointmentClinicId || appointmentClinicId !== activeClinicId) {
     return NextResponse.json({ error: 'Cita no encontrada' }, { status: 404 })
   }
 
@@ -111,7 +112,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
           </a>
         </div>
       </div>`,
-    }).catch(() => {})
+    }).catch((err: unknown) => { console.error('[appointments/PATCH] email failed:', err) })
   }
 
   return NextResponse.json({ ok: true })
