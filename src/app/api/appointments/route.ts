@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
         </a>
       </div>
     </div>`,
-  }).catch(() => {})
+  }).catch((err: unknown) => { console.error('[appointments/POST] owner email failed:', err) })
 
   // ── Email a los veterinarios de la clínica ──
   const { data: clinicVets } = await admin.from('profiles')
@@ -144,7 +144,7 @@ export async function POST(req: NextRequest) {
           </a>
         </div>
       </div>`,
-    }).catch(() => {})
+    }).catch((err: unknown) => { console.error('[appointments/POST] vet email failed:', err) })
   }
 
   return NextResponse.json({ appointment: appt })

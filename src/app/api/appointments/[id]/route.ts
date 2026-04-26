@@ -111,7 +111,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
           </a>
         </div>
       </div>`,
-    }).catch(() => {})
+    }).catch((err: unknown) => { console.error('[appointments/PATCH] email failed:', err) })
   }
 
   return NextResponse.json({ ok: true })
