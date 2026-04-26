@@ -104,8 +104,8 @@ export default async function RequestsPage() {
       .order('created_at', { ascending: false }),
   ])
 
-  const careRequests = (careRes.data ?? []) as CareRequest[]
-  const joinRequests = (joinRes.data ?? []) as JoinRequest[]
+  const careRequests = (careRes.data ?? []) as unknown as CareRequest[]
+  const joinRequests = (joinRes.data ?? []) as unknown as JoinRequest[]
   const total = careRequests.length + joinRequests.length
 
   return (
