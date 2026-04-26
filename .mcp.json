@@ -9,7 +9,7 @@
         "owoszanuthrijsptvmfr"
       ],
       "env": {
-        "SUPABASE_ACCESS_TOKEN": "${SUPABASE_ACCESS_TOKEN}"
+        "SUPABASE_ACCESS_TOKEN": "${sbp_d16c07de0cdab6bfc8a667986044a504ac143b3d}"
       }
     }
   }
