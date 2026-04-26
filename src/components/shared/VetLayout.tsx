@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Home, Calendar, PawPrint, ClipboardList, Mail, Sparkles, Users, CreditCard, LogOut, Menu, X, Store } from 'lucide-react'
+import { Home, Calendar, PawPrint, ClipboardList, Mail, Sparkles, Users, CreditCard, LogOut, Menu, X, Store, Inbox } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import AvailabilityToggle from '@/components/vet/AvailabilityToggle'
 
@@ -37,6 +37,7 @@ const nav = [
   { href: '/vet/pets',             Icon: PawPrint,      label: 'Mascotas' },
   { href: '/vet/records',          Icon: ClipboardList, label: 'Consultas' },
   { href: '/vet/invitations',      Icon: Mail,          label: 'Invitaciones' },
+  { href: '/vet/requests',         Icon: Inbox,         label: 'Solicitudes' },
   { href: '/vet/ai',               Icon: Sparkles,      label: 'IA Clínica', tint: 'purple' as const },
   { href: '/marketplace/clinicas', Icon: Store,         label: 'Marketplace' },
   { href: '/vet/team',             Icon: Users,         label: 'Equipo' },
