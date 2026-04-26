@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
 
   let query = admin
     .from('clinics')
-    .select('id, name, slug, verified, public_profile')
+    .select('id, name, slug, verified')
     .order('name')
 
   if (q) query = query.ilike('name', `%${q}%`)
