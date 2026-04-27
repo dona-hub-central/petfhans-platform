@@ -34,6 +34,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: createError.message }, { status: 400 })
     }
 
+    // Insertar profile explícitamente — mismo patrón que accept-invite.
+    // No confiar en el trigger handle_new_user(): si falla en silencio el
+    // usuario queda con cuenta auth pero sin profile, rompiendo todo el portal.
+    // El upsert es no-op si el trigger ya lo creó.
+    const { error: profileError } = await admin.from('profiles').upsert({
+      user_id:   userData.user.id,
+      role:      'pet_owner',
+      full_name: normalizedName,
+      email:     normalizedEmail,
+    }, { onConflict: 'user_id' })
+
+    if (profileError) {
+      console.error('[register] profile upsert error:', profileError.message)
+      await admin.auth.admin.deleteUser(userData.user.id)
+      return NextResponse.json({ error: 'No se pudo crear el perfil' }, { status: 500 })
+    }
+
     const code = generateCode()
     const token = createOtpToken(userData.user.id, normalizedEmail, normalizedName, code)
 
