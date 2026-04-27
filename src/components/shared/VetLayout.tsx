@@ -56,10 +56,10 @@ const nav: NavItem[] = [
   { href: '/vet/settings',         Icon: Settings,      label: 'Configuración', requiresClinic: true, adminOnly: true },
 ]
 
-const bottomNavItems = [
-  { href: '/vet/dashboard',    Icon: Home,     label: 'Inicio' },
-  { href: '/vet/appointments', Icon: Calendar, label: 'Citas' },
-  { href: '/vet/pets',         Icon: PawPrint, label: 'Mascotas' },
+const bottomNavBase = [
+  { href: '/vet/dashboard',    Icon: Home,     label: 'Inicio',    requiresClinic: false },
+  { href: '/vet/appointments', Icon: Calendar, label: 'Citas',     requiresClinic: true },
+  { href: '/vet/pets',         Icon: PawPrint, label: 'Mascotas',  requiresClinic: true },
 ]
 
 function AvatarCircle({ avatarUrl, userName, size = 30 }: { avatarUrl?: string | null; userName: string; size?: number }) {
@@ -109,6 +109,7 @@ export default function VetLayout({
   useEffect(() => { setDrawerOpen(false) }, [path])
 
   const isVetAdmin = role === 'vet_admin'
+  const bottomNavItems = bottomNavBase.filter(item => !item.requiresClinic || hasClinic)
   const visibleNav = nav.filter(item => {
     if (item.alwaysShow) return true
     if (item.requiresClinic && !hasClinic) return false
