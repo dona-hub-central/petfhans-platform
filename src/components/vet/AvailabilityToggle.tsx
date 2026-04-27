@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Video, PhoneCall, X } from 'lucide-react'
 
-type Profile = { id: string; clinic_id: string; full_name: string }
+type Profile = { id: string; clinic_id: string | null; full_name: string }
 
 type IncomingCall = {
   appointment_id: string
@@ -24,14 +24,16 @@ export default function AvailabilityToggle() {
   const presenceRef = useRef<ReturnType<ReturnType<typeof createClient>['channel']> | null>(null)
   const changesRef  = useRef<ReturnType<ReturnType<typeof createClient>['channel']> | null>(null)
 
-  // Load own profile once
+  // Load own profile + clinic_id from profile_clinics
   useEffect(() => {
     const supabase = createClient()
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return
-      supabase.from('profiles').select('id, clinic_id, full_name')
-        .eq('user_id', user.id).single()
-        .then(({ data }) => { if (data) setProfile(data as Profile) })
+      const [{ data: prof }, { data: cl }] = await Promise.all([
+        supabase.from('profiles').select('id, full_name').eq('user_id', user.id).single(),
+        supabase.from('profile_clinics').select('clinic_id').eq('user_id', user.id).limit(1).single(),
+      ])
+      if (prof) setProfile({ id: prof.id, full_name: prof.full_name, clinic_id: cl?.clinic_id ?? null } as Profile)
     })
   }, [])
 
@@ -45,7 +47,7 @@ export default function AvailabilityToggle() {
   }, [])
 
   const goOnline = async () => {
-    if (!profile) return
+    if (!profile?.clinic_id) return
     const supabase = createClient()
 
     // 1. Join presence channel for this clinic

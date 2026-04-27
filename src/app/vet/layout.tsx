@@ -11,12 +11,19 @@ export default async function VetSegmentLayout({ children }: { children: React.R
   const admin = createAdminClient()
   const { data: profile } = await admin
     .from('profiles')
-    .select('full_name, role, avatar_url, clinics(name)')
+    .select('full_name, role, avatar_url')
     .eq('user_id', user.id)
     .single()
 
-  type ProfileRow = { full_name: string | null; role: string; avatar_url: string | null; clinics: { name: string } | null }
-  const clinicName = (profile as ProfileRow | null)?.clinics?.name ?? ''
+  const { data: clinicLink } = await admin
+    .from('profile_clinics')
+    .select('clinics(name)')
+    .eq('user_id', user.id)
+    .limit(1)
+    .single()
+
+  type ClinicRow = { name: string }
+  const clinicName = (clinicLink?.clinics as ClinicRow | null)?.name ?? ''
   const userName = profile?.full_name ?? ''
 
   return (

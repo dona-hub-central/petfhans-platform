@@ -75,12 +75,22 @@ export default async function RequestsPage() {
   const admin = createAdminClient()
   const { data: profile } = await admin
     .from('profiles')
-    .select('id, role, clinic_id')
+    .select('id, role')
     .eq('user_id', user.id)
     .single()
 
   if (!profile || profile.role !== 'vet_admin') redirect('/vet/dashboard')
-  if (!profile.clinic_id) redirect('/vet/dashboard')
+
+  const { data: clinicLink } = await admin
+    .from('profile_clinics')
+    .select('clinic_id')
+    .eq('user_id', user.id)
+    .in('role', ['vet_admin'])
+    .limit(1)
+    .single()
+
+  if (!clinicLink?.clinic_id) redirect('/vet/dashboard')
+  const clinicId = clinicLink.clinic_id
 
   const [careRes, joinRes] = await Promise.all([
     admin
@@ -89,7 +99,7 @@ export default async function RequestsPage() {
         id, requester_id, pet_name, pet_species, reason, status, created_at,
         profiles!requester_id(full_name, email, avatar_url)
       `)
-      .eq('clinic_id', profile.clinic_id)
+      .eq('clinic_id', clinicId)
       .eq('status', 'pending')
       .order('created_at', { ascending: false }),
 
@@ -99,7 +109,7 @@ export default async function RequestsPage() {
         id, vet_id, message, status, created_at,
         profiles!vet_id(full_name, email, avatar_url, role)
       `)
-      .eq('clinic_id', profile.clinic_id)
+      .eq('clinic_id', clinicId)
       .eq('status', 'pending')
       .order('created_at', { ascending: false }),
   ])

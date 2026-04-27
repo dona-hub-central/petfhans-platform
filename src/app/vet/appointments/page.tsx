@@ -13,9 +13,14 @@ export default async function AppointmentsPage() {
 
   const admin = createAdminClient()
   const { data: profile } = await admin.from('profiles')
-    .select('id, role, clinic_id').eq('user_id', user.id).single()
+    .select('id, role').eq('user_id', user.id).single()
 
-  if (!profile?.clinic_id) {
+  const { data: clinicLink } = await admin.from('profile_clinics')
+    .select('clinic_id').eq('user_id', user.id).limit(1).single()
+
+  const clinicId = clinicLink?.clinic_id ?? null
+
+  if (!clinicId) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
         <p className="text-lg font-semibold" style={{ color: 'var(--pf-ink)' }}>Sin clínica asignada</p>
@@ -26,7 +31,7 @@ export default async function AppointmentsPage() {
     )
   }
 
-  const isAdmin = profile.role === 'vet_admin' || profile.role === 'superadmin'
+  const isAdmin = profile?.role === 'vet_admin' || profile?.role === 'superadmin'
 
   // Citas del mes actual
   const now = new Date()
@@ -37,7 +42,7 @@ export default async function AppointmentsPage() {
   // veterinarian    → mismas por ahora (vet_id en appointments requiere migración futura)
   const { data: appointments } = await admin.from('appointments')
     .select('*, pets(name, species), profiles(full_name, email)')
-    .eq('clinic_id', profile.clinic_id)
+    .eq('clinic_id', clinicId)
     .gte('appointment_date', monthStart)
     .lte('appointment_date', monthEnd)
     .order('appointment_date').order('appointment_time')
@@ -45,7 +50,7 @@ export default async function AppointmentsPage() {
   // Pendientes de hoy en adelante
   const { data: pending } = await admin.from('appointments')
     .select('*, pets(name, species), profiles(full_name, email)')
-    .eq('clinic_id', profile.clinic_id)
+    .eq('clinic_id', clinicId)
     .eq('status', 'pending')
     .gte('appointment_date', now.toISOString().split('T')[0])
     .order('appointment_date').order('appointment_time')
