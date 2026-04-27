@@ -28,7 +28,7 @@ export default async function MarketplaceVetsPage({
   // First clinic per user (deterministic ordering not guaranteed — first seen wins)
   const clinicByUser = new Map<string, ClinicLink>()
   ;(links ?? []).forEach(l => {
-    if (!clinicByUser.has(l.user_id)) clinicByUser.set(l.user_id, l as ClinicLink)
+    if (!clinicByUser.has(l.user_id)) clinicByUser.set(l.user_id, l as unknown as ClinicLink)
   })
   const vetUserIds = [...clinicByUser.keys()]
 
