@@ -23,7 +23,7 @@ export default async function VetSegmentLayout({ children }: { children: React.R
     .single()
 
   type ClinicRow = { name: string }
-  const clinicName = (clinicLink?.clinics as ClinicRow | null)?.name ?? ''
+  const clinicName = (clinicLink?.clinics as unknown as ClinicRow | null)?.name ?? ''
   const userName = profile?.full_name ?? ''
 
   return (
