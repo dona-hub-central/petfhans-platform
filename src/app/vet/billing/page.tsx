@@ -24,12 +24,14 @@ export default async function BillingPage() {
   if (!user) redirect('/auth/login')
 
   const { data: profile } = await supabase.from('profiles')
-    .select('id').eq('user_id', user.id).single()
+    .select('id, role').eq('user_id', user.id).single()
+  if (!profile || profile.role !== 'vet_admin') redirect('/vet/dashboard')
 
   const admin = createAdminClient()
   const { data: clinicLink } = await admin
     .from('profile_clinics').select('clinic_id').eq('user_id', user.id).limit(1).single()
   const clinicId = clinicLink?.clinic_id
+  if (!clinicId) redirect('/vet/dashboard')
 
   const { data: clinic } = await admin.from('clinics')
     .select('name, subscription_plan, subscription_status, max_patients, stripe_customer_id')

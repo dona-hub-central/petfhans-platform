@@ -17,12 +17,14 @@ export default async function TeamPage() {
   if (!user) redirect('/auth/login')
 
   const { data: profile } = await supabase.from('profiles')
-    .select('id').eq('user_id', user.id).single()
+    .select('id, role').eq('user_id', user.id).single()
+  if (!profile || profile.role !== 'vet_admin') redirect('/vet/dashboard')
 
   const admin = createAdminClient()
   const { data: clinicLink } = await admin
     .from('profile_clinics').select('clinic_id').eq('user_id', user.id).limit(1).single()
   const clinicId = clinicLink?.clinic_id
+  if (!clinicId) redirect('/vet/dashboard')
 
   const { data: memberLinks } = clinicId
     ? await admin.from('profile_clinics').select('user_id').eq('clinic_id', clinicId).in('role', ['vet_admin', 'veterinarian'])
