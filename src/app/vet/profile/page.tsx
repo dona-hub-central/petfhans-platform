@@ -197,6 +197,22 @@ export default async function VetProfilePage({
             </form>
           </div>
 
+          <Link href="/vet/support"
+            className="bg-white rounded-2xl border p-4 flex items-center gap-3 mb-3"
+            style={{ borderColor: 'var(--pf-border)', textDecoration: 'none' }}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: '#fff8e6', color: '#b07800' }}>
+              <Shield size={18} strokeWidth={1.75} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold" style={{ color: 'var(--pf-ink)' }}>Soporte y verificación</p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--pf-muted)' }}>
+                Contacta con el equipo o solicita cambios en tu clínica
+              </p>
+            </div>
+            <span style={{ color: 'var(--pf-hint)' }}>›</span>
+          </Link>
+
           <LogoutButton variant="danger" />
         </div>
 

@@ -183,6 +183,20 @@ export default async function OwnerProfilePage({
             </form>
           </div>
 
+          {/* Soporte */}
+          <Link href="/owner/support" className="card" style={{ display:'flex', alignItems:'center', gap:14, textDecoration:'none' }}>
+            <div style={{
+              width:42, height:42, borderRadius:12, flexShrink:0,
+              background:'#fff8e6', display:'flex', alignItems:'center', justifyContent:'center',
+              color:'#b07800', fontSize:22, fontWeight:700,
+            }}>?</div>
+            <div style={{ flex:1, minWidth:0 }}>
+              <p style={{ fontSize:14, fontWeight:700, color:'#1c1c1e', margin:'0 0 2px' }}>¿Eres veterinario o tienes una clínica?</p>
+              <p style={{ fontSize:12, color:'#8e8e93', margin:0 }}>Solicita verificación y contacta con soporte</p>
+            </div>
+            <span style={{ color:'#c7c7cc', fontSize:20, flexShrink:0 }}>›</span>
+          </Link>
+
           {/* Cerrar sesión */}
           <LogoutButton variant="danger" />
         </div>
