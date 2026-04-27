@@ -43,8 +43,13 @@ export default async function OwnerProfilePage({
     if (!u) redirect('/auth/login')
     const adminSb = createAdminClient()
     const { error: updateErr } = await adminSb.from('profiles')
-      .update({ full_name, phone: phone || null })
-      .eq('user_id', u.id)
+      .upsert({
+        user_id: u.id,
+        email: u.email ?? '',
+        role: (u.user_metadata?.role as string) || 'pet_owner',
+        full_name,
+        phone: phone || null,
+      }, { onConflict: 'user_id' })
     if (updateErr) redirect('/owner/profile?error=save')
     revalidatePath('/owner/profile')
     revalidatePath('/owner/dashboard')
