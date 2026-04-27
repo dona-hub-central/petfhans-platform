@@ -19,9 +19,11 @@ export default async function InvitationsPage() {
   const { data: clinicLink } = await admin
     .from('profile_clinics').select('clinic_id').eq('user_id', user.id).limit(1).single()
 
+  if (!clinicLink?.clinic_id) redirect('/vet/dashboard')
+
   const { data: invitations } = await admin.from('invitations')
     .select('*, pets(name)')
-    .eq('clinic_id', clinicLink?.clinic_id)
+    .eq('clinic_id', clinicLink.clinic_id)
     .order('created_at', { ascending: false })
 
   const active = invitations?.filter(i => !i.used_at && new Date(i.expires_at) > new Date()) ?? []
