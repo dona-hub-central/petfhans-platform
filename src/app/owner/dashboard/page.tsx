@@ -13,11 +13,18 @@ export default async function OwnerDashboard() {
   if (!user) redirect('/auth/login')
 
   const { data: profile } = await supabase.from('profiles')
-    .select('*, clinics(id, name, slug)').eq('user_id', user.id).single()
+    .select('id, full_name').eq('user_id', user.id).single()
 
   if (!profile) redirect('/auth/login')
 
   const admin = createAdminClient()
+
+  const { data: clinicLink } = await admin
+    .from('profile_clinics')
+    .select('clinics(id, name, slug)')
+    .eq('user_id', user.id)
+    .limit(1)
+    .single()
 
   // Use pet_access as authoritative source — owners only see pets explicitly granted
   const { data: access } = await admin.from('pet_access')
@@ -45,8 +52,8 @@ export default async function OwnerDashboard() {
   const petsWithInfo = pets.map(pet => ({ ...pet, nextVisit: nextVisitMap[pet.id] ?? null }))
 
   const speciesLabel: Record<string, string> = { dog: 'Perro', cat: 'Gato', bird: 'Ave', rabbit: 'Conejo', other: 'Otro' }
-  type ProfileRow = { full_name: string | null; clinics: { id: string; name: string; slug: string } | null }
-  const clinic = (profile as ProfileRow | null)?.clinics
+  type ClinicRow = { id: string; name: string; slug: string }
+  const clinic = (clinicLink?.clinics as unknown as ClinicRow | null)
   const firstName = profile?.full_name?.split(' ')[0] ?? ''
 
   return (

@@ -18,17 +18,41 @@ export default async function MarketplaceVetsPage({
   const { q = '' } = await searchParams
   const admin = createAdminClient()
 
-  let query = admin
-    .from('profiles')
-    .select('id, full_name, avatar_url, role, clinic_id, clinics(id, name, slug)')
+  // Get vet–clinic links from the multi-clinic table
+  type ClinicLink = { user_id: string; clinic_id: string; clinics: { id: string; name: string; slug: string } | null }
+  const { data: links } = await admin
+    .from('profile_clinics')
+    .select('user_id, clinic_id, clinics(id, name, slug)')
     .in('role', ['vet_admin', 'veterinarian'])
-    .not('clinic_id', 'is', null)
-    .order('full_name')
 
-  if (q) query = query.ilike('full_name', `%${q}%`)
+  // First clinic per user (deterministic ordering not guaranteed — first seen wins)
+  const clinicByUser = new Map<string, ClinicLink>()
+  ;(links ?? []).forEach(l => {
+    if (!clinicByUser.has(l.user_id)) clinicByUser.set(l.user_id, l as unknown as ClinicLink)
+  })
+  const vetUserIds = [...clinicByUser.keys()]
 
-  const { data: vets } = await query
-  const vetList = (vets ?? []) as unknown as MarketplaceVet[]
+  let vetList: MarketplaceVet[] = []
+  if (vetUserIds.length > 0) {
+    let profileQuery = admin
+      .from('profiles')
+      .select('id, full_name, avatar_url, user_id')
+      .in('user_id', vetUserIds)
+
+    if (q) profileQuery = profileQuery.ilike('full_name', `%${q}%`)
+
+    const { data: profiles } = await profileQuery.order('full_name')
+    vetList = (profiles ?? []).map(p => {
+      const link = clinicByUser.get(p.user_id)
+      return {
+        id:        p.id,
+        full_name: p.full_name,
+        avatar_url: p.avatar_url,
+        clinic_id: link?.clinic_id ?? null,
+        clinics:   (link?.clinics as { id: string; name: string; slug: string } | null) ?? null,
+      }
+    })
+  }
 
   return (
     <div>

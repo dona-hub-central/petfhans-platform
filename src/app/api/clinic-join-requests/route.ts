@@ -17,7 +17,10 @@ export async function GET(_req: NextRequest) {
   if (!profile || profile.role !== 'vet_admin') {
     return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
   }
-  if (!profile.clinic_id) {
+
+  const { data: clinicLink } = await admin
+    .from('profile_clinics').select('clinic_id').eq('user_id', user.id).in('role', ['vet_admin']).limit(1).single()
+  if (!clinicLink?.clinic_id) {
     return NextResponse.json({ error: 'Sin clínica asignada' }, { status: 403 })
   }
 
@@ -27,7 +30,7 @@ export async function GET(_req: NextRequest) {
       id, vet_id, message, status, created_at,
       profiles!vet_id(full_name, email, avatar_url, role)
     `)
-    .eq('clinic_id', profile.clinic_id)
+    .eq('clinic_id', clinicLink.clinic_id)
     .eq('status', 'pending')
     .order('created_at', { ascending: false })
 
@@ -56,8 +59,10 @@ export async function POST(req: NextRequest) {
   const { clinic_id, message } = body
   if (!clinic_id) return NextResponse.json({ error: 'clinic_id requerido' }, { status: 400 })
 
-  // Can't request to join own current clinic
-  if (profile.clinic_id === clinic_id) {
+  // Can't request to join a clinic already belonging to
+  const { data: alreadyMember } = await admin
+    .from('profile_clinics').select('id').eq('user_id', user.id).eq('clinic_id', clinic_id).maybeSingle()
+  if (alreadyMember) {
     return NextResponse.json({ error: 'Ya perteneces a esta clínica' }, { status: 409 })
   }
 

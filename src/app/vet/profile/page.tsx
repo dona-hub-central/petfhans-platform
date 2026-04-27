@@ -28,12 +28,19 @@ export default async function VetProfilePage({
 
   const admin = createAdminClient()
   const { data: profile } = await admin.from('profiles')
-    .select('role, full_name, phone, avatar_url, clinics(name, slug, subscription_plan)')
+    .select('role, full_name, phone, avatar_url')
     .eq('user_id', user.id).single()
 
+  const { data: clinicLink } = await admin
+    .from('profile_clinics')
+    .select('clinics(name, slug, subscription_plan)')
+    .eq('user_id', user.id)
+    .limit(1)
+    .single()
+
   const isVetAdmin = profile?.role === 'vet_admin'
-  type ProfileRow = { role: string; full_name: string | null; phone: string | null; avatar_url: string | null; clinics: { name: string; slug: string; subscription_plan: string } | null }
-  const clinic = (profile as ProfileRow | null)?.clinics
+  type ClinicRow = { name: string; slug: string; subscription_plan: string }
+  const clinic = (clinicLink?.clinics as unknown as ClinicRow | null)
   const roleTag = ROLE_LABELS[profile?.role ?? '']
 
   async function saveProfile(formData: FormData) {

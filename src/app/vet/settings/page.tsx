@@ -30,17 +30,27 @@ export default async function SettingsPage({
   const admin = createAdminClient()
   const { data: profile } = await admin
     .from('profiles')
-    .select('id, role, clinic_id')
+    .select('id, role')
     .eq('user_id', user.id)
     .single()
 
   if (!profile || profile.role !== 'vet_admin') redirect('/vet/dashboard')
-  if (!profile.clinic_id) redirect('/vet/dashboard')
+
+  const { data: clinicLink } = await admin
+    .from('profile_clinics')
+    .select('clinic_id')
+    .eq('user_id', user.id)
+    .in('role', ['vet_admin'])
+    .limit(1)
+    .single()
+
+  if (!clinicLink?.clinic_id) redirect('/vet/dashboard')
+  const clinicId = clinicLink.clinic_id
 
   const { data: clinic } = await admin
     .from('clinics')
     .select('id, name, slug, public_profile')
-    .eq('id', profile.clinic_id)
+    .eq('id', clinicId)
     .single()
 
   if (!clinic) redirect('/vet/dashboard')
@@ -54,8 +64,12 @@ export default async function SettingsPage({
     if (!u) redirect('/auth/login')
 
     const adm = createAdminClient()
-    const { data: p } = await adm.from('profiles').select('role, clinic_id').eq('user_id', u.id).single()
-    if (!p || p.role !== 'vet_admin' || !p.clinic_id) redirect('/vet/dashboard')
+    const { data: p } = await adm.from('profiles').select('role').eq('user_id', u.id).single()
+    if (!p || p.role !== 'vet_admin') redirect('/vet/dashboard')
+
+    const { data: cl } = await adm.from('profile_clinics').select('clinic_id').eq('user_id', u.id).in('role', ['vet_admin']).limit(1).single()
+    if (!cl?.clinic_id) redirect('/vet/dashboard')
+    const cid = cl.clinic_id
 
     const name = ((formData.get('name') as string) ?? '').trim()
     if (!name) redirect('/vet/settings?error=name')
@@ -68,11 +82,11 @@ export default async function SettingsPage({
 
     // Check slug uniqueness (excluding own clinic)
     const { data: existing } = await adm
-      .from('clinics').select('id').eq('slug', slug).neq('id', p.clinic_id).maybeSingle()
+      .from('clinics').select('id').eq('slug', slug).neq('id', cid).maybeSingle()
     if (existing) redirect('/vet/settings?error=slug_taken')
 
     const { error: updErr } = await adm
-      .from('clinics').update({ name, slug }).eq('id', p.clinic_id)
+      .from('clinics').update({ name, slug }).eq('id', cid)
     if (updErr) redirect('/vet/settings?error=save')
 
     revalidatePath('/vet', 'layout')
@@ -86,10 +100,14 @@ export default async function SettingsPage({
     if (!u) redirect('/auth/login')
 
     const adm = createAdminClient()
-    const { data: p } = await adm.from('profiles').select('role, clinic_id').eq('user_id', u.id).single()
-    if (!p || p.role !== 'vet_admin' || !p.clinic_id) redirect('/vet/dashboard')
+    const { data: p } = await adm.from('profiles').select('role').eq('user_id', u.id).single()
+    if (!p || p.role !== 'vet_admin') redirect('/vet/dashboard')
 
-    const { data: current } = await adm.from('clinics').select('public_profile').eq('id', p.clinic_id).single()
+    const { data: cl2 } = await adm.from('profile_clinics').select('clinic_id').eq('user_id', u.id).in('role', ['vet_admin']).limit(1).single()
+    if (!cl2?.clinic_id) redirect('/vet/dashboard')
+    const cid = cl2.clinic_id
+
+    const { data: current } = await adm.from('clinics').select('public_profile').eq('id', cid).single()
     const prev = (current?.public_profile ?? {}) as ClinicPublicProfile
 
     const description = ((formData.get('description') as string) ?? '').trim() || undefined
@@ -127,7 +145,7 @@ export default async function SettingsPage({
     if (speciesSelected.length === 0) delete updated.species
 
     const { error: updErr } = await adm
-      .from('clinics').update({ public_profile: updated }).eq('id', p.clinic_id)
+      .from('clinics').update({ public_profile: updated }).eq('id', cid)
     if (updErr) redirect('/vet/settings?error=save')
 
     revalidatePath('/vet', 'layout')

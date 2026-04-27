@@ -29,17 +29,20 @@ export default function NewPetPage() {
     if (!user) return
 
     const { data: profile } = await supabase.from('profiles')
-      .select('id, clinic_id').eq('user_id', user.id).single()
+      .select('id').eq('user_id', user.id).single()
 
-    if (!profile?.clinic_id) {
+    const { data: clinicLink } = await supabase.from('profile_clinics')
+      .select('clinic_id').eq('user_id', user.id).limit(1).single()
+
+    if (!clinicLink?.clinic_id) {
       setError('Tu cuenta no tiene una clínica asignada. Contacta al administrador para que te vincule a una clínica.')
       setLoading(false)
       return
     }
 
     const { data: pet, error: err } = await supabase.from('pets').insert({
-      clinic_id:  profile.clinic_id,
-      owner_id:   profile.id,
+      clinic_id:  clinicLink.clinic_id,
+      owner_id:   profile?.id,
       name:       form.name,
       species:    form.species,
       breed:      form.breed || null,
