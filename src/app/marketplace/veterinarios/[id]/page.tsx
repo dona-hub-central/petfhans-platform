@@ -22,12 +22,25 @@ export default async function VetPublicProfilePage({
 
   const { data: vet } = await admin
     .from('profiles')
-    .select('id, full_name, avatar_url, role, clinic_id, clinics(id, name, slug, verified, public_profile)')
+    .select('id, full_name, avatar_url, role, user_id')
     .eq('id', id)
     .in('role', ['vet_admin', 'veterinarian'])
     .single()
 
-  if (!vet || !vet.clinic_id) notFound()
+  if (!vet) notFound()
+
+  const { data: vetClinicLink } = await admin
+    .from('profile_clinics')
+    .select('clinic_id, clinics(id, name, slug, verified, public_profile)')
+    .eq('user_id', vet.user_id)
+    .limit(1)
+    .single()
+
+  if (!vetClinicLink?.clinic_id) notFound()
+
+  type ClinicJoin = { id: string; name: string; slug: string; verified: boolean; public_profile: ClinicPublicProfile | null }
+  const clinic = (vetClinicLink.clinics as unknown as ClinicJoin | null)
+  const clinicId = vetClinicLink.clinic_id
 
   const { data: profile } = await admin
     .from('profiles')
@@ -55,8 +68,6 @@ export default async function VetPublicProfilePage({
     }
   }
 
-  type ClinicJoin = { id: string; name: string; slug: string; verified: boolean; public_profile: ClinicPublicProfile | null }
-  const clinic = vet.clinics as unknown as ClinicJoin | null
   const isVet = profile.role === 'vet_admin' || profile.role === 'veterinarian'
 
   return (
@@ -125,7 +136,7 @@ export default async function VetPublicProfilePage({
         <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid var(--pf-border)' }}>
           {profile.role === 'pet_owner' ? (
             <CareRequestForm
-              clinicId={vet.clinic_id}
+              clinicId={clinicId}
               clinicName={clinic?.name ?? ''}
               pets={pets}
               preselectedVetId={vet.id}

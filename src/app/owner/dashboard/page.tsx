@@ -6,11 +6,16 @@ import PetAvatar from '@/components/shared/PetAvatar'
 import LogoutButton from '@/components/owner/LogoutButton'
 import { Building2, PawPrint, Calendar, Store } from 'lucide-react'
 import type { Pet, PetWithNextVisit } from '@/types'
+import { ensureProfile } from '@/lib/ensure-profile'
 
 export default async function OwnerDashboard() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
+
+  // Backfill profile if missing
+  const ensured = await ensureProfile(user)
+  if (!ensured) redirect('/auth/login')
 
   const { data: profile } = await supabase.from('profiles')
     .select('id, full_name').eq('user_id', user.id).single()

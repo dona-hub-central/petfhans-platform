@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { ensureProfile } from '@/lib/ensure-profile'
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
@@ -11,9 +12,10 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient()
 
-  const { data: profile } = await admin.from('profiles')
-    .select('id, role').eq('user_id', user.id).single()
-  if (!profile) return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 404 })
+  // Backfill profile if missing — accounts created without metadata role
+  // never had the auth trigger fire.
+  const profile = await ensureProfile(user)
+  if (!profile) return NextResponse.json({ error: 'No se pudo crear el perfil' }, { status: 500 })
   if (profile.role !== 'pet_owner') return NextResponse.json({ error: 'Solo para dueños' }, { status: 403 })
 
   let clinicId: string | null = null

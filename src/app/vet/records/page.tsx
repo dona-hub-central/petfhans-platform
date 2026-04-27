@@ -21,12 +21,15 @@ export default async function RecordsPage() {
   if (!user) redirect('/auth/login')
 
   const { data: profile } = await supabase.from('profiles')
-    .select('*').eq('user_id', user.id).single()
+    .select('id').eq('user_id', user.id).single()
 
   const admin = createAdminClient()
+  const { data: clinicLink } = await admin
+    .from('profile_clinics').select('clinic_id').eq('user_id', user.id).limit(1).single()
+
   const { data: records } = await admin.from('medical_records')
     .select('*, pets(id, name, species), profiles!medical_records_vet_id_fkey(full_name)')
-    .eq('clinic_id', profile?.clinic_id)
+    .eq('clinic_id', clinicLink?.clinic_id)
     .order('visit_date', { ascending: false })
 
   return (

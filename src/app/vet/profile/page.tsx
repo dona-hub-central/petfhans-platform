@@ -53,7 +53,14 @@ export default async function VetProfilePage({
     // Use admin client to bypass RLS on UPDATE — safe because user identity
     // is verified via auth.getUser() above and scoped to their own user_id.
     const adminSb = createAdminClient()
-    const { error: updateErr } = await adminSb.from('profiles').update({ full_name, phone: phone || null }).eq('user_id', u.id)
+    const { error: updateErr } = await adminSb.from('profiles')
+      .upsert({
+        user_id: u.id,
+        email: u.email ?? '',
+        role: (u.user_metadata?.role as string) || 'veterinarian',
+        full_name,
+        phone: phone || null,
+      }, { onConflict: 'user_id' })
     if (updateErr) redirect('/vet/profile?error=save')
     revalidatePath('/vet', 'layout')
     redirect('/vet/profile?success=profile')

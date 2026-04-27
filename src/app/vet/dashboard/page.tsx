@@ -14,29 +14,33 @@ export default async function VetDashboard() {
   if (!user) redirect('/auth/login')
 
   const { data: profile } = await supabase.from('profiles')
-    .select('*').eq('user_id', user.id).single()
+    .select('full_name').eq('user_id', user.id).single()
 
   const admin = createAdminClient()
+  const { data: clinicLink } = await admin
+    .from('profile_clinics').select('clinic_id').eq('user_id', user.id).limit(1).single()
+  const clinicId = clinicLink?.clinic_id
+
   const { count: petCount } = await admin.from('pets')
     .select('*', { count: 'exact', head: true })
-    .eq('clinic_id', profile?.clinic_id)
+    .eq('clinic_id', clinicId)
     .eq('is_active', true)
 
   const { data: recentRecords } = await admin.from('medical_records')
     .select('*, pets(name, species)')
-    .eq('clinic_id', profile?.clinic_id)
+    .eq('clinic_id', clinicId)
     .order('visit_date', { ascending: false })
     .limit(5)
 
   const sevenDaysAgo = new Date(new Date().setDate(new Date().getDate() - 7)).toISOString().split('T')[0]
   const { count: weekRecords } = await admin.from('medical_records')
     .select('*', { count: 'exact', head: true })
-    .eq('clinic_id', profile?.clinic_id)
+    .eq('clinic_id', clinicId)
     .gte('visit_date', sevenDaysAgo)
 
   const { count: invCount } = await admin.from('invitations')
     .select('*', { count: 'exact', head: true })
-    .eq('clinic_id', profile?.clinic_id)
+    .eq('clinic_id', clinicId)
     .is('used_at', null)
     .gt('expires_at', new Date().toISOString())
 
