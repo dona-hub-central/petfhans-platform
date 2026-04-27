@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import Link from 'next/link'
 import AvatarUpload from '@/components/shared/AvatarUpload'
 import LogoutButton from '@/components/shared/LogoutButton'
+import { ensureProfile } from '@/lib/ensure-profile'
 
 export const metadata = { title: 'Mi perfil · Petfhans' }
 
@@ -18,6 +19,9 @@ export default async function OwnerProfilePage({
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
+
+  // Backfill profile if missing — covers users created without metadata role
+  await ensureProfile(user)
 
   const admin = createAdminClient()
   const { data: profile } = await admin.from('profiles')

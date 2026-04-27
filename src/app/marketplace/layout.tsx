@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Store, Stethoscope } from 'lucide-react'
+import { ensureProfile } from '@/lib/ensure-profile'
 
 export const metadata = { title: 'Marketplace · Petfhans' }
 
@@ -9,6 +10,9 @@ export default async function MarketplaceLayout({ children }: { children: React.
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
+
+  // Backfill profile if the auth trigger didn't fire for this user
+  await ensureProfile(user)
 
   const backHref = '/owner/dashboard'
 
