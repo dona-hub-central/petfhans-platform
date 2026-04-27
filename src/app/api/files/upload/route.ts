@@ -11,7 +11,8 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
   const { data: profile } = await supabase.from('profiles')
-    .select('id, role, clinic_id').eq('user_id', user.id).single()
+    .select('id, role').eq('user_id', user.id).single()
+  if (!profile) return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 403 })
 
   const formData = await req.formData()
   const file      = formData.get('file') as File
@@ -23,9 +24,10 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient()
 
-  // Para dueños: verificar acceso explícito a la mascota (H-9)
-  let clinicId = profile?.clinic_id
-  if (profile?.role === 'pet_owner') {
+  // Para dueños: verificar acceso explícito y usar clinic_id de la mascota
+  // Para staff: usar la clínica activa del header
+  let clinicId: string | null | undefined
+  if (profile.role === 'pet_owner') {
     const { data: access } = await admin.from('pet_access')
       .select('pet_id')
       .eq('owner_id', profile.id)
@@ -33,9 +35,11 @@ export async function POST(req: NextRequest) {
       .single()
     if (!access) return NextResponse.json({ error: 'Sin acceso a esta mascota' }, { status: 403 })
 
-    // Obtener clinic_id de la mascota (no confiar en el del perfil para pet_owner)
     const { data: pet } = await admin.from('pets').select('clinic_id').eq('id', petId).single()
     clinicId = pet?.clinic_id
+  } else {
+    clinicId = req.headers.get('x-active-clinic-id')
+    if (!clinicId) return NextResponse.json({ error: 'Sin clínica activa' }, { status: 403 })
   }
 
   // Subir a Supabase Storage
@@ -52,7 +56,7 @@ export async function POST(req: NextRequest) {
   const { data: fileRecord, error: dbErr } = await admin.from('pet_files').insert({
     pet_id:      petId,
     clinic_id:   clinicId,
-    uploaded_by: profile!.id,
+    uploaded_by: profile.id,
     file_type:   fileType,
     file_name:   file.name,
     file_path:   uploadData.path,

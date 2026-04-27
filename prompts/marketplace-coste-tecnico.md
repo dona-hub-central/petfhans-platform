@@ -1,8 +1,8 @@
 # Documento de Riesgo Técnico — Migración Multi-Clínica + Marketplace
 
 **Fecha:** 2026-04-24  
-**Actualizado:** 2026-04-24 — números de migración Fase B desplazados +2  
-**Motivo:** `012_fix_profiles_rls.sql` (SELECT) y `013_fix_profiles_update_rls.sql` (UPDATE) fueron ejecutadas como fixes de bugs funcionales. Fase B arranca desde `014`.  
+**Actualizado:** 2026-04-25 — números de migración Fase B desplazados +3  
+**Motivo:** `012_fix_profiles_rls.sql` (SELECT), `013_fix_profiles_update_rls.sql` (UPDATE) fueron fixes de bugs. `014_marketplace_tables.sql` fue Fase C (tablas del marketplace). Fase B arranca desde `015`.  
 **Fuente:** Outputs de Etapas 1–5A  
 **Estado TypeScript:** `npx tsc --noEmit` — **sin errores**
 
@@ -31,7 +31,7 @@
 | A8 | RLS profiles UPDATE — usuario actualiza su propio perfil | `013_fix_profiles_update_rls.sql` | ✅ |
 | A9 | Middleware redirige a dominio único en lugar de subdominio | — | ✅ |
 
-**Nota:** Migraciones 011, 012 y 013 aplicadas en producción. Fase B arranca desde `014`.
+**Nota:** Migraciones 001–014 aplicadas en producción (014 = tablas marketplace Fase C). Fase B arranca desde `015`.
 
 ---
 
@@ -43,10 +43,10 @@
 
 | Paso | Acción | Archivo |
 |---|---|---|
-| B.1.1 | Crear `profile_clinics(user_id, clinic_id, role, created_at)` + índice | `014_profile_clinics.sql` |
-| B.1.2 | Crear función `get_active_clinic_id()` parametrizada | `015_rls_rewrite.sql` |
-| B.1.3 | Reescribir las 12 políticas RLS usando `profile_clinics` — **mantener `get_user_clinic_id()` activa** | `015_rls_rewrite.sql` |
-| B.1.4 | Migración de datos: poblar `profile_clinics` desde `profiles.clinic_id` (rollbackable) | `016_migrate_data.sql` |
+| B.1.1 | Crear `profile_clinics(user_id, clinic_id, role, created_at)` + índice | `015_profile_clinics.sql` |
+| B.1.2 | Crear función `get_active_clinic_id()` parametrizada | `016_rls_rewrite.sql` |
+| B.1.3 | Reescribir las 12 políticas RLS usando `profile_clinics` — **mantener `get_user_clinic_id()` activa** | `016_rls_rewrite.sql` |
+| B.1.4 | Migración de datos: poblar `profile_clinics` desde `profiles.clinic_id` (rollbackable) | `017_migrate_data.sql` |
 
 Verificar: `SELECT COUNT(*) FROM profile_clinics` = `SELECT COUNT(*) FROM profiles WHERE clinic_id IS NOT NULL`.
 
@@ -205,9 +205,9 @@ Todas las 6 URLs migradas a `petfhans.com` en producción.
 
 **Preparación de Fase B — pendientes:**
 
-- [ ] `014_profile_clinics.sql` revisada y aprobada
-- [ ] `015_rls_rewrite.sql`: 12 políticas reescritas, `get_user_clinic_id()` sigue activa
-- [ ] `016_migrate_data.sql` probada en staging
+- [ ] `015_profile_clinics.sql` revisada y aprobada
+- [ ] `016_rls_rewrite.sql`: 12 políticas reescritas, `get_user_clinic_id()` sigue activa
+- [ ] `017_migrate_data.sql` probada en staging
 - [ ] `accept-invite` path de usuario existente probado en staging
 - [ ] `owner/setup` escribe en `profile_clinics` en staging
 - [ ] Middleware cookie → header desplegado en staging sin errores

@@ -48,7 +48,7 @@ export default async function VetProfilePage({
     const adminSb = createAdminClient()
     const { error: updateErr } = await adminSb.from('profiles').update({ full_name, phone: phone || null }).eq('user_id', u.id)
     if (updateErr) redirect('/vet/profile?error=save')
-    revalidatePath('/vet/profile')
+    revalidatePath('/vet', 'layout')
     redirect('/vet/profile?success=profile')
   }
 

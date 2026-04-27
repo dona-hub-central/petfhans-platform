@@ -39,3 +39,16 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# supabase
+supabase/.temp/
+
+# claude local config (puede contener tokens MCP)
+.claude/settings.local.json
+
+# prompts generados / outputs de sesiones Claude
+prompts/outputs/
+
+# archivos de análisis temporales generados por herramientas
+*.analysis.md
+*.audit.tmp

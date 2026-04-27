@@ -5,6 +5,8 @@
 # de main cuando se hace merge desde Develop. Esto evita que archivos de
 # desarrollo, diseño o tooling de IA contaminen la rama de producción.
 #
+# export-ignore excluye el path de los paquetes git archive (deploys por zip).
+#
 # REQUISITO: cada developer y el runner de CI deben ejecutar una vez:
 #   git config --global merge.ours.driver true
 #
@@ -12,25 +14,49 @@
 #   git config merge.ours.driver true
 # ─────────────────────────────────────────────────────────────────────────────
 
-# Archivos de handoff de diseño — solo necesarios en Develop
-design_handoff_petfhans/**  merge=ours
+# ── Diseño ───────────────────────────────────────────────────────────────────
+# Handoff de diseño — solo Develop
+design_handoff_petfhans/**   merge=ours export-ignore
+frontend.md                  merge=ours export-ignore
+DESIGN_SYSTEM.md             merge=ours export-ignore
 
-# Documentos de auditoría y análisis — solo relevantes en Develop
-frontend.md                 merge=ours
+# ── Prompts y análisis de Claude Code ────────────────────────────────────────
+prompts/**                   merge=ours export-ignore
 
-# Prompts de Claude Code — específicos del workflow de Develop
-# main tiene sus propios prompts para producción
-prompts/**                  merge=ours
+# Skills de IA — guías de workflow para Claude, no van a producción
+skills-ai/**                 merge=ours export-ignore
+
+# Auditorías y análisis de bugs — workflow de Develop únicamente
+src/lib/bugs/**              merge=ours export-ignore
+
+# ── Tooling de desarrollo ─────────────────────────────────────────────────────
+# Configuración MCP y settings de Claude Code
+.mcp.json                    merge=ours export-ignore
+.claude/**                   merge=ours export-ignore
+
+# Scripts de utilidad (superadmin, seeders) — no para producción
+scripts/**                   merge=ours export-ignore
+
+# Configuración PM2 — difiere por entorno
+ecosystem.config.js          merge=ours export-ignore
+
+# ── Documentación de desarrollo ───────────────────────────────────────────────
+METRICS.md                   merge=ours export-ignore
+AGENTS.md                    merge=ours export-ignore
+
+# ── Migraciones SQL ───────────────────────────────────────────────────────────
+# Las migraciones se revisan y aplican manualmente por entorno.
+# merge=ours evita que nuevas migraciones de Develop sobreescriban main
+# sin una revisión explícita del PR. Aplicar con: supabase db push
+supabase/migrations/**       merge=ours export-ignore
 
 # Configuración de MCP — contiene referencias a proyectos, no va a producción
 .mcp.json                   merge=ours
 
 # ─────────────────────────────────────────────────────────────────────────────
-# NOTA sobre skills-ai/ y CLAUDE.md
-# ─────────────────────────────────────────────────────────────────────────────
-# Estos NO están marcados como merge=ours porque sí deben fluir de Develop
-# a main, pero requieren revisión manual en el PR para decidir qué cambios
-# aplican a producción. Ver sección "Flujo Develop → main" en CLAUDE.md.
+# NOTA: CLAUDE.md y PRODUCT.md NO están marcados como merge=ours porque
+# sí deben fluir de Develop a main — son documentación de producto y reglas
+# de trabajo que aplican en ambas ramas.
 # ─────────────────────────────────────────────────────────────────────────────
 
 # ─────────────────────────────────────────────────────────────────────────────

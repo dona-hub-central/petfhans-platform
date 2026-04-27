@@ -12,22 +12,26 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient()
 
+  const activeClinicId = req.headers.get('x-active-clinic-id')
+  if (!activeClinicId) return NextResponse.json({ error: 'Sin clínica activa' }, { status: 403 })
+
   const [{ data: profile }, { data: pet }, { data: vet }] = await Promise.all([
-    supabase.from('profiles').select('id, clinic_id, full_name').eq('user_id', user.id).single(),
+    supabase.from('profiles').select('id, full_name').eq('user_id', user.id).single(),
     admin.from('pets').select('name, species, clinic_id, clinics(name, slug)').eq('id', pet_id).single(),
     admin.from('profiles').select('id, clinic_id, full_name, role').eq('id', vet_id).single(),
   ])
 
-  if (!pet)  return NextResponse.json({ error: 'Mascota no encontrada' }, { status: 404 })
-  if (!vet)  return NextResponse.json({ error: 'Veterinario no encontrado' }, { status: 404 })
+  if (!profile) return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 403 })
+  if (!pet)     return NextResponse.json({ error: 'Mascota no encontrada' }, { status: 404 })
+  if (!vet)     return NextResponse.json({ error: 'Veterinario no encontrado' }, { status: 404 })
 
   // Security: vet must belong to the same clinic as the pet
   if (vet.clinic_id !== pet.clinic_id) {
     return NextResponse.json({ error: 'El veterinario no pertenece a esta clínica' }, { status: 403 })
   }
 
-  // Owner's pet must belong to the same clinic
-  if (profile?.clinic_id !== pet.clinic_id) {
+  // Active clinic must match the pet's clinic
+  if (pet.clinic_id !== activeClinicId) {
     return NextResponse.json({ error: 'No autorizado para esta clínica' }, { status: 403 })
   }
 
@@ -38,7 +42,7 @@ export async function POST(req: NextRequest) {
   const { data: appt, error } = await admin.from('appointments').insert({
     clinic_id:        pet.clinic_id,
     pet_id,
-    owner_id:         profile!.id,
+    owner_id:         profile.id,
     vet_id:           vet.id,
     appointment_date: date,
     appointment_time: time,
