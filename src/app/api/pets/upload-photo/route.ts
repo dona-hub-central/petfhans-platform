@@ -35,14 +35,16 @@ export async function POST(req: NextRequest) {
 
   // A3: para vets verificar que la mascota pertenece a su clínica
   if (['vet_admin', 'veterinarian'].includes(profile.role)) {
-    if (!profile.clinic_id) {
+    const { data: vetClinicLink } = await admin
+      .from('profile_clinics').select('clinic_id').eq('user_id', user.id).limit(1).single()
+    if (!vetClinicLink?.clinic_id) {
       return NextResponse.json({ error: 'Sin clínica asignada' }, { status: 403 })
     }
     const { data: vetPet } = await admin.from('pets')
       .select('clinic_id')
       .eq('id', petId)
       .single()
-    if (!vetPet || vetPet.clinic_id !== profile.clinic_id) {
+    if (!vetPet || vetPet.clinic_id !== vetClinicLink.clinic_id) {
       return NextResponse.json({ error: 'Mascota no encontrada' }, { status: 404 })
     }
   }

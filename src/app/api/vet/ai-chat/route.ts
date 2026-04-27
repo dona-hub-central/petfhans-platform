@@ -11,13 +11,14 @@ async function handler(req: NextRequest): Promise<NextResponse> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-  // C-4: obtener clinic_id del perfil antes de cualquier query de datos
-  const { data: profile } = await supabase.from('profiles')
-    .select('clinic_id').eq('user_id', user.id).single()
-  if (!profile?.clinic_id) return NextResponse.json({ error: 'Sin clínica asignada' }, { status: 403 })
-
   const { message, pet_id, history = [] } = await req.json()
   const admin = createAdminClient()
+
+  // C-4: obtener clinic_id desde profile_clinics (profile.clinic_id es null post-migración)
+  const { data: clinicLink } = await admin
+    .from('profile_clinics').select('clinic_id').eq('user_id', user.id).limit(1).single()
+  if (!clinicLink?.clinic_id) return NextResponse.json({ error: 'Sin clínica asignada' }, { status: 403 })
+  const clinicId = clinicLink.clinic_id
 
   const { data: agent } = await admin.from('ai_agent').select('*').eq('id', 'default').single()
   if (!agent?.openai_api_key) {
@@ -33,7 +34,7 @@ async function handler(req: NextRequest): Promise<NextResponse> {
     const { data: pet } = await admin.from('pets')
       .select('*, profiles!pets_owner_id_fkey(full_name)')
       .eq('id', pet_id)
-      .eq('clinic_id', profile.clinic_id)
+      .eq('clinic_id', clinicId)
       .single()
 
     if (!pet) return NextResponse.json({ error: 'Mascota no encontrada' }, { status: 404 })
