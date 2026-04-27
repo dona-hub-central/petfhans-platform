@@ -11,11 +11,18 @@ export default async function OwnerPetPage({ params }: { params: Promise<{ id: s
   if (!user) redirect('/auth/login')
 
   const { data: profile } = await supabase.from('profiles')
-    .select('*, clinics(name, slug)').eq('user_id', user.id).single()
+    .select('id').eq('user_id', user.id).single()
 
   if (!profile) redirect('/auth/login')
 
   const admin = createAdminClient()
+
+  const { data: clinicLink } = await admin
+    .from('profile_clinics')
+    .select('clinics(name, slug)')
+    .eq('user_id', user.id)
+    .limit(1)
+    .single()
 
   // Verify this owner has explicit access to the pet via pet_access
   const { data: access } = await admin.from('pet_access')
@@ -50,8 +57,8 @@ export default async function OwnerPetPage({ params }: { params: Promise<{ id: s
     return { ...f, publicUrl: data?.signedUrl || '' }
   }))
 
-  type ProfileRow = { clinics: { name: string; slug: string } | null }
-  const clinicName = (profile as ProfileRow | null)?.clinics?.name ?? ''
+  type ClinicRow = { name: string; slug: string }
+  const clinicName = (clinicLink?.clinics as unknown as ClinicRow | null)?.name ?? ''
 
   return (
     <OwnerPetView
