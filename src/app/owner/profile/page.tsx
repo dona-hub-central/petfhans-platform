@@ -21,11 +21,18 @@ export default async function OwnerProfilePage({
 
   const admin = createAdminClient()
   const { data: profile } = await admin.from('profiles')
-    .select('full_name, phone, avatar_url, clinics(name)')
+    .select('full_name, phone, avatar_url')
     .eq('user_id', user.id).single()
 
-  type ProfileRow = { full_name: string | null; phone: string | null; avatar_url: string | null; clinics: { name: string } | null }
-  const clinicName = (profile as ProfileRow | null)?.clinics?.name
+  const { data: clinicLink } = await admin
+    .from('profile_clinics')
+    .select('clinics(name)')
+    .eq('user_id', user.id)
+    .limit(1)
+    .single()
+
+  type ClinicRow = { name: string }
+  const clinicName = (clinicLink?.clinics as unknown as ClinicRow | null)?.name
 
   async function saveProfile(formData: FormData) {
     'use server'
