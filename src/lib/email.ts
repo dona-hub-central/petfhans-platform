@@ -1,6 +1,7 @@
 import { Resend } from 'resend'
 
 const FROM = process.env.EMAIL_FROM ?? 'Petfhans <onboarding@resend.dev>'
+const SUPPORT_TO = process.env.SUPPORT_EMAIL ?? 'soporte@petfhans.com'
 
 function resend() {
   return new Resend(process.env.RESEND_API_KEY)
@@ -174,6 +175,119 @@ export async function sendOtpEmail({
 // =============================================
 // Email: Bienvenida (invitación aceptada)
 // =============================================
+// =============================================
+// Email: Notificación a soporte de nueva solicitud
+// =============================================
+export async function sendSupportRequestEmail({
+  type,
+  subject,
+  message,
+  fromName,
+  fromEmail,
+  contactPhone,
+  clinicName,
+}: {
+  type: 'clinic_creation' | 'general'
+  subject: string
+  message: string
+  fromName: string
+  fromEmail: string
+  contactPhone?: string
+  clinicName?: string
+}) {
+  const typeLabel = type === 'clinic_creation'
+    ? 'Solicitud de creación de clínica + vet_admin'
+    : 'Consulta general'
+
+  const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;background:#f7f6f4;font-family:Arial,sans-serif;padding:40px 20px;">
+  <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:16px;border:1px solid #ebebeb;padding:32px;">
+    <h1 style="font-size:18px;color:#1a1a1a;margin:0 0 4px;">Nueva solicitud de soporte</h1>
+    <p style="font-size:13px;color:#888;margin:0 0 20px;">${typeLabel}</p>
+
+    <div style="background:#fff0ef;border-radius:12px;padding:16px 18px;margin-bottom:20px;">
+      <p style="margin:0;font-size:13px;color:#666;">De</p>
+      <p style="margin:2px 0 0;font-size:15px;color:#1a1a1a;font-weight:600;">${fromName}</p>
+      <p style="margin:2px 0 0;font-size:13px;color:#666;">${fromEmail}${contactPhone ? ` · ${contactPhone}` : ''}</p>
+      ${clinicName ? `<p style="margin:8px 0 0;font-size:13px;color:#666;">Clínica propuesta: <strong>${clinicName}</strong></p>` : ''}
+    </div>
+
+    <p style="font-size:13px;color:#888;margin:0 0 4px;">Asunto</p>
+    <p style="font-size:15px;color:#1a1a1a;font-weight:600;margin:0 0 16px;">${subject}</p>
+
+    <p style="font-size:13px;color:#888;margin:0 0 4px;">Mensaje</p>
+    <p style="font-size:14px;color:#333;line-height:1.6;margin:0;white-space:pre-wrap;">${message}</p>
+
+    <hr style="border:none;border-top:1px solid #ebebeb;margin:24px 0;">
+    <p style="font-size:12px;color:#aaa;margin:0;">Revisa esta solicitud en el panel de admin.</p>
+  </div>
+</body>
+</html>`
+
+  return resend().emails.send({
+    from: FROM,
+    to: SUPPORT_TO,
+    replyTo: fromEmail,
+    subject: `[Soporte] ${typeLabel}: ${subject}`,
+    html,
+  })
+}
+
+// =============================================
+// Email: Confirmación al usuario que envió la solicitud
+// =============================================
+export async function sendSupportRequestConfirmationEmail({
+  to,
+  name,
+  type,
+}: {
+  to: string
+  name: string
+  type: 'clinic_creation' | 'general'
+}) {
+  const firstName = name ? name.split(' ')[0] : 'Hola'
+  const isClinic = type === 'clinic_creation'
+
+  const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;background:#f7f6f4;font-family:Arial,sans-serif;padding:40px 20px;">
+  <div style="max-width:480px;margin:0 auto;background:#fff;border-radius:16px;border:1px solid #ebebeb;padding:36px;">
+    <div style="text-align:center;margin-bottom:24px;">
+      <span style="font-size:36px;">📨</span>
+      <p style="font-size:16px;font-weight:700;color:#1a1a1a;margin:8px 0 0;">Petfhans</p>
+    </div>
+
+    <h1 style="font-size:20px;color:#1a1a1a;margin:0 0 12px;">¡Hola, ${firstName}!</h1>
+    <p style="font-size:15px;color:#555;line-height:1.6;margin:0 0 16px;">
+      Recibimos tu solicitud de ${isClinic ? '<strong>creación de clínica y asignación como administrador veterinario</strong>' : 'soporte'}.
+    </p>
+    ${isClinic ? `
+    <p style="font-size:15px;color:#555;line-height:1.6;margin:0 0 16px;">
+      Para proteger a los dueños y mascotas, nuestro equipo verifica cada clínica y veterinario antes de activar la cuenta. Te contactaremos por email en las próximas 48 horas para validar la documentación.
+    </p>` : `
+    <p style="font-size:15px;color:#555;line-height:1.6;margin:0 0 16px;">
+      Te responderemos lo antes posible al email asociado a tu cuenta.
+    </p>`}
+    <p style="font-size:13px;color:#888;margin:16px 0 0;">Gracias por confiar en Petfhans.</p>
+  </div>
+</body>
+</html>`
+
+  return resend().emails.send({
+    from: FROM,
+    to,
+    subject: isClinic
+      ? 'Recibimos tu solicitud de verificación de clínica'
+      : 'Recibimos tu consulta de soporte',
+    html,
+  })
+}
+
 export async function sendWelcomeEmail({
   to,
   name,

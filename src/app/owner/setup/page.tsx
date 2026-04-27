@@ -65,7 +65,7 @@ export default function OwnerSetupPage() {
 
         <div className="bg-white rounded-2xl shadow-sm border p-8" style={{ borderColor: 'var(--pf-border)' }}>
 
-          {/* STEP 1: Clínica (primero) */}
+          {/* STEP 1: Clínica (opcional) */}
           {step === 'clinic' && (
             <>
               <div className="text-center mb-6">
@@ -75,7 +75,7 @@ export default function OwnerSetupPage() {
                 </div>
                 <h1 className="text-xl font-bold" style={{ color: 'var(--pf-ink)' }}>Conecta tu clínica</h1>
                 <p className="text-sm mt-1" style={{ color: 'var(--pf-muted)' }}>
-                  Necesitas un código de clínica para registrar mascotas
+                  Opcional — puedes vincular una clínica más tarde
                 </p>
               </div>
 
@@ -94,24 +94,16 @@ export default function OwnerSetupPage() {
                 </div>
 
                 <button
-                  onClick={() => {
-                    if (clinicSlug.trim()) {
-                      setError(''); setStep('pet')
-                    } else {
-                      finish(false)
-                    }
-                  }}
+                  onClick={() => { setError(''); setStep('pet') }}
                   disabled={loading}
                   className="btn-pf w-full py-3 text-sm flex items-center justify-center gap-2">
-                  {loading ? 'Guardando...' : clinicSlug.trim() ? (
-                    <><span>Continuar</span><ChevronRight size={16} strokeWidth={2} /></>
-                  ) : 'Entrar sin clínica'}
+                  <span>Continuar</span><ChevronRight size={16} strokeWidth={2} />
                 </button>
               </div>
             </>
           )}
 
-          {/* STEP 2: Mascota (solo si hay clínica) */}
+          {/* STEP 2: Mascota (siempre visible, clínica es opcional) */}
           {step === 'pet' && (
             <>
               <div className="text-center mb-6">

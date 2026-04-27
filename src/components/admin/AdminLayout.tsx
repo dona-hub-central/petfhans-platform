@@ -4,11 +4,12 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { BarChart2, Building2, CreditCard, Sparkles, Layers, User, Zap, Menu, X } from 'lucide-react'
+import { BarChart2, Building2, CreditCard, Sparkles, Layers, User, Zap, Menu, X, LifeBuoy } from 'lucide-react'
 
 const nav = [
   { href: '/admin',               Icon: BarChart2,  label: 'Dashboard',      exact: true },
   { href: '/admin/clinics',       Icon: Building2,  label: 'Clínicas',       exact: false },
+  { href: '/admin/support',       Icon: LifeBuoy,   label: 'Soporte',        exact: false },
   { href: '/admin/subscriptions', Icon: CreditCard, label: 'Suscripciones',  exact: false },
   { href: '/admin/agent',         Icon: Sparkles,   label: 'Agente IA',      exact: false, tint: 'purple' as const },
   { href: '/admin/tiers',         Icon: Layers,     label: 'Tarifas',        exact: false },

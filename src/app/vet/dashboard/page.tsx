@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 
-import { PawPrint, ClipboardCheck, Mail, Plus, ClipboardList, Sparkles, type LucideIcon } from 'lucide-react'
+import { PawPrint, ClipboardCheck, Mail, Plus, ClipboardList, Sparkles, Building2, LifeBuoy, type LucideIcon } from 'lucide-react'
 import type { RecordListItem } from '@/types'
 
 export const metadata = { title: 'Dashboard · Petfhans', description: 'Panel de gestión de tu clínica veterinaria.' }
@@ -20,6 +20,48 @@ export default async function VetDashboard() {
   const { data: clinicLink } = await admin
     .from('profile_clinics').select('clinic_id').eq('user_id', user.id).limit(1).single()
   const clinicId = clinicLink?.clinic_id
+
+  const firstName = (profile?.full_name ?? '').split(' ')[0]
+
+  // Vet without a clinic association — guide them to support instead of
+  // rendering broken empty stats.
+  if (!clinicId) {
+    return (
+      <div style={{ maxWidth: 560, margin: '40px auto' }}>
+        <header style={{ marginBottom: 28 }}>
+          <h1 style={{ font: 'var(--pf-text-display)', margin: 0, color: 'var(--pf-ink)' }}>
+            Hola, {firstName}
+          </h1>
+          <p style={{ font: 'var(--pf-text-body)', color: 'var(--pf-muted)', margin: '6px 0 0' }}>
+            Tu cuenta aún no está vinculada a ninguna clínica
+          </p>
+        </header>
+
+        <div style={{ background: 'var(--pf-white)', border: '0.5px solid var(--pf-border)', borderRadius: 16, padding: 28, textAlign: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12, color: 'var(--pf-coral)' }}>
+            <Building2 size={42} strokeWidth={1.5} />
+          </div>
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--pf-ink)', margin: '0 0 6px', fontFamily: 'var(--pf-font-display)' }}>
+            Sin clínica vinculada
+          </h2>
+          <p style={{ fontSize: 14, color: 'var(--pf-muted)', margin: '0 0 20px', lineHeight: 1.6 }}>
+            Para acceder a citas, pacientes, consultas y todas las herramientas
+            clínicas necesitas estar vinculado a una clínica verificada.
+          </p>
+          <Link href="/vet/support"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              padding: '10px 20px', borderRadius: 10,
+              background: 'var(--pf-coral)', color: '#fff',
+              textDecoration: 'none', fontSize: 14, fontWeight: 600,
+            }}>
+            <LifeBuoy size={15} strokeWidth={2} />
+            Solicitar verificación
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   const { count: petCount } = await admin.from('pets')
     .select('*', { count: 'exact', head: true })
@@ -44,7 +86,6 @@ export default async function VetDashboard() {
     .is('used_at', null)
     .gt('expires_at', new Date().toISOString())
 
-  const firstName = (profile?.full_name ?? '').split(' ')[0]
   const today = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
 
   return (
