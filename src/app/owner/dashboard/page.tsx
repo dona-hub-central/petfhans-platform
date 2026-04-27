@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import PetAvatar from '@/components/shared/PetAvatar'
 import LogoutButton from '@/components/owner/LogoutButton'
-import { Building2, PawPrint, Calendar, Store } from 'lucide-react'
+import { Building2, PawPrint, Calendar, Store, Plus } from 'lucide-react'
 import type { Pet, PetWithNextVisit } from '@/types'
 import { ensureProfile } from '@/lib/ensure-profile'
 
@@ -138,7 +138,19 @@ export default async function OwnerDashboard() {
             Buscar clínicas
           </Link>
 
-          <p className="section-title">Mis mascotas</p>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }}>
+            <p className="section-title" style={{ margin:0 }}>Mis mascotas</p>
+            <Link href="/owner/pets/new"
+              style={{
+                display:'inline-flex', alignItems:'center', gap:5,
+                padding:'7px 14px', borderRadius:10,
+                background:'var(--pf-coral)', color:'#fff',
+                textDecoration:'none', fontSize:13, fontWeight:600,
+              }}>
+              <Plus size={14} strokeWidth={2.5} />
+              Añadir
+            </Link>
+          </div>
 
           {petsWithInfo.length === 0 ? (
             <div className="empty-pets">
@@ -146,7 +158,17 @@ export default async function OwnerDashboard() {
                 <PawPrint size={44} strokeWidth={1.5} />
               </div>
               <p style={{ fontSize:17, fontWeight:700, color:'var(--pf-ink)', margin:'0 0 4px', fontFamily:'var(--pf-font-display)' }}>Sin mascotas aún</p>
-              <p style={{ fontSize:14, color:'var(--pf-muted)', margin:0, fontFamily:'var(--pf-font-body)' }}>Tu clínica te asignará una pronto</p>
+              <p style={{ fontSize:14, color:'var(--pf-muted)', margin:'0 0 16px', fontFamily:'var(--pf-font-body)' }}>Registra a tu compañero para comenzar</p>
+              <Link href="/owner/pets/new"
+                style={{
+                  display:'inline-flex', alignItems:'center', gap:6,
+                  padding:'10px 20px', borderRadius:10,
+                  background:'var(--pf-coral)', color:'#fff',
+                  textDecoration:'none', fontSize:14, fontWeight:600,
+                }}>
+                <Plus size={15} strokeWidth={2.5} />
+                Añadir mascota
+              </Link>
             </div>
           ) : (
             <div className="dash-grid">
