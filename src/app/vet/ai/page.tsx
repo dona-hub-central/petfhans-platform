@@ -21,10 +21,10 @@ export default function AIPage() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
-      const { data: profile } = await supabase.from('profiles')
-        .select('clinic_id').eq('user_id', user.id).single()
+      const { data: cl } = await supabase.from('profile_clinics')
+        .select('clinic_id').eq('user_id', user.id).limit(1).single()
       const { data } = await supabase.from('pets').select('id, name, species, breed')
-        .eq('clinic_id', profile?.clinic_id).eq('is_active', true).order('name')
+        .eq('clinic_id', cl?.clinic_id).eq('is_active', true).order('name')
       setPets(data ?? [])
     }
     load()

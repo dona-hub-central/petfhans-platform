@@ -17,14 +17,20 @@ export default async function TeamPage() {
   if (!user) redirect('/auth/login')
 
   const { data: profile } = await supabase.from('profiles')
-    .select('*').eq('user_id', user.id).single()
+    .select('id').eq('user_id', user.id).single()
 
   const admin = createAdminClient()
-  const { data: team } = await admin.from('profiles')
-    .select('*')
-    .eq('clinic_id', profile?.clinic_id)
-    .in('role', ['vet_admin', 'veterinarian'])
-    .order('created_at')
+  const { data: clinicLink } = await admin
+    .from('profile_clinics').select('clinic_id').eq('user_id', user.id).limit(1).single()
+  const clinicId = clinicLink?.clinic_id
+
+  const { data: memberLinks } = clinicId
+    ? await admin.from('profile_clinics').select('user_id').eq('clinic_id', clinicId).in('role', ['vet_admin', 'veterinarian'])
+    : { data: [] }
+  const memberUserIds = (memberLinks ?? []).map((m: { user_id: string }) => m.user_id)
+  const { data: team } = memberUserIds.length > 0
+    ? await admin.from('profiles').select('*').in('user_id', memberUserIds).order('created_at')
+    : { data: [] }
 
   return (
     <>
