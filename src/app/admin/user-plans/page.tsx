@@ -8,10 +8,11 @@ export default async function UserPlansPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
-  const { data: profile } = await supabase.from('profiles').select('*').eq('user_id', user.id).single()
-  if (profile?.role !== 'superadmin') redirect('/auth/login')
 
   const admin = createAdminClient()
+  const { data: profile } = await admin.from('profiles').select('role, full_name').eq('user_id', user.id).single()
+  if (profile?.role !== 'superadmin') redirect('/auth/login')
+
   const { data: plans } = await admin.from('user_plans').select('*').order('sort_order').order('price_per_seat')
 
   return (
