@@ -10,12 +10,11 @@ export default async function OwnerPetPage({ params }: { params: Promise<{ id: s
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: profile } = await supabase.from('profiles')
+  const admin = createAdminClient()
+  const { data: profile } = await admin.from('profiles')
     .select('id').eq('user_id', user.id).single()
 
   if (!profile) redirect('/auth/login')
-
-  const admin = createAdminClient()
 
   const { data: clinicLink } = await admin
     .from('profile_clinics')

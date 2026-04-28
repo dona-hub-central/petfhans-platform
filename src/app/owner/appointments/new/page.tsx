@@ -16,11 +16,10 @@ export default async function NewAppointmentPicker() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: profile } = await supabase.from('profiles')
+  const admin = createAdminClient()
+  const { data: profile } = await admin.from('profiles')
     .select('id').eq('user_id', user.id).single()
   if (!profile) redirect('/auth/login')
-
-  const admin = createAdminClient()
   const { data: access } = await admin.from('pet_access')
     .select('pet_id').eq('owner_id', profile.id)
   const petIds = (access ?? []).map(a => a.pet_id)

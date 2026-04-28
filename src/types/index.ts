@@ -10,6 +10,7 @@ export interface Clinic {
   max_patients: number
   stripe_customer_id?: string | null
   stripe_subscription_id?: string | null
+  verified: boolean
   created_at: string
 }
 
