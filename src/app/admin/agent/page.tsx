@@ -9,10 +9,11 @@ export default async function AgentPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
-  const { data: profile } = await supabase.from('profiles').select('*').eq('user_id', user.id).single()
-  if (profile?.role !== 'superadmin') redirect('/auth/login')
 
   const admin = createAdminClient()
+  const { data: profile } = await admin.from('profiles').select('role, full_name').eq('user_id', user.id).single()
+  if (profile?.role !== 'superadmin') redirect('/auth/login')
+
   const { data: agent } = await admin.from('ai_agent').select('*').eq('id', 'default').single()
 
   // Stats para el agente

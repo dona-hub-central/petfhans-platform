@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import AdminLayout from '@/components/admin/AdminLayout'
 import StripeConfig from './StripeConfig'
@@ -9,7 +10,8 @@ export default async function StripePage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: profile } = await supabase.from('profiles').select('*').eq('user_id', user.id).single()
+  const admin = createAdminClient()
+  const { data: profile } = await admin.from('profiles').select('role, full_name').eq('user_id', user.id).single()
   if (profile?.role !== 'superadmin') redirect('/auth/login')
 
   const hasSecretKey  = !!process.env.STRIPE_SECRET_KEY
