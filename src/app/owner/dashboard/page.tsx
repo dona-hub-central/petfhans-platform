@@ -17,12 +17,11 @@ export default async function OwnerDashboard() {
   const ensured = await ensureProfile(user)
   if (!ensured) redirect('/auth/login')
 
-  const { data: profile } = await supabase.from('profiles')
+  const admin = createAdminClient()
+  const { data: profile } = await admin.from('profiles')
     .select('id, full_name').eq('user_id', user.id).single()
 
   if (!profile) redirect('/auth/login')
-
-  const admin = createAdminClient()
 
   const { data: clinicLink } = await admin
     .from('profile_clinics')

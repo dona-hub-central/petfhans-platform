@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import OwnerBottomNav from '@/components/owner/OwnerBottomNav'
 
@@ -7,8 +8,10 @@ export default async function OwnerLayout({ children }: { children: React.ReactN
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  // Block non-owner roles from the owner segment.
-  const { data: profile } = await supabase.from('profiles')
+  // Block non-owner roles from the owner segment. Admin client bypasses RLS to
+  // avoid edge cases where the user-scoped read returns null.
+  const admin = createAdminClient()
+  const { data: profile } = await admin.from('profiles')
     .select('role').eq('user_id', user.id).single()
   if (profile?.role === 'superadmin') redirect('/admin')
   if (['vet_admin', 'veterinarian'].includes(profile?.role ?? '')) redirect('/vet/dashboard')

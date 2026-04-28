@@ -20,10 +20,9 @@ export default async function ClinicDetailPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: profile } = await supabase.from('profiles').select('role').eq('user_id', user.id).single()
-  if (profile?.role !== 'superadmin') redirect('/auth/login')
-
   const admin = createAdminClient()
+  const { data: profile } = await admin.from('profiles').select('role, full_name').eq('user_id', user.id).single()
+  if (profile?.role !== 'superadmin') redirect('/auth/login')
 
   const { data: clinic } = await admin
     .from('clinics')
@@ -43,12 +42,8 @@ export default async function ClinicDetailPage({
     admin.from('medical_records').select('*', { count: 'exact', head: true }).eq('clinic_id', id),
   ])
 
-  const supabaseUser = await createClient()
-  const { data: { user: authUser } } = await supabaseUser.auth.getUser()
-  const { data: authProfile } = await supabaseUser.from('profiles').select('full_name').eq('user_id', authUser!.id).single()
-
   return (
-    <AdminLayout userName={authProfile?.full_name ?? 'Admin'}>
+    <AdminLayout userName={profile?.full_name ?? 'Admin'}>
     <div>
       <div className="adm-pg" style={{ paddingBottom: 8, paddingTop: 24 }}>
         <div className="flex items-center gap-2">
