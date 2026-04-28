@@ -43,13 +43,17 @@ export default async function MarketplaceClinicsPage({
       .from('pet_access')
       .select('clinic_id')
       .eq('owner_id', profile.id)
-    access?.forEach(a => { if (!linkedIds.includes(a.clinic_id)) linkedIds.push(a.clinic_id) })
+    access?.forEach(a => {
+      if (a.clinic_id && !linkedIds.includes(a.clinic_id)) linkedIds.push(a.clinic_id)
+    })
   } else {
     const { data: links } = await admin
       .from('profile_clinics')
       .select('clinic_id')
       .eq('user_id', user.id)
-    links?.forEach((l: { clinic_id: string }) => { if (!linkedIds.includes(l.clinic_id)) linkedIds.push(l.clinic_id) })
+    links?.forEach((l: { clinic_id: string | null }) => {
+      if (l.clinic_id && !linkedIds.includes(l.clinic_id)) linkedIds.push(l.clinic_id)
+    })
   }
 
   const excludeIds = [...new Set([...blockedIds, ...linkedIds])]

@@ -15,6 +15,10 @@ export default async function VetSegmentLayout({ children }: { children: React.R
     .eq('user_id', user.id)
     .single()
 
+  // Block non-vet roles from the vet segment.
+  if (profile?.role === 'superadmin') redirect('/admin')
+  if (!['vet_admin', 'veterinarian'].includes(profile?.role ?? '')) redirect('/owner/dashboard')
+
   const { data: clinicLink } = await admin
     .from('profile_clinics')
     .select('clinics(name)')

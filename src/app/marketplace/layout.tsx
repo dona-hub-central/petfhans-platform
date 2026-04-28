@@ -14,13 +14,14 @@ export default async function MarketplaceLayout({ children }: { children: React.
   // Backfill profile if the auth trigger didn't fire for this user
   await ensureProfile(user)
 
-  // Back link target depends on the user's role: vets go back to /vet/dashboard,
-  // pet owners (and anyone else) go back to /owner/dashboard.
+  // Back link target depends on the user's role.
   const { data: profile } = await supabase.from('profiles')
     .select('role').eq('user_id', user.id).single()
-  const backHref = ['vet_admin', 'veterinarian'].includes(profile?.role ?? '')
-    ? '/vet/dashboard'
-    : '/owner/dashboard'
+  const role = profile?.role ?? ''
+  const backHref =
+    role === 'superadmin' ? '/admin' :
+    ['vet_admin', 'veterinarian'].includes(role) ? '/vet/dashboard' :
+    '/owner/dashboard'
 
   return (
     <div style={{ minHeight: '100svh', background: 'var(--pf-bg)', fontFamily: 'var(--pf-font-body)' }}>
