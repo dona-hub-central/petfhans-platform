@@ -26,6 +26,7 @@ export default async function RecordsPage() {
   const admin = createAdminClient()
   const { data: clinicLink } = await admin
     .from('profile_clinics').select('clinic_id').eq('user_id', user.id).limit(1).single()
+  if (!clinicLink?.clinic_id) redirect('/vet/dashboard')
 
   const { data: records } = await admin.from('medical_records')
     .select('*, pets(id, name, species), profiles!medical_records_vet_id_fkey(full_name)')

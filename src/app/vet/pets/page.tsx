@@ -22,6 +22,7 @@ export default async function PetsPage() {
   const { data: clinicLink } = await admin
     .from('profile_clinics').select('clinic_id').eq('user_id', user.id).limit(1).single()
   const clinicId = clinicLink?.clinic_id
+  if (!clinicId) redirect('/vet/dashboard')
 
   const [
     { data: pets },
