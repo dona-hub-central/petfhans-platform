@@ -13,21 +13,23 @@ skills-ai/api-and-interface-design/SKILL.md
 
 ## Mapa definitivo de URLs
 
-| URL actual | URL nueva | Contenido | Nav label |
-|------------|-----------|-----------|-----------|
-| `/owner/perfil` | `/owner/dashboard` | Dashboard con widgets (Hola Wilmer) | Inicio |
-| `/owner/profile` | `/owner/settings` | Cuenta (nombre, email, tel) + Seguridad | Perfil |
+| URL actual | URL nueva | Contenido | En nav |
+|------------|-----------|-----------|--------|
+| `/owner/perfil` | `/owner/dashboard` | Dashboard con widgets (Hola Wilmer) | "Perfil" |
+| `/owner/profile` | `/owner/settings` | Cuenta (nombre, email, tel) + Seguridad | No (link interno) |
 | `/owner/inicio` | **LIBRE** | Futura landing page — NO TOCAR | — |
 | `/owner/home` | **LIBRE** | Futura landing page — NO TOCAR | — |
 
-Nav después de los cambios:
+Nav después de los cambios — **3 items, sin Inicio, sin Mensajes**:
 ```
-Inicio      → /owner/dashboard   (dashboard con widgets)
 Marketplace → /marketplace/clinicas
 Mis citas   → /owner/appointments
-Perfil      → /owner/settings    (cuenta y seguridad)
+Perfil      → /owner/dashboard    ← el dashboard con widgets
 ```
-Sin "Mensajes" en nav — ya está en el widget de Acciones Rápidas.
+
+`/owner/settings` NO es un nav item — se accede desde un link dentro
+del propio dashboard (por ejemplo un icono de ajustes o un enlace
+"Configuración de cuenta" en el widget de saludo).
 
 ---
 
@@ -44,7 +46,7 @@ Lee `src/app/owner/perfil/page.tsx` primero, luego sobreescribe
 
 Actualiza el metadata:
 ```typescript
-export const metadata = { title: 'Inicio · Petfhans' }
+export const metadata = { title: 'Mi perfil · Petfhans' }
 ```
 
 ### 1B — Convertir `/owner/perfil` en redirect de compatibilidad
@@ -113,6 +115,27 @@ grep -rn "owner/profile" src/ --include="*.ts" --include="*.tsx"
 Reemplaza `/owner/profile` por `/owner/settings` en cada resultado,
 EXCEPTO en `src/app/owner/profile/page.tsx` (ya es redirect).
 
+### 2D — Añadir link a settings desde el dashboard
+
+En `src/app/owner/dashboard/page.tsx` o en el componente
+`src/components/owner/dashboard/GreetingHeader.tsx`, añade un link
+discreto a `/owner/settings` para que el usuario pueda llegar a sus
+datos de cuenta. Puede ser un icono de engranaje (Settings de lucide)
+en la esquina superior derecha del saludo:
+
+```tsx
+import { Settings } from 'lucide-react'
+import Link from 'next/link'
+
+// Dentro del GreetingHeader, a la derecha del saludo:
+<Link href="/owner/settings" style={{
+  display: 'inline-flex', alignItems: 'center',
+  color: 'var(--pf-muted)', textDecoration: 'none',
+}} aria-label="Configuración de cuenta">
+  <Settings size={18} strokeWidth={1.75} />
+</Link>
+```
+
 ```bash
 npx tsc --noEmit
 ```
@@ -124,35 +147,40 @@ Commit: `refactor: move account settings from /owner/profile to /owner/settings`
 
 Lee `src/components/owner/OwnerBottomNav.tsx` completo.
 
-### Nuevo array `items`
+### Nuevo array `items` — 3 items, sin Inicio, sin Mensajes
 
 ```typescript
-import { Home, Store, Calendar, User, Plus, PawPrint } from 'lucide-react'
-// Eliminar MessageSquare del import
+import { Store, Calendar, User, Plus, PawPrint } from 'lucide-react'
+// Eliminar: Home, MessageSquare — ya no se usan
 
 const items = [
-  { href: '/owner/dashboard',      Icon: Home,     label: 'Inicio',      match: '/owner/dashboard' },
   { href: '/marketplace/clinicas', Icon: Store,    label: 'Marketplace', match: '/marketplace' },
   { href: '/owner/appointments',   Icon: Calendar, label: 'Mis citas',   match: '/owner/appointments' },
-  { href: '/owner/settings',       Icon: User,     label: 'Perfil',      match: '/owner/settings' },
+  { href: '/owner/dashboard',      Icon: User,     label: 'Perfil',      match: '/owner/dashboard' },
 ] as const
 ```
 
-### Grid mobile — 4 items + FAB = 5 columnas
+**Por qué:**
+- "Inicio" se elimina del nav — quedará libre para la futura landing page
+- "Mensajes" se elimina — ya está en el widget de Acciones Rápidas del dashboard
+- "Perfil" → `/owner/dashboard` (el dashboard con widgets es el perfil del owner)
+- `/owner/settings` no es un nav item — se accede desde el icono de ajustes en el dashboard
+
+### Grid mobile — 3 items + FAB = 4 columnas
 
 Busca `.pf-own-bot-inner` y cambia el grid:
 ```css
 /* Antes (6 columnas): */
 grid-template-columns: 1fr 1fr 1.2fr 1fr 1fr 1fr;
 
-/* Después (5 columnas): */
-grid-template-columns: 1fr 1fr 1.2fr 1fr 1fr;
+/* Después (4 columnas, 3 items + FAB): */
+grid-template-columns: 1fr 1.2fr 1fr 1fr;
 ```
 
-### Distribución mobile — 2 items | FAB | 2 items
+### Distribución mobile — 1 item | FAB | 2 items
 
 ```tsx
-{items.slice(0, 2).map(item => (
+{items.slice(0, 1).map(item => (
   <BottomLink key={item.href} item={item}
     active={path.startsWith(item.match) && !fabActive} />
 ))}
@@ -165,18 +193,17 @@ grid-template-columns: 1fr 1fr 1.2fr 1fr 1fr;
   <span className="pf-own-fab-label">Pedir cita</span>
 </Link>
 
-{items.slice(2).map(item => (
+{items.slice(1).map(item => (
   <BottomLink key={item.href} item={item}
     active={path.startsWith(item.match) && !fabActive} />
 ))}
 ```
 
-Resultado mobile: `Inicio | Marketplace | [FAB] | Mis citas | Perfil`
+Resultado mobile: `Marketplace | [FAB] | Mis citas | Perfil`
 
 ### Logo del sidebar como link al dashboard
 
 ```tsx
-// Envuelve el brand en un Link:
 <Link href="/owner/dashboard" className="pf-own-side-brand"
   style={{ textDecoration: 'none' }}>
   <span className="pf-own-side-logo">
@@ -189,7 +216,7 @@ Resultado mobile: `Inicio | Marketplace | [FAB] | Mis citas | Perfil`
 ```bash
 npx tsc --noEmit
 ```
-Commit: `fix: update nav — Inicio→/dashboard, Perfil→/settings, remove Mensajes`
+Commit: `fix: nav — Perfil→/dashboard, remove Inicio and Mensajes`
 
 ---
 
@@ -473,28 +500,40 @@ npx tsc --noEmit
 npm run build
 ```
 
-**Checklist:**
+**Checklist — verificar contra cada requisito original:**
 
-1. Login como owner → llega a `/owner/dashboard` (Hola Wilmer, widgets)
-2. Nav desktop: Inicio | Marketplace | Mis citas | Perfil
-3. Nav mobile: Inicio | Marketplace | [FAB] | Mis citas | Perfil
-4. Nav "Inicio" → `/owner/dashboard` ✅
-5. Nav "Perfil" → `/owner/settings` (nombre, email, tel, contraseña) ✅
-6. `/owner/perfil` → redirect a `/owner/dashboard` ✅
-7. `/owner/profile` → redirect a `/owner/settings` ✅
-8. Logo sidebar → lleva a `/owner/dashboard` ✅
-9. `/owner/inicio` y `/owner/home` → 404 (libres, sin tocar) ✅
+| Requisito | Verificación |
+|-----------|-------------|
+| "inicio quedara libre para landing" | `/owner/inicio` y `/owner/home` dan 404 — no existen |
+| "dashboard pasa a Perfil" | Nav "Perfil" → `/owner/dashboard` (widgets, Hola Wilmer) |
+| "Perfil se irá a /settings" | `/owner/settings` existe con nombre, email, teléfono, contraseña |
+| "quitar Mensajes del nav" | Nav mobile y sidebar no tienen "Mensajes" |
+| "perfil de mascota editable" | Tab Ficha tiene botón "Editar perfil" y formulario funcional |
+
+**Prueba paso a paso:**
+
+1. Login como owner → llega a `/owner/dashboard` (Hola Wilmer, widgets) ✅
+2. Nav mobile: `Marketplace | [FAB] | Mis citas | Perfil` — 4 columnas ✅
+3. Nav desktop sidebar: `Marketplace | Mis citas | Perfil` — sin Inicio, sin Mensajes ✅
+4. Clic nav "Perfil" → `/owner/dashboard` (dashboard con widgets, NO settings) ✅
+5. Icono de ajustes (⚙) en el dashboard → `/owner/settings` ✅
+6. `/owner/settings` muestra nombre, email, teléfono, cambio de contraseña ✅
+7. `/owner/perfil` → redirect automático a `/owner/dashboard` ✅
+8. `/owner/profile` → redirect automático a `/owner/settings` ✅
+9. Logo sidebar → lleva a `/owner/dashboard` ✅
 10. Perfil de kitty → tab Ficha → botón "Editar perfil" visible ✅
 11. Editar raza "Siamés", peso 3.5 → Guardar → datos actualizados ✅
 12. Recargar → datos persisten ✅
 
-PR: `fix: /dashboard=widgets /settings=cuenta landing-libre + editable pet profile`
+PR: `fix: Perfil=dashboard /settings=cuenta landing-libre editable-pet-profile`
 
 ---
 
 ## Restricciones
 
 - ❌ NO crear ni tocar `/owner/inicio` ni `/owner/home` — libres para landing
+- ❌ "Inicio" NO debe aparecer en la nav (ni mobile ni desktop)
+- ❌ "Mensajes" NO debe aparecer en la nav (está en Acciones Rápidas)
 - ❌ No toques `src/app/vet/` ni `src/app/admin/`
 - ❌ No modifiques migraciones de Supabase
 - ❌ No instales dependencias nuevas
