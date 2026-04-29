@@ -266,6 +266,12 @@ function InfoDesktop({ pet, clinicName, nextVisit, records }: {
   )
 }
 
+const DOC_TYPES: { value: string; Icon: LucideIcon; label: string }[] = [
+  { value: 'prescription', Icon: Pill,       label: 'Receta' },
+  { value: 'exam',         Icon: Microscope, label: 'Examen' },
+  { value: 'other',        Icon: Paperclip,  label: 'Otro'   },
+]
+
 function DocsTab({ petId, initialDocs }: { petId: string; initialDocs: PetFile[] }) {
   const [docs, setDocs] = useState(initialDocs)
   const [showForm, setShowForm] = useState(false)
@@ -297,45 +303,52 @@ function DocsTab({ petId, initialDocs }: { petId: string; initialDocs: PetFile[]
     <>
       <button onClick={() => setShowForm(!showForm)} style={{
         width:'100%', border:'none', borderRadius:18, padding:'14px 16px',
-        background:'#EE726D', color:'#fff', fontFamily:'inherit',
+        background:'var(--pf-coral)', color:'var(--pf-white)', fontFamily:'inherit',
         fontSize:15, fontWeight:700, cursor:'pointer', marginBottom:12,
       }}>+ Añadir documento</button>
 
       {showForm && (
-        <form onSubmit={upload} style={{ background:'#fff', borderRadius:18, padding:18, marginBottom:12 }}>
-          <p style={{ fontWeight:700, fontSize:15, color:'#1c1c1e', margin:'0 0 12px' }}>Nuevo documento</p>
+        <form onSubmit={upload} style={{ background:'var(--pf-white)', borderRadius:18, padding:18, marginBottom:12 }}>
+          <p style={{ fontWeight:700, fontSize:15, color:'var(--pf-ink)', margin:'0 0 12px' }}>Nuevo documento</p>
           <div style={{ display:'flex', gap:8, marginBottom:12 }}>
-            {[['prescription','💊 Receta'],['exam','🔬 Examen'],['other','📎 Otro']].map(([v,l]) => (
-              <button key={v} type="button" onClick={() => setFileType(v)}
+            {DOC_TYPES.map(({ value, Icon, label }) => (
+              <button key={value} type="button" onClick={() => setFileType(value)}
                 style={{ flex:1, border:'none', borderRadius:12, padding:'10px 4px', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'inherit',
-                  background: fileType===v ? '#fff0ef' : '#f2f2f7', color: fileType===v ? '#EE726D' : '#8e8e93',
-                  outline: fileType===v ? '2px solid #EE726D' : 'none' }}>{l}</button>
+                  display:'flex', flexDirection:'column', alignItems:'center', gap:4,
+                  background: fileType===value ? 'var(--pf-coral-soft)' : 'var(--pf-surface)',
+                  color:      fileType===value ? 'var(--pf-coral)'      : 'var(--pf-muted)',
+                  outline:    fileType===value ? '2px solid var(--pf-coral)' : 'none' }}>
+                <Icon size={15} strokeWidth={2} />{label}
+              </button>
             ))}
           </div>
           <input type="text" placeholder="Descripción (opcional)" value={notes} onChange={e => setNotes(e.target.value)}
-            style={{ width:'100%', border:'none', background:'#f2f2f7', borderRadius:12, padding:'12px 14px', fontSize:14, fontFamily:'inherit', marginBottom:10, boxSizing:'border-box' }} />
+            style={{ width:'100%', border:'none', background:'var(--pf-surface)', borderRadius:12, padding:'12px 14px', fontSize:14, fontFamily:'inherit', marginBottom:10, boxSizing:'border-box' }} />
           <div onClick={() => inputRef.current?.click()} style={{
-            border:'2px dashed #d1d1d6', borderRadius:12, padding:'18px', textAlign:'center', cursor:'pointer', marginBottom:12, background:'#f9f9f9',
+            border:'2px dashed var(--pf-border-md)', borderRadius:12, padding:'18px', textAlign:'center', cursor:'pointer', marginBottom:12, background:'var(--pf-surface)',
           }}>
-            <p style={{ margin:0, fontSize:13, color: file ? '#1c1c1e' : '#8e8e93', fontWeight: file ? 600 : 400 }}>
+            <p style={{ margin:0, fontSize:13, color: file ? 'var(--pf-ink)' : 'var(--pf-muted)', fontWeight: file ? 600 : 400 }}>
               {file ? `✓ ${file.name}` : 'Toca para seleccionar archivo'}
             </p>
             <input ref={inputRef} type="file" style={{ display:'none' }} accept=".pdf,.doc,.docx,image/*"
               onChange={e => { setFile(e.target.files?.[0] || null); setError('') }} />
           </div>
-          {error && <p style={{ color:'#dc2626', fontSize:13, margin:'0 0 10px' }}>{error}</p>}
+          {error && <p style={{ color:'var(--pf-danger-fg)', fontSize:13, margin:'0 0 10px' }}>{error}</p>}
           <div style={{ display:'flex', gap:8 }}>
             <button type="button" onClick={() => { setShowForm(false); setError('') }}
-              style={{ flex:1, border:'none', borderRadius:12, padding:13, background:'#f2f2f7', color:'#8e8e93', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>Cancelar</button>
+              style={{ flex:1, border:'none', borderRadius:12, padding:13, background:'var(--pf-surface)', color:'var(--pf-muted)', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>Cancelar</button>
             <button type="submit" disabled={uploading}
-              style={{ flex:2, border:'none', borderRadius:12, padding:13, background:'#EE726D', color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:'inherit', opacity: uploading ? .6 : 1 }}>
+              style={{ flex:2, border:'none', borderRadius:12, padding:13, background:'var(--pf-coral)', color:'var(--pf-white)', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:'inherit', opacity: uploading ? .6 : 1 }}>
               {uploading ? 'Subiendo…' : 'Subir'}</button>
           </div>
         </form>
       )}
 
       {docs.length === 0 && !showForm
-        ? <div className="empty-box"><p style={{ fontSize:36, margin:'0 0 8px' }}>📎</p><p style={{ fontSize:14, color:'#8e8e93', margin:0 }}>Sin documentos aún</p></div>
+        ? <div className="empty-box">
+            <Paperclip size={28} strokeWidth={1.5} style={{ color:'var(--pf-muted)', marginBottom:8 }} />
+            <p style={{ fontSize:14, color:'var(--pf-muted)', margin:0 }}>Sin documentos aún</p>
+          </div>
         : docs.map((d) => <DocCard key={d.id} doc={d} />)
       }
     </>
@@ -366,30 +379,33 @@ function HistorialTab({ petId, records }: { petId: string; records: RecordWithVe
   return (
     <>
       <button onClick={() => setShowNote(!showNote)} style={{
-        width:'100%', border:'2px solid #EE726D', borderRadius:18, padding:'13px 16px',
-        background:'#fff', color:'#EE726D', fontFamily:'inherit', fontSize:14, fontWeight:700, cursor:'pointer', marginBottom:12,
+        width:'100%', border:'2px solid var(--pf-coral)', borderRadius:18, padding:'13px 16px',
+        background:'var(--pf-white)', color:'var(--pf-coral)', fontFamily:'inherit', fontSize:14, fontWeight:700, cursor:'pointer', marginBottom:12,
       }}>+ Añadir observación</button>
-      {ok && <p style={{ color:'#16a34a', fontSize:13, textAlign:'center', margin:'0 0 10px' }}>✓ Guardado</p>}
+      {ok && <p style={{ color:'var(--pf-success-fg)', fontSize:13, textAlign:'center', margin:'0 0 10px' }}>✓ Guardado</p>}
       {showNote && (
-        <form onSubmit={submit} style={{ background:'#fff', borderRadius:18, padding:16, marginBottom:12 }}>
+        <form onSubmit={submit} style={{ background:'var(--pf-white)', borderRadius:18, padding:16, marginBottom:12 }}>
           <textarea placeholder="Escribe una observación sobre tu mascota…" value={note} onChange={e => setNote(e.target.value)} rows={3}
-            style={{ width:'100%', border:'none', background:'#f2f2f7', borderRadius:12, padding:'12px 14px', fontSize:14, fontFamily:'inherit', resize:'none', marginBottom:10, boxSizing:'border-box' }} />
-          <label style={{ display:'block', border:'2px dashed #d1d1d6', borderRadius:12, padding:'12px', textAlign:'center', cursor:'pointer', marginBottom:12, background:'#f9f9f9', fontSize:13, color: file ? '#1c1c1e' : '#8e8e93' }}>
+            style={{ width:'100%', border:'none', background:'var(--pf-surface)', borderRadius:12, padding:'12px 14px', fontSize:14, fontFamily:'inherit', resize:'none', marginBottom:10, boxSizing:'border-box' }} />
+          <label style={{ display:'block', border:'2px dashed var(--pf-border-md)', borderRadius:12, padding:'12px', textAlign:'center', cursor:'pointer', marginBottom:12, background:'var(--pf-surface)', fontSize:13, color: file ? 'var(--pf-ink)' : 'var(--pf-muted)' }}>
             {file ? `✓ ${file.name}` : 'Adjuntar archivo (opcional)'}
             <input type="file" style={{ display:'none' }} onChange={e => setFile(e.target.files?.[0] || null)} />
           </label>
           <div style={{ display:'flex', gap:8 }}>
             <button type="button" onClick={() => setShowNote(false)}
-              style={{ flex:1, border:'none', borderRadius:12, padding:13, background:'#f2f2f7', color:'#8e8e93', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>Cancelar</button>
+              style={{ flex:1, border:'none', borderRadius:12, padding:13, background:'var(--pf-surface)', color:'var(--pf-muted)', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>Cancelar</button>
             <button type="submit" disabled={saving}
-              style={{ flex:2, border:'none', borderRadius:12, padding:13, background:'#EE726D', color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:'inherit', opacity: saving ? .6 : 1 }}>
+              style={{ flex:2, border:'none', borderRadius:12, padding:13, background:'var(--pf-coral)', color:'var(--pf-white)', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:'inherit', opacity: saving ? .6 : 1 }}>
               {saving ? 'Guardando…' : 'Guardar'}</button>
           </div>
         </form>
       )}
 
       {records.length === 0
-        ? <div className="empty-box"><p style={{ fontSize:36, margin:'0 0 8px' }}>📋</p><p style={{ fontSize:14, color:'#8e8e93', margin:0 }}>Sin consultas registradas</p></div>
+        ? <div className="empty-box">
+            <ClipboardList size={28} strokeWidth={1.5} style={{ color:'var(--pf-muted)', marginBottom:8 }} />
+            <p style={{ fontSize:14, color:'var(--pf-muted)', margin:0 }}>Sin consultas registradas</p>
+          </div>
         : records.map((r) => (
           <div key={r.id} className="rec-card">
             <div className="rec-top">
@@ -399,7 +415,12 @@ function HistorialTab({ petId, records }: { petId: string; records: RecordWithVe
             <p className="rec-reason">{r.reason}</p>
             {r.diagnosis && <p className="rec-detail">Diagnóstico: {r.diagnosis}</p>}
             {r.treatment && <p className="rec-detail">Tratamiento: {r.treatment}</p>}
-            {r.next_visit && <p className="rec-next">📅 Próxima: {new Date(r.next_visit).toLocaleDateString('es-ES', { day:'numeric', month:'long' })}</p>}
+            {r.next_visit && (
+              <p className="rec-next">
+                <Calendar size={12} strokeWidth={2} />
+                Próxima: {new Date(r.next_visit).toLocaleDateString('es-ES', { day:'numeric', month:'long' })}
+              </p>
+            )}
           </div>
         ))
       }
@@ -407,13 +428,17 @@ function HistorialTab({ petId, records }: { petId: string; records: RecordWithVe
   )
 }
 
+const DOC_CFG: Record<string, { Icon: LucideIcon; label: string; color: string; bg: string }> = {
+  prescription: { Icon: Pill,       label: 'Receta',  color: 'var(--pf-info-fg)',  bg: 'var(--pf-info)'    },
+  exam:         { Icon: Microscope, label: 'Examen',  color: '#2563eb',             bg: '#eff6ff'            },
+  photo:        { Icon: Camera,     label: 'Foto',    color: '#16a34a',              bg: '#f0fdf4'            },
+  video:        { Icon: Video,      label: 'Vídeo',   color: '#dc2626',              bg: '#fef2f2'            },
+  other:        { Icon: Paperclip,  label: 'Archivo', color: 'var(--pf-muted)',     bg: 'var(--pf-surface)' },
+}
+
 function DocCard({ doc }: { doc: PetFile }) {
   const [opening, setOpening] = useState(false)
-  const cfg: Record<string, [string, string, string]> = {
-    prescription:['💊','Receta','#7c3aed'], exam:['🔬','Examen','#2563eb'],
-    photo:['📷','Foto','#16a34a'], video:['🎥','Vídeo','#dc2626'], other:['📎','Archivo','#64748b'],
-  }
-  const [icon, label, color] = cfg[doc.file_type] ?? cfg.other
+  const { Icon, label, color, bg } = DOC_CFG[doc.file_type] ?? DOC_CFG.other
   const open = async () => {
     setOpening(true)
     const res = await fetch(`/api/files/${doc.id}`)
@@ -423,15 +448,17 @@ function DocCard({ doc }: { doc: PetFile }) {
   }
   return (
     <button onClick={open} disabled={opening} style={{
-      background:'#fff', borderRadius:18, padding:'14px 16px', display:'flex', alignItems:'center', gap:12,
+      background:'var(--pf-white)', borderRadius:18, padding:'14px 16px', display:'flex', alignItems:'center', gap:12,
       border:'none', width:'100%', textAlign:'left', cursor:'pointer', marginBottom:8, fontFamily:'inherit',
     }}>
-      <div style={{ width:44, height:44, borderRadius:12, flexShrink:0, background:color+'15', display:'flex', alignItems:'center', justifyContent:'center', fontSize:22 }}>{icon}</div>
-      <div style={{ flex:1, minWidth:0 }}>
-        <p style={{ fontSize:13, fontWeight:600, color:'#1c1c1e', margin:'0 0 3px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{doc.notes || doc.file_name}</p>
-        <span style={{ fontSize:10, fontWeight:600, color, background:color+'15', padding:'2px 7px', borderRadius:6 }}>{label}</span>
+      <div style={{ width:44, height:44, borderRadius:12, flexShrink:0, background:bg, display:'flex', alignItems:'center', justifyContent:'center', color }}>
+        <Icon size={20} strokeWidth={1.75} />
       </div>
-      <span style={{ color:'#c7c7cc', fontSize:20, flexShrink:0 }}>{opening ? '⏳' : '›'}</span>
+      <div style={{ flex:1, minWidth:0 }}>
+        <p style={{ fontSize:13, fontWeight:600, color:'var(--pf-ink)', margin:'0 0 3px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{doc.notes || doc.file_name}</p>
+        <span style={{ fontSize:10, fontWeight:600, color, background:bg, padding:'2px 7px', borderRadius:6 }}>{label}</span>
+      </div>
+      <span style={{ color:'var(--pf-hint)', fontSize:20, flexShrink:0 }}>{opening ? '…' : '›'}</span>
     </button>
   )
 }
@@ -462,36 +489,38 @@ function CitasTab({ petId, petName, clinicId, appointments }: {
       {/* Scheduled booking form */}
       {clinicId
         ? <BookAppointment petId={petId} petName={petName} clinicId={clinicId} />
-        : <div className="empty-box"><p style={{ fontSize: 32, margin: '0 0 8px' }}>📅</p><p style={{ fontSize: 14, color: '#8e8e93', margin: 0 }}>Sin clínica asignada</p></div>
+        : <div className="empty-box">
+            <Calendar size={28} strokeWidth={1.5} style={{ color:'var(--pf-muted)', marginBottom:8 }} />
+            <p style={{ fontSize: 14, color: 'var(--pf-muted)', margin: 0 }}>Sin clínica asignada</p>
+          </div>
       }
 
-      {/* Upcoming appointments */}
       {upcoming.length > 0 && (
         <div style={{ marginBottom: 10 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: '#8e8e93', textTransform: 'uppercase', letterSpacing: '.07em', margin: '0 2px 8px' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--pf-muted)', textTransform: 'uppercase', letterSpacing: '.07em', margin: '0 2px 8px' }}>
             Próximas
           </p>
           {upcoming.map((a) => {
             const st = APPT_STATUS[a.status] ?? APPT_STATUS.pending
             const dateLabel = new Date(a.appointment_date + 'T12:00').toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
             return (
-              <div key={a.id} style={{ background: '#fff', borderRadius: 16, padding: '14px 16px', marginBottom: 8 }}>
+              <div key={a.id} style={{ background: 'var(--pf-white)', borderRadius: 16, padding: '14px 16px', marginBottom: 8 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     {a.is_virtual
                       ? <Video size={13} strokeWidth={2} style={{ color: '#6366f1' }} />
-                      : <MapPin size={13} strokeWidth={2} style={{ color: '#EE726D' }} />
+                      : <MapPin size={13} strokeWidth={2} style={{ color: 'var(--pf-coral)' }} />
                     }
-                    <span style={{ fontSize: 13, fontWeight: 700, color: '#1c1c1e' }}>{dateLabel}</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--pf-ink)' }}>{dateLabel}</span>
                   </div>
                   <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 9px', borderRadius: 20, background: st.bg, color: st.color }}>
                     {st.label}
                   </span>
                 </div>
-                <p style={{ fontSize: 12, color: '#8e8e93', margin: '0 0 4px' }}>
+                <p style={{ fontSize: 12, color: 'var(--pf-muted)', margin: '0 0 4px' }}>
                   {a.appointment_time.slice(0, 5)} · {a.is_virtual ? 'Videollamada' : 'Presencial'}
                 </p>
-                <p style={{ fontSize: 13, color: '#3c3c43', margin: '0 0 10px', lineHeight: 1.5 }}>{a.reason}</p>
+                <p style={{ fontSize: 13, color: 'var(--pf-ink)', margin: '0 0 10px', lineHeight: 1.5 }}>{a.reason}</p>
                 {a.is_virtual && a.status === 'confirmed' && (
                   <VideoCallRoom
                     appointmentId={a.id}
@@ -505,7 +534,7 @@ function CitasTab({ petId, petName, clinicId, appointments }: {
                   </p>
                 )}
                 {a.notes && (
-                  <p style={{ fontSize: 12, color: '#1a7a3c', margin: '6px 0 0', fontStyle: 'italic' }}>
+                  <p style={{ fontSize: 12, color: 'var(--pf-success-fg)', margin: '6px 0 0', fontStyle: 'italic' }}>
                     Nota del veterinario: {a.notes}
                   </p>
                 )}
@@ -515,27 +544,26 @@ function CitasTab({ petId, petName, clinicId, appointments }: {
         </div>
       )}
 
-      {/* Past appointments */}
       {past.length > 0 && (
         <div>
-          <p style={{ fontSize: 11, fontWeight: 700, color: '#8e8e93', textTransform: 'uppercase', letterSpacing: '.07em', margin: '0 2px 8px' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--pf-muted)', textTransform: 'uppercase', letterSpacing: '.07em', margin: '0 2px 8px' }}>
             Historial de citas
           </p>
           {past.map((a) => {
             const st = APPT_STATUS[a.status] ?? APPT_STATUS.completed
             return (
-              <div key={a.id} style={{ background: '#fff', borderRadius: 16, padding: '12px 16px', marginBottom: 8, opacity: 0.8 }}>
+              <div key={a.id} style={{ background: 'var(--pf-white)', borderRadius: 16, padding: '12px 16px', marginBottom: 8, opacity: 0.8 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#1c1c1e' }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--pf-ink)' }}>
                     {new Date(a.appointment_date + 'T12:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </span>
                   <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 9px', borderRadius: 20, background: st.bg, color: st.color }}>
                     {st.label}
                   </span>
                 </div>
-                <p style={{ fontSize: 12, color: '#8e8e93', margin: 0 }}>{a.reason}</p>
+                <p style={{ fontSize: 12, color: 'var(--pf-muted)', margin: 0 }}>{a.reason}</p>
                 {a.cancellation_reason && (
-                  <p style={{ fontSize: 11, color: '#dc2626', margin: '4px 0 0' }}>Motivo: {a.cancellation_reason}</p>
+                  <p style={{ fontSize: 11, color: 'var(--pf-danger-fg)', margin: '4px 0 0' }}>Motivo: {a.cancellation_reason}</p>
                 )}
               </div>
             )
@@ -545,8 +573,8 @@ function CitasTab({ petId, petName, clinicId, appointments }: {
 
       {appointments.length === 0 && (
         <div className="empty-box">
-          <p style={{ fontSize: 32, margin: '0 0 8px' }}>📅</p>
-          <p style={{ fontSize: 14, color: '#8e8e93', margin: 0 }}>Sin citas registradas</p>
+          <Calendar size={28} strokeWidth={1.5} style={{ color:'var(--pf-muted)', marginBottom:8 }} />
+          <p style={{ fontSize: 14, color: 'var(--pf-muted)', margin: 0 }}>Sin citas registradas</p>
         </div>
       )}
     </>
