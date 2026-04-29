@@ -8,7 +8,7 @@ const ROLE_REDIRECTS: Record<string, string> = {
   superadmin:   '/admin',
   vet_admin:    '/vet/dashboard',
   veterinarian: '/vet/dashboard',
-  pet_owner:    '/owner/dashboard',
+  pet_owner:    '/owner/perfil',
 }
 
 // Validates ?next= is a safe relative path (prevents open redirect)

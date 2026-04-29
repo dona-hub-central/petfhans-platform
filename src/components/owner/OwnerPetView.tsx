@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import PetAvatar from '@/components/shared/PetAvatar'
 import PetGallery from '@/components/owner/PetGallery'
 import BookAppointment from '@/components/owner/BookAppointment'
@@ -33,7 +34,13 @@ export default function OwnerPetView({ pet, records, photos, docs, appointments,
   clinicName: string
   clinicId?: string
 }) {
-  const [tab, setTab] = useState<Tab>('info')
+  const searchParams = useSearchParams()
+  const validTabs: Tab[] = ['info', 'galeria', 'docs', 'historial', 'citas', 'recetas']
+  const initialTab = (() => {
+    const t = searchParams.get('tab') as Tab | null
+    return t && validTabs.includes(t) ? t : 'info'
+  })()
+  const [tab, setTab] = useState<Tab>(initialTab)
   const nextVisit = records.find(r => r.next_visit && new Date(r.next_visit) > new Date())
 
   return (
