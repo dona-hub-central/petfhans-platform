@@ -85,10 +85,9 @@ export default async function ClinicDetailPage({
               </div>
               <div>
                 <h2 className="text-xl font-bold" style={{ color: 'var(--pf-ink)' }}>{clinic.name}</h2>
-                <a href={`https://${clinic.slug}.petfhans.com`} target="_blank"
-                  className="text-sm hover:underline" style={{ color: 'var(--pf-coral)' }}>
-                  {clinic.slug}.petfhans.com ↗
-                </a>
+                <span className="text-sm" style={{ color: 'var(--pf-muted)' }}>
+                  petfhans.com/{clinic.slug}
+                </span>
               </div>
             </div>
             <span className="text-sm px-3 py-1 rounded-full font-medium flex-shrink-0"
