@@ -18,11 +18,14 @@ export default async function OwnerLayout({ children }: { children: React.ReactN
 
   return (
     <>
-      <div className="pf-own-page">{children}</div>
+      <main className="pf-own-page owner-main">{children}</main>
       <OwnerBottomNav />
       <style>{`
         @media (max-width: 767px) {
           .pf-own-page { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+        }
+        @media (min-width: 768px) {
+          .pf-own-page.owner-main { margin-left: 220px; }
         }
       `}</style>
     </>
