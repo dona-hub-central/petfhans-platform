@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Store, Calendar, MessageSquare, User, Plus } from 'lucide-react'
+import { Home, Store, Calendar, MessageSquare, User, Plus, PawPrint } from 'lucide-react'
 
 const items = [
   { href: '/owner/perfil',          Icon: Home,          label: 'Inicio',      match: '/owner/perfil' },
@@ -46,7 +46,9 @@ export default function OwnerBottomNav() {
       {/* Desktop / Tablet sidebar */}
       <aside className="pf-own-side" aria-label="Navegación principal">
         <div className="pf-own-side-brand">
-          <span className="pf-own-side-logo">🐾</span>
+          <span className="pf-own-side-logo">
+            <PawPrint size={18} strokeWidth={2.25} />
+          </span>
           <span className="pf-own-side-name">Petfhans</span>
         </div>
 
@@ -151,7 +153,7 @@ export default function OwnerBottomNav() {
             display: inline-flex; align-items: center; justify-content: center;
             width: 36px; height: 36px; border-radius: 10px;
             background: var(--pf-coral-soft);
-            font-size: 18px;
+            color: var(--pf-coral);
           }
           .pf-own-side-name {
             font-family: var(--pf-font-display);

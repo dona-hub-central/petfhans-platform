@@ -12,11 +12,12 @@ export default function AiTipsWidget({ pet }: { pet: Pet | undefined }) {
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState(false)
 
+  const petId = pet?.id
   useEffect(() => {
-    if (!pet) { setLoading(false); return }
+    if (!petId) { setLoading(false); return }
     let cancelled = false
     setLoading(true); setError(false)
-    fetch(`/api/owner/pet-tips?pet_id=${pet.id}`, { credentials: 'include' })
+    fetch(`/api/owner/pet-tips?pet_id=${petId}`, { credentials: 'include' })
       .then(r => r.ok ? r.json() : Promise.reject(new Error(`status ${r.status}`)))
       .then(data => {
         if (cancelled) return
@@ -29,7 +30,7 @@ export default function AiTipsWidget({ pet }: { pet: Pet | undefined }) {
         setError(true); setLoading(false)
       })
     return () => { cancelled = true }
-  }, [pet])
+  }, [petId])
 
   if (!pet) return null
 

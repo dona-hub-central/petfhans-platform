@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect } from 'react'
+
 type Pet = { id: string; name: string; photo_url: string | null; species: string }
 
 export default function PetSelectorModal({
@@ -13,6 +15,17 @@ export default function PetSelectorModal({
   onSelect: (petId: string) => void
   onClose: () => void
 }) {
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', handleKey)
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', handleKey)
+      document.body.style.overflow = prevOverflow
+    }
+  }, [onClose])
+
   return (
     <>
       <div className="pf-pselect-bg" onClick={onClose} />

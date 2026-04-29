@@ -88,7 +88,7 @@ export default function PetSummaryWidget({
   }
 
   const completeness = profileCompleteness(selected)
-  const completeColor = completeness >= 80 ? '#22c55e' : '#f59e0b'
+  const completeColor = completeness >= 80 ? 'var(--pf-success-fg)' : 'var(--pf-warning-fg)'
 
   const handleChange = (id: string) => {
     setInternalId(id)
@@ -262,10 +262,10 @@ export default function PetSummaryWidget({
         .pf-summary-warn {
           margin: 12px 0 0;
           padding: 10px 12px;
-          background: #fff8e6;
+          background: var(--pf-warning);
           border-radius: 10px;
           font-family: var(--pf-font-body);
-          font-size: 12px; color: #92400e;
+          font-size: 12px; color: var(--pf-warning-fg);
           display: flex; align-items: center; gap: 8px;
         }
         .pf-summary-cta {
