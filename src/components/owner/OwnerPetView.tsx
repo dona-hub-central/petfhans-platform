@@ -484,7 +484,17 @@ function CitasTab({ petId, petName, clinicId, appointments }: {
   return (
     <>
       {/* Emergency / instant call panel */}
-      <EmergencyCall petId={petId} petName={petName} clinicId={clinicId} />
+      <div style={{ marginBottom: 24 }}>
+        <EmergencyCall petId={petId} petName={petName} clinicId={clinicId} />
+      </div>
+
+      {/* Section label before scheduled appointments */}
+      <p style={{
+        fontSize: 11, fontWeight: 700, color: 'var(--pf-muted)',
+        textTransform: 'uppercase', letterSpacing: '.07em', margin: '0 2px 10px',
+      }}>
+        Mis citas
+      </p>
 
       {/* Scheduled booking form */}
       {clinicId
