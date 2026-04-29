@@ -40,5 +40,12 @@ export async function GET(req: NextRequest) {
 
   if (!inv) return NextResponse.json({ error: 'Invitación inválida o expirada' }, { status: 404 })
 
-  return NextResponse.json({ invitation: inv })
+  // Detect if this email already has an account so the UI can show login vs register
+  const { data: existing } = await admin
+    .from('profiles')
+    .select('id')
+    .eq('email', inv.email)
+    .maybeSingle()
+
+  return NextResponse.json({ invitation: inv, userExists: !!existing })
 }
