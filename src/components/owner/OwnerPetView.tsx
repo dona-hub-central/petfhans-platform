@@ -17,7 +17,7 @@ const TABS: { key: Tab; Icon: LucideIcon; label: string }[] = [
   { key: 'galeria',   Icon: Camera,        label: 'Galería' },
   { key: 'docs',      Icon: FileText,      label: 'Docs' },
   { key: 'historial', Icon: ClipboardList, label: 'Historial' },
-  { key: 'recetas',   Icon: Sparkles,      label: 'IA Tips' },
+  { key: 'recetas',   Icon: Sparkles,      label: 'Recetas' },
 ]
 
 const speciesLabel: Record<string, string> = {
