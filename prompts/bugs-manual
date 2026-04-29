@@ -1,0 +1,268 @@
+# Prompt para Claude Code — Bugs del portal owner (kitty)
+
+Lee CLAUDE.md antes de empezar.
+
+Luego lee:
+```
+skills-ai/debugging-and-error-recovery/SKILL.md
+skills-ai/security-invitation-flow/SKILL.md
+skills-ai/frontend-design-quality/SKILL.md
+skills-ai/api-and-interface-design/SKILL.md
+```
+
+---
+
+## CONTEXTO — diagnóstico desde la BD
+
+El usuario dueño de "kitty" (pet_owner, user_id: 47db8a31)
+tiene clinic_id = NULL en profiles Y no tiene fila en profile_clinics.
+Es un usuario huérfano — existe en la app pero no está vinculado
+a ninguna clínica.
+
+Este es el origen de TODOS los errores visibles:
+- "Perfil no encontrado" al subir archivos → las rutas verifican clinic_id
+- "Error de IA" en IA Tips → la ruta de IA requiere clinic_id para el scope
+- "Sin clínica asignada" en Citas → la UI consulta citas por clinic_id
+
+Los 5 bugs de esta sesión son consecuencia de ese estado,
+no problemas independientes.
+
+---
+
+## BUG 1 — "Perfil no encontrado" al subir archivos (Docs y Galería)
+
+**Archivos a leer:**
+```bash
+src/app/api/files/upload/route.ts
+src/app/api/pets/upload-photo/route.ts
+```
+
+**Causa:** Para un pet_owner con clinic_id = null, el código
+no puede determinar a qué clínica asociar el archivo.
+
+**Fix:** Para pet_owner, el clinic_id del archivo debe tomarse
+de la mascota misma, no del perfil del usuario.
+
+Primero verifica el esquema de pet_access:
+```bash
+grep -n "clinic_id" supabase/migrations/008_pet_access.sql
+```
+
+Si pet_access tiene clinic_id:
+```typescript
+if (profile.role === 'pet_owner') {
+  const { data: access } = await admin.from('pet_access')
+    .select('pet_id, clinic_id')
+    .eq('owner_id', profile.id)
+    .eq('pet_id', petId)
+    .single()
+
+  if (!access) return NextResponse.json(
+    { error: 'Sin acceso a esta mascota' }, { status: 403 }
+  )
+
+  clinicId = access.clinic_id
+}
+```
+
+Si pet_access NO tiene clinic_id, leer de la mascota:
+```typescript
+const { data: pet } = await admin.from('pets')
+  .select('clinic_id').eq('id', petId).single()
+clinicId = pet?.clinic_id
+```
+
+Aplica este fix en ambos archivos de upload.
+
+```bash
+npx tsc --noEmit
+```
+
+Commit: `fix: pet_owner file upload uses pet.clinic_id instead of profile.clinic_id`
+
+---
+
+## BUG 2 — "Error de IA" en pestaña IA Tips
+
+**Localiza el archivo:**
+```bash
+grep -rn "ia.tips\|ia-tips\|aiTips\|ai_tips\|IA Tips" src/app/ --include="*.ts" --include="*.tsx" -l
+```
+
+**Causa:** La ruta de IA falla porque intenta scopear el contexto
+con clinic_id del perfil, que es null.
+
+**Fix:** Para pet_owner, obtener el contexto del pet directamente
+sin pasar por clinic_id del perfil:
+
+```typescript
+const { data: pet } = await admin.from('pets')
+  .select('id, name, species, breed, birth_date, weight')
+  .eq('id', petId)
+  .single()
+
+if (!pet) return NextResponse.json(
+  { error: 'Mascota no encontrada' }, { status: 404 }
+)
+// Construir el prompt de IA con datos del pet directamente
+```
+
+```bash
+npx tsc --noEmit
+```
+
+Commit: `fix: ai-tips route uses pet data directly, not profile.clinic_id`
+
+---
+
+## BUG 3 — "Sin clínica asignada" en sección Citas
+
+**Localiza el archivo:**
+```bash
+find src/app/owner -name "*.tsx" | xargs grep -l "cita\|appointment\|Sin clínica" 2>/dev/null
+find src/components/owner -name "*.tsx" | xargs grep -l "cita\|appointment" 2>/dev/null
+```
+
+**Fix 1 — Buscar citas por pet_id en lugar de clinic_id:**
+```typescript
+const { data: appointments } = await admin.from('appointments')
+  .select('*')
+  .in('pet_id', userPetIds)
+  .order('appointment_date', { ascending: false })
+```
+
+**Fix 2 — Empty state con link al marketplace si no tiene clínica:**
+```tsx
+{!hasClinic && (
+  <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+    <p style={{ font: 'var(--pf-text-h3)', color: 'var(--pf-ink)', margin: '0 0 8px' }}>
+      Aún no tienes una clínica
+    </p>
+    <p style={{ font: 'var(--pf-text-body)', color: 'var(--pf-muted)', margin: '0 0 20px' }}>
+      Busca una clínica en el marketplace para empezar
+    </p>
+    <Link href="/marketplace/clinicas" className="pf-btn pf-btn-primary">
+      Buscar clínica
+    </Link>
+  </div>
+)}
+```
+
+```bash
+npx tsc --noEmit
+```
+
+Commit: `fix: owner appointments uses pet_ids not clinic_id + better empty state`
+
+---
+
+## TAREA 4 — Renombrar "IA Tips" → "Recetas" con contenido generado por IA
+
+**Localiza el archivo:**
+```bash
+find src/components/owner src/app/owner -name "*.tsx" | \
+  xargs grep -l "IA Tips\|ia.tips" 2>/dev/null
+```
+
+**Cambio 1 — Renombrar en la navegación:**
+```tsx
+// Antes:
+{ key: 'ia-tips', label: 'IA Tips', Icon: Sparkles }
+// Después:
+{ key: 'recetas', label: 'Recetas', Icon: Sparkles }
+```
+
+**Cambio 2 — La IA genera recomendaciones desde el perfil.**
+
+El prompt que se envía a la IA debe incluir:
+- Nombre, especie y raza (si existe)
+- Edad o fecha de nacimiento (si existe)
+- Peso actual (si existe)
+- Si está castrado/a
+
+La IA debe generar:
+- Alimentación recomendada según especie, edad y peso
+- Cuidados básicos del día
+- Señales de alerta a vigilar
+
+Si faltan datos en el perfil, incluir en la respuesta:
+```
+"Para darte recomendaciones más precisas, completa
+el perfil de [nombre] con su edad y peso."
+```
+
+Si el perfil tiene muy pocos datos (solo especie), la IA trabaja
+con lo disponible y añade una nota sobre los datos faltantes.
+
+```bash
+npx tsc --noEmit
+```
+
+Commit: `feat: rename IA Tips to Recetas with AI content from pet profile`
+
+---
+
+## TAREA 5 — Separación visual entre llamada inmediata y citas
+
+**Localiza el archivo:**
+```bash
+find src/components/owner src/app/owner -name "*.tsx" | \
+  xargs grep -l "Llamada inmediata\|emergency\|virtual" 2>/dev/null
+```
+
+**Fix:**
+```tsx
+{/* Bloque de llamada inmediata */}
+<div style={{
+  marginBottom: 32,
+  borderRadius: 'var(--pf-r-lg)',
+  overflow: 'hidden',
+}}>
+  {/* contenido del bloque de emergencia sin cambios */}
+</div>
+
+{/* Label de sección antes de las citas */}
+<p style={{
+  font: 'var(--pf-text-label)',
+  color: 'var(--pf-muted)',
+  textTransform: 'uppercase',
+  letterSpacing: '0.05em',
+  marginBottom: 12,
+}}>
+  Mis citas
+</p>
+```
+
+```bash
+npx tsc --noEmit
+```
+
+Commit: `fix: add spacing and section label between emergency block and appointments`
+
+---
+
+## Verificación final
+
+```bash
+npx tsc --noEmit
+npm run build
+```
+
+Prueba manual con el usuario dueño de kitty:
+1. Docs → subir archivo → no debe mostrar "Perfil no encontrado"
+2. Galería → añadir foto → no debe mostrar error
+3. Recetas (antes IA Tips) → debe mostrar contenido generado por IA
+4. Citas → debe mostrar empty state con link al marketplace
+5. El bloque de llamada inmediata tiene separación visual clara
+
+PR: `fix: owner portal bugs — file upload, AI tips, appointments empty state, spacing`
+
+---
+
+## Restricciones
+
+- ❌ No toques src/app/vet/ ni src/app/admin/
+- ❌ No modifiques migraciones existentes
+- ❌ No instales dependencias nuevas
+- ✅ Un commit por tarea
+- ✅ npx tsc --noEmit después de cada cambio
