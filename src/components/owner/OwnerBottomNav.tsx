@@ -2,13 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Store, Calendar, User, Plus } from 'lucide-react'
+import { Home, Store, Calendar, MessageSquare, User, Plus } from 'lucide-react'
 
 const items = [
-  { href: '/owner/dashboard',       Icon: Home,     label: 'Inicio',     match: '/owner/dashboard' },
-  { href: '/marketplace/clinicas',  Icon: Store,    label: 'Marketplace', match: '/marketplace' },
-  { href: '/owner/appointments',    Icon: Calendar, label: 'Mis citas',  match: '/owner/appointments' },
-  { href: '/owner/profile',         Icon: User,     label: 'Perfil',     match: '/owner/profile' },
+  { href: '/owner/dashboard',       Icon: Home,          label: 'Inicio',      match: '/owner/dashboard' },
+  { href: '/marketplace/clinicas',  Icon: Store,         label: 'Marketplace', match: '/marketplace' },
+  { href: '/owner/appointments',    Icon: Calendar,      label: 'Mis citas',   match: '/owner/appointments' },
+  { href: '/owner/messages',        Icon: MessageSquare, label: 'Mensajes',    match: '/owner/messages' },
+  { href: '/owner/profile',         Icon: User,          label: 'Perfil',      match: '/owner/profile' },
 ] as const
 
 export default function OwnerBottomNav() {
@@ -36,7 +37,7 @@ export default function OwnerBottomNav() {
           </Link>
 
           {items.slice(2).map(item => (
-            <BottomLink key={item.href} item={item} active={path.startsWith(item.match)} />
+            <BottomLink key={item.href} item={item} active={path.startsWith(item.match) && !fabActive} />
           ))}
         </div>
       </nav>
@@ -55,7 +56,7 @@ export default function OwnerBottomNav() {
           .pf-own-bot-inner {
             position: relative;
             display: grid;
-            grid-template-columns: 1fr 1fr 1.2fr 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1.2fr 1fr 1fr 1fr;
             align-items: end;
             height: 64px;
           }
