@@ -8,10 +8,11 @@ export default async function TiersPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
-  const { data: profile } = await supabase.from('profiles').select('*').eq('user_id', user.id).single()
-  if (profile?.role !== 'superadmin') redirect('/auth/login')
 
   const admin = createAdminClient()
+  const { data: profile } = await admin.from('profiles').select('role, full_name').eq('user_id', user.id).single()
+  if (profile?.role !== 'superadmin') redirect('/auth/login')
+
   const { data: tiers } = await admin
     .from('clinic_tiers').select('*').order('sort_order').order('min_patients')
 

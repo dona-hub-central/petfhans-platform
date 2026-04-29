@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import { BadgeCheck, MapPin, Star } from 'lucide-react'
 import type { MarketplaceClinic } from '@/types'
@@ -8,7 +10,7 @@ interface Props {
 
 export default function MarketplaceClinicCard({ clinic }: Props) {
   const profile = clinic.public_profile
-  const initial = clinic.name[0]?.toUpperCase() ?? '?'
+  const initial = clinic.name?.[0]?.toUpperCase() ?? '?'
 
   return (
     <Link

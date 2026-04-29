@@ -28,12 +28,19 @@ export default async function VetProfilePage({
 
   const admin = createAdminClient()
   const { data: profile } = await admin.from('profiles')
-    .select('role, full_name, phone, avatar_url, clinics(name, slug, subscription_plan)')
+    .select('role, full_name, phone, avatar_url')
     .eq('user_id', user.id).single()
 
+  const { data: clinicLink } = await admin
+    .from('profile_clinics')
+    .select('clinics(name, slug, subscription_plan)')
+    .eq('user_id', user.id)
+    .limit(1)
+    .single()
+
   const isVetAdmin = profile?.role === 'vet_admin'
-  type ProfileRow = { role: string; full_name: string | null; phone: string | null; avatar_url: string | null; clinics: { name: string; slug: string; subscription_plan: string } | null }
-  const clinic = (profile as ProfileRow | null)?.clinics
+  type ClinicRow = { name: string; slug: string; subscription_plan: string }
+  const clinic = (clinicLink?.clinics as unknown as ClinicRow | null)
   const roleTag = ROLE_LABELS[profile?.role ?? '']
 
   async function saveProfile(formData: FormData) {
@@ -46,7 +53,14 @@ export default async function VetProfilePage({
     // Use admin client to bypass RLS on UPDATE — safe because user identity
     // is verified via auth.getUser() above and scoped to their own user_id.
     const adminSb = createAdminClient()
-    const { error: updateErr } = await adminSb.from('profiles').update({ full_name, phone: phone || null }).eq('user_id', u.id)
+    const { error: updateErr } = await adminSb.from('profiles')
+      .upsert({
+        user_id: u.id,
+        email: u.email ?? '',
+        role: (u.user_metadata?.role as string) || 'veterinarian',
+        full_name,
+        phone: phone || null,
+      }, { onConflict: 'user_id' })
     if (updateErr) redirect('/vet/profile?error=save')
     revalidatePath('/vet', 'layout')
     redirect('/vet/profile?success=profile')
@@ -182,6 +196,22 @@ export default async function VetProfilePage({
               <button type="submit" className="btn-pf px-5 py-2.5 text-sm">Cambiar contraseña</button>
             </form>
           </div>
+
+          <Link href="/vet/support"
+            className="bg-white rounded-2xl border p-4 flex items-center gap-3 mb-3"
+            style={{ borderColor: 'var(--pf-border)', textDecoration: 'none' }}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: '#fff8e6', color: '#b07800' }}>
+              <Shield size={18} strokeWidth={1.75} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold" style={{ color: 'var(--pf-ink)' }}>Soporte y verificación</p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--pf-muted)' }}>
+                Contacta con el equipo o solicita cambios en tu clínica
+              </p>
+            </div>
+            <span style={{ color: 'var(--pf-hint)' }}>›</span>
+          </Link>
 
           <LogoutButton variant="danger" />
         </div>

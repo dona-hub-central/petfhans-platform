@@ -23,18 +23,24 @@ export default async function BillingPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: profile } = await supabase.from('profiles')
-    .select('*').eq('user_id', user.id).single()
-
   const admin = createAdminClient()
+  const { data: profile } = await admin.from('profiles')
+    .select('id, role').eq('user_id', user.id).single()
+  if (!profile || profile.role !== 'vet_admin') redirect('/vet/dashboard')
+
+  const { data: clinicLink } = await admin
+    .from('profile_clinics').select('clinic_id').eq('user_id', user.id).limit(1).single()
+  const clinicId = clinicLink?.clinic_id
+  if (!clinicId) redirect('/vet/dashboard')
+
   const { data: clinic } = await admin.from('clinics')
     .select('name, subscription_plan, subscription_status, max_patients, stripe_customer_id')
-    .eq('id', profile?.clinic_id)
+    .eq('id', clinicId)
     .single()
 
   const { count: petCount } = await admin.from('pets')
     .select('*', { count: 'exact', head: true })
-    .eq('clinic_id', profile?.clinic_id)
+    .eq('clinic_id', clinicId)
     .eq('is_active', true)
 
   const count   = petCount ?? 0

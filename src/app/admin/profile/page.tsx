@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import AdminLayout from '@/components/admin/AdminLayout'
@@ -16,7 +17,8 @@ export default async function AdminProfilePage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: profile } = await supabase.from('profiles')
+  const admin = createAdminClient()
+  const { data: profile } = await admin.from('profiles')
     .select('role, full_name, phone').eq('user_id', user.id).single()
   if (profile?.role !== 'superadmin') redirect('/auth/login')
 
@@ -27,7 +29,8 @@ export default async function AdminProfilePage({
     const sb = await createClient()
     const { data: { user: u } } = await sb.auth.getUser()
     if (!u) return
-    await sb.from('profiles').update({ full_name, phone: phone || null }).eq('user_id', u.id)
+    const adminSb = createAdminClient()
+    await adminSb.from('profiles').update({ full_name, phone: phone || null }).eq('user_id', u.id)
     revalidatePath('/admin/profile')
     redirect('/admin/profile?success=profile')
   }

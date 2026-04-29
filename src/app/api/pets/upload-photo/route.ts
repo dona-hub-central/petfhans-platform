@@ -10,10 +10,6 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-  const { data: profile } = await supabase.from('profiles')
-    .select('id, role, clinic_id').eq('user_id', user.id).single()
-  if (!profile) return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 403 })
-
   const formData = await req.formData()
   const file  = formData.get('file') as File
   const petId = formData.get('pet_id') as string
@@ -23,14 +19,19 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient()
 
-  // H-9: para pet_owner verificar acceso explícito antes de cualquier operación
+  const { data: profile } = await admin.from('profiles')
+    .select('id, role').eq('user_id', user.id).single()
+  if (!profile) return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 403 })
+
+  // Para pet_owner: verificar acceso vía pet_access o pets.owner_id directo
   if (profile.role === 'pet_owner') {
-    const { data: access } = await admin.from('pet_access')
-      .select('pet_id')
-      .eq('owner_id', profile.id)
-      .eq('pet_id', petId)
-      .single()
-    if (!access) return NextResponse.json({ error: 'Sin acceso a esta mascota' }, { status: 403 })
+    const { data: accessRow } = await admin.from('pet_access')
+      .select('pet_id').eq('owner_id', profile.id).eq('pet_id', petId).maybeSingle()
+    if (!accessRow) {
+      const { data: owned } = await admin.from('pets')
+        .select('id').eq('id', petId).eq('owner_id', profile.id).maybeSingle()
+      if (!owned) return NextResponse.json({ error: 'Sin acceso a esta mascota' }, { status: 403 })
+    }
   }
 
   // A3: para vets verificar que la mascota pertenece a su clínica

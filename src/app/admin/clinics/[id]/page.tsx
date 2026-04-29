@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import AdminLayout from '@/components/admin/AdminLayout'
+import VerifyClinicButton from '@/components/admin/VerifyClinicButton'
 import { Building2, CheckCircle } from 'lucide-react'
 import type { Profile } from '@/types'
 
@@ -20,10 +21,9 @@ export default async function ClinicDetailPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: profile } = await supabase.from('profiles').select('role').eq('user_id', user.id).single()
-  if (profile?.role !== 'superadmin') redirect('/auth/login')
-
   const admin = createAdminClient()
+  const { data: profile } = await admin.from('profiles').select('role, full_name').eq('user_id', user.id).single()
+  if (profile?.role !== 'superadmin') redirect('/auth/login')
 
   const { data: clinic } = await admin
     .from('clinics')
@@ -43,12 +43,8 @@ export default async function ClinicDetailPage({
     admin.from('medical_records').select('*', { count: 'exact', head: true }).eq('clinic_id', id),
   ])
 
-  const supabaseUser = await createClient()
-  const { data: { user: authUser } } = await supabaseUser.auth.getUser()
-  const { data: authProfile } = await supabaseUser.from('profiles').select('full_name').eq('user_id', authUser!.id).single()
-
   return (
-    <AdminLayout userName={authProfile?.full_name ?? 'Admin'}>
+    <AdminLayout userName={profile?.full_name ?? 'Admin'}>
     <div>
       <div className="adm-pg" style={{ paddingBottom: 8, paddingTop: 24 }}>
         <div className="flex items-center gap-2">
@@ -90,19 +86,21 @@ export default async function ClinicDetailPage({
               </div>
               <div>
                 <h2 className="text-xl font-bold" style={{ color: 'var(--pf-ink)' }}>{clinic.name}</h2>
-                <a href={`https://${clinic.slug}.petfhans.com`} target="_blank"
-                  className="text-sm hover:underline" style={{ color: 'var(--pf-coral)' }}>
-                  {clinic.slug}.petfhans.com ↗
-                </a>
+                <span className="text-sm" style={{ color: 'var(--pf-muted)' }}>
+                  petfhans.com/{clinic.slug}
+                </span>
               </div>
             </div>
-            <span className="text-sm px-3 py-1 rounded-full font-medium flex-shrink-0"
-              style={{
-                background: clinic.subscription_status === 'active' ? '#edfaf1' : clinic.subscription_status === 'trial' ? '#fff8e6' : '#fee2e2',
-                color: clinic.subscription_status === 'active' ? '#1a7a3c' : clinic.subscription_status === 'trial' ? '#b07800' : '#dc2626',
-              }}>
-              {clinic.subscription_status}
-            </span>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className="text-sm px-3 py-1 rounded-full font-medium"
+                style={{
+                  background: clinic.subscription_status === 'active' ? '#edfaf1' : clinic.subscription_status === 'trial' ? '#fff8e6' : '#fee2e2',
+                  color: clinic.subscription_status === 'active' ? '#1a7a3c' : clinic.subscription_status === 'trial' ? '#b07800' : '#dc2626',
+                }}>
+                {clinic.subscription_status}
+              </span>
+              <VerifyClinicButton clinicId={clinic.id} verified={!!clinic.verified} />
+            </div>
           </div>
 
           <div className="clinic-det-stats">

@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Home, Calendar, PawPrint, ClipboardList, Mail, Sparkles, Users, CreditCard, LogOut, Menu, X, Store, Inbox, Settings } from 'lucide-react'
+import { Home, Calendar, PawPrint, ClipboardList, Mail, Sparkles, Users, CreditCard, LogOut, Menu, X, Store, Inbox, Settings, MessageSquare } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import AvailabilityToggle from '@/components/vet/AvailabilityToggle'
 
@@ -31,24 +31,36 @@ function LogoutSidebarButton() {
   )
 }
 
-const nav = [
-  { href: '/vet/dashboard',        Icon: Home,          label: 'Inicio' },
-  { href: '/vet/appointments',     Icon: Calendar,      label: 'Citas' },
-  { href: '/vet/pets',             Icon: PawPrint,      label: 'Mascotas' },
-  { href: '/vet/records',          Icon: ClipboardList, label: 'Consultas' },
-  { href: '/vet/invitations',      Icon: Mail,          label: 'Invitaciones' },
-  { href: '/vet/requests',         Icon: Inbox,         label: 'Solicitudes' },
-  { href: '/vet/ai',               Icon: Sparkles,      label: 'IA Clínica', tint: 'purple' as const },
-  { href: '/marketplace/clinicas', Icon: Store,         label: 'Marketplace' },
-  { href: '/vet/team',             Icon: Users,         label: 'Equipo' },
-  { href: '/vet/billing',          Icon: CreditCard,    label: 'Facturación' },
-  { href: '/vet/settings',         Icon: Settings,      label: 'Configuración' },
+type NavItem = {
+  href: string
+  Icon: typeof Home
+  label: string
+  tint?: 'purple'
+  // Visibility rules
+  alwaysShow?: boolean        // Hidden hide rules don't apply (always visible)
+  requiresClinic?: boolean    // Hide if user has no clinic association
+  adminOnly?: boolean         // Hide if user is not vet_admin
+}
+
+const nav: NavItem[] = [
+  { href: '/vet/dashboard',        Icon: Home,          label: 'Inicio',        alwaysShow: true },
+  { href: '/vet/appointments',     Icon: Calendar,      label: 'Citas',         requiresClinic: true },
+  { href: '/vet/pets',             Icon: PawPrint,      label: 'Mascotas',      requiresClinic: true },
+  { href: '/vet/records',          Icon: ClipboardList, label: 'Consultas',     requiresClinic: true },
+  { href: '/vet/invitations',      Icon: Mail,          label: 'Invitaciones',  requiresClinic: true },
+  { href: '/vet/messages',         Icon: MessageSquare, label: 'Mensajes',      requiresClinic: true },
+  { href: '/vet/requests',         Icon: Inbox,         label: 'Solicitudes',   requiresClinic: true, adminOnly: true },
+  { href: '/vet/ai',               Icon: Sparkles,      label: 'IA Clínica',    requiresClinic: true, tint: 'purple' },
+  { href: '/marketplace/clinicas', Icon: Store,         label: 'Marketplace',   alwaysShow: true },
+  { href: '/vet/team',             Icon: Users,         label: 'Equipo',        requiresClinic: true, adminOnly: true },
+  { href: '/vet/billing',          Icon: CreditCard,    label: 'Facturación',   requiresClinic: true, adminOnly: true },
+  { href: '/vet/settings',         Icon: Settings,      label: 'Configuración', requiresClinic: true, adminOnly: true },
 ]
 
-const bottomNavItems = [
-  { href: '/vet/dashboard',    Icon: Home,     label: 'Inicio' },
-  { href: '/vet/appointments', Icon: Calendar, label: 'Citas' },
-  { href: '/vet/pets',         Icon: PawPrint, label: 'Mascotas' },
+const bottomNavBase = [
+  { href: '/vet/dashboard',    Icon: Home,     label: 'Inicio',    requiresClinic: false },
+  { href: '/vet/appointments', Icon: Calendar, label: 'Citas',     requiresClinic: true },
+  { href: '/vet/pets',         Icon: PawPrint, label: 'Mascotas',  requiresClinic: true },
 ]
 
 function AvatarCircle({ avatarUrl, userName, size = 30 }: { avatarUrl?: string | null; userName: string; size?: number }) {
@@ -75,12 +87,14 @@ export default function VetLayout({
   userName,
   avatarUrl,
   role,
+  hasClinic = false,
 }: {
   children: React.ReactNode
   clinicName: string
   userName: string
   avatarUrl?: string | null
   role?: string | null
+  hasClinic?: boolean
 }) {
   const path = usePathname()
   const [usage, setUsage] = useState<{ count: number; max: number } | null>(null)
@@ -94,6 +108,15 @@ export default function VetLayout({
   }, [])
 
   useEffect(() => { setDrawerOpen(false) }, [path])
+
+  const isVetAdmin = role === 'vet_admin'
+  const bottomNavItems = bottomNavBase.filter(item => !item.requiresClinic || hasClinic)
+  const visibleNav = nav.filter(item => {
+    if (item.alwaysShow) return true
+    if (item.requiresClinic && !hasClinic) return false
+    if (item.adminOnly && !isVetAdmin) return false
+    return true
+  })
 
   const usagePct   = usage && usage.max > 0 ? Math.min((usage.count / usage.max) * 100, 100) : 0
   const usageColor = usagePct >= 100 ? 'var(--pf-danger-fg)' : usagePct >= 80 ? 'var(--pf-warning-fg)' : 'var(--pf-coral)'
@@ -123,7 +146,7 @@ export default function VetLayout({
         </div>
 
         <nav style={{ flex: 1, padding: '12px 10px', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto' }}>
-          {nav.map(item => {
+          {visibleNav.map(item => {
             const active = path.startsWith(item.href)
             const color = active
               ? (item.tint === 'purple' ? 'var(--pf-info-fg)' : 'var(--pf-coral)')
@@ -225,7 +248,7 @@ export default function VetLayout({
               </button>
             </div>
             <nav style={{ flex: 1, padding: '12px 10px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {nav.map(item => {
+              {visibleNav.map(item => {
                 const active = path.startsWith(item.href)
                 return (
                   <Link key={item.href} href={item.href}

@@ -16,9 +16,14 @@ export default async function PetsPage() {
   if (!user) redirect('/auth/login')
 
   const { data: profile } = await supabase.from('profiles')
-    .select('*').eq('user_id', user.id).single()
+    .select('id').eq('user_id', user.id).single()
 
   const admin = createAdminClient()
+  const { data: clinicLink } = await admin
+    .from('profile_clinics').select('clinic_id').eq('user_id', user.id).limit(1).single()
+  const clinicId = clinicLink?.clinic_id
+  if (!clinicId) redirect('/vet/dashboard')
+
   const [
     { data: pets },
     { data: clinic },
@@ -26,16 +31,16 @@ export default async function PetsPage() {
   ] = await Promise.all([
     admin.from('pets')
       .select('*, profiles!pets_owner_id_fkey(full_name, email)')
-      .eq('clinic_id', profile?.clinic_id)
+      .eq('clinic_id', clinicId)
       .eq('is_active', true)
       .order('created_at', { ascending: false }),
     admin.from('clinics')
       .select('max_patients')
-      .eq('id', profile?.clinic_id)
+      .eq('id', clinicId)
       .single(),
     admin.from('pets')
       .select('*', { count: 'exact', head: true })
-      .eq('clinic_id', profile?.clinic_id)
+      .eq('clinic_id', clinicId)
       .eq('is_active', true),
   ])
 

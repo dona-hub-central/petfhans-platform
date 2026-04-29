@@ -39,13 +39,20 @@ export async function GET(
     isBlocked = !!block
   }
 
-  // Get public-facing vet team (all vets belonging to this clinic)
-  const { data: team } = await admin
-    .from('profiles')
-    .select('id, full_name, avatar_url, role')
+  // Get public-facing vet team via profile_clinics (profiles.clinic_id nullified in migration 019)
+  const { data: teamLinks } = await admin
+    .from('profile_clinics')
+    .select('user_id')
     .eq('clinic_id', clinic.id)
     .in('role', ['vet_admin', 'veterinarian'])
-    .order('full_name')
+  const teamUserIds = (teamLinks ?? []).map((l: { user_id: string }) => l.user_id)
+  const { data: team } = teamUserIds.length > 0
+    ? await admin
+        .from('profiles')
+        .select('id, full_name, avatar_url, role')
+        .in('user_id', teamUserIds)
+        .order('full_name')
+    : { data: [] }
 
   // Get clinic ratings via appointments
   const { data: appointments } = await admin

@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 
-import { PawPrint, ClipboardCheck, Mail, Plus, ClipboardList, Sparkles, type LucideIcon } from 'lucide-react'
+import { PawPrint, ClipboardCheck, Mail, Plus, ClipboardList, Sparkles, Building2, LifeBuoy, type LucideIcon } from 'lucide-react'
 import type { RecordListItem } from '@/types'
 
 export const metadata = { title: 'Dashboard · Petfhans', description: 'Panel de gestión de tu clínica veterinaria.' }
@@ -13,34 +13,78 @@ export default async function VetDashboard() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: profile } = await supabase.from('profiles')
-    .select('*').eq('user_id', user.id).single()
-
   const admin = createAdminClient()
+  const { data: profile } = await admin.from('profiles')
+    .select('full_name').eq('user_id', user.id).single()
+  const { data: clinicLink } = await admin
+    .from('profile_clinics').select('clinic_id').eq('user_id', user.id).limit(1).single()
+  const clinicId = clinicLink?.clinic_id
+
+  const firstName = (profile?.full_name ?? '').split(' ')[0]
+
+  // Vet without a clinic association — guide them to support instead of
+  // rendering broken empty stats.
+  if (!clinicId) {
+    return (
+      <div style={{ maxWidth: 560, margin: '40px auto' }}>
+        <header style={{ marginBottom: 28 }}>
+          <h1 style={{ font: 'var(--pf-text-display)', margin: 0, color: 'var(--pf-ink)' }}>
+            Hola, {firstName}
+          </h1>
+          <p style={{ font: 'var(--pf-text-body)', color: 'var(--pf-muted)', margin: '6px 0 0' }}>
+            Tu cuenta aún no está vinculada a ninguna clínica
+          </p>
+        </header>
+
+        <div style={{ background: 'var(--pf-white)', border: '0.5px solid var(--pf-border)', borderRadius: 16, padding: 28, textAlign: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12, color: 'var(--pf-coral)' }}>
+            <Building2 size={42} strokeWidth={1.5} />
+          </div>
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--pf-ink)', margin: '0 0 6px', fontFamily: 'var(--pf-font-display)' }}>
+            Sin clínica vinculada
+          </h2>
+          <p style={{ fontSize: 14, color: 'var(--pf-muted)', margin: '0 0 20px', lineHeight: 1.6 }}>
+            Para acceder a citas, pacientes, consultas y todas las herramientas
+            clínicas necesitas estar vinculado a una clínica verificada.
+          </p>
+          <Link href="/vet/support"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              padding: '10px 20px', borderRadius: 10,
+              background: 'var(--pf-coral)', color: '#fff',
+              textDecoration: 'none', fontSize: 14, fontWeight: 600,
+            }}>
+            <LifeBuoy size={15} strokeWidth={2} />
+            Solicitar verificación
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
   const { count: petCount } = await admin.from('pets')
     .select('*', { count: 'exact', head: true })
-    .eq('clinic_id', profile?.clinic_id)
+    .eq('clinic_id', clinicId)
     .eq('is_active', true)
 
   const { data: recentRecords } = await admin.from('medical_records')
     .select('*, pets(name, species)')
-    .eq('clinic_id', profile?.clinic_id)
+    .eq('clinic_id', clinicId)
     .order('visit_date', { ascending: false })
     .limit(5)
 
   const sevenDaysAgo = new Date(new Date().setDate(new Date().getDate() - 7)).toISOString().split('T')[0]
   const { count: weekRecords } = await admin.from('medical_records')
     .select('*', { count: 'exact', head: true })
-    .eq('clinic_id', profile?.clinic_id)
+    .eq('clinic_id', clinicId)
     .gte('visit_date', sevenDaysAgo)
 
   const { count: invCount } = await admin.from('invitations')
     .select('*', { count: 'exact', head: true })
-    .eq('clinic_id', profile?.clinic_id)
+    .eq('clinic_id', clinicId)
     .is('used_at', null)
     .gt('expires_at', new Date().toISOString())
 
-  const firstName = (profile?.full_name ?? '').split(' ')[0]
   const today = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
 
   return (
@@ -49,6 +93,7 @@ export default async function VetDashboard() {
         @keyframes fadeUp { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:none } }
         .qa-card { background:var(--pf-white); border:0.5px solid var(--pf-border); border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:10px; text-decoration:none; transition:border-color 0.2s, box-shadow 0.2s; }
         .qa-card:hover { border-color:var(--pf-coral-mid); box-shadow:var(--pf-shadow-card-hover); }
+        .stat-card:hover { border-color:var(--pf-coral-mid); box-shadow:var(--pf-shadow-card-hover); }
         .recent-row { display:flex; align-items:center; gap:12px; padding:14px 20px; text-decoration:none; border-top:0.5px solid var(--pf-border); transition:background 0.15s; }
         .recent-row:hover { background:var(--pf-bg); }
         @media (max-width:767px) {
@@ -68,9 +113,9 @@ export default async function VetDashboard() {
 
       {/* Stats */}
       <section className="dash-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 24 }}>
-        <StatCard Icon={PawPrint}       label="Pacientes activos"     value={petCount ?? 0}   tint="coral"  delay={0} />
-        <StatCard Icon={ClipboardCheck} label="Consultas esta semana" value={weekRecords ?? 0} tint="mint"   delay={80} />
-        <StatCard Icon={Mail}           label="Invitaciones activas"  value={invCount ?? 0}   tint="amber"  delay={160} />
+        <StatCard href="/vet/pets"        Icon={PawPrint}       label="Pacientes activos"     value={petCount ?? 0}   tint="coral"  delay={0} />
+        <StatCard href="/vet/records"     Icon={ClipboardCheck} label="Consultas esta semana" value={weekRecords ?? 0} tint="mint"   delay={80} />
+        <StatCard href="/vet/invitations" Icon={Mail}           label="Invitaciones activas"  value={invCount ?? 0}   tint="amber"  delay={160} />
       </section>
 
       {/* Quick actions */}
@@ -119,16 +164,20 @@ const tintMap = {
   purple: { bg: 'var(--pf-info)',        fg: 'var(--pf-info-fg)' },
 } as const
 
-function StatCard({ Icon, label, value, tint, delay }: { Icon: LucideIcon; label: string; value: number; tint: keyof typeof tintMap; delay: number }) {
+function StatCard({ href, Icon, label, value, tint, delay }: { href: string; Icon: LucideIcon; label: string; value: number; tint: keyof typeof tintMap; delay: number }) {
   const { bg, fg } = tintMap[tint]
   return (
-    <div style={{ background: 'var(--pf-white)', border: '0.5px solid var(--pf-border)', borderRadius: 14, padding: '18px 20px', animation: `fadeUp 0.5s ${delay}ms both` }}>
+    <Link href={href} className="stat-card" style={{
+      display: 'block', background: 'var(--pf-white)', border: '0.5px solid var(--pf-border)',
+      borderRadius: 14, padding: '18px 20px', animation: `fadeUp 0.5s ${delay}ms both`,
+      textDecoration: 'none', transition: 'border-color 0.2s, box-shadow 0.2s, transform 0.15s',
+    }}>
       <div style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10, background: bg, color: fg }}>
         <Icon size={20} strokeWidth={2} />
       </div>
       <div style={{ font: 'var(--pf-text-display)', fontSize: 26, color: 'var(--pf-ink)', lineHeight: 1 }}>{value}</div>
       <div style={{ font: 'var(--pf-text-sm)', color: 'var(--pf-muted)', marginTop: 3 }}>{label}</div>
-    </div>
+    </Link>
   )
 }
 

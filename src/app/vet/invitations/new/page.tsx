@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import PetSearch from '@/components/shared/PetSearch'
 
 export default function NewInvitationPage() {
@@ -13,15 +12,10 @@ export default function NewInvitationPage() {
   const [form, setForm] = useState({ email: '', role: 'pet_owner', pet_id: '' })
 
   useEffect(() => {
-    const load = async () => {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      const { data: profile } = await supabase.from('profiles').select('clinic_id').eq('user_id', user.id).single()
-      const { data } = await supabase.from('pets').select('id, name').eq('clinic_id', profile?.clinic_id).eq('is_active', true)
-      setPets(data ?? [])
-    }
-    load()
+    fetch('/api/vet/pets')
+      .then(r => r.json())
+      .then(({ pets }) => setPets(pets ?? []))
+      .catch(() => {})
   }, [])
 
   const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }))
@@ -29,10 +23,6 @@ export default function NewInvitationPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true); setError('')
-
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
 
     const res = await fetch('/api/vet/create-invitation', {
       method: 'POST',

@@ -50,6 +50,9 @@ AGENTS.md                    merge=ours export-ignore
 # sin una revisión explícita del PR. Aplicar con: supabase db push
 supabase/migrations/**       merge=ours export-ignore
 
+# Configuración de MCP — contiene referencias a proyectos, no va a producción
+.mcp.json                   merge=ours
+
 # ─────────────────────────────────────────────────────────────────────────────
 # NOTA: CLAUDE.md y PRODUCT.md NO están marcados como merge=ours porque
 # sí deben fluir de Develop a main — son documentación de producto y reglas

@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import Link from 'next/link'
 import AvatarUpload from '@/components/shared/AvatarUpload'
 import LogoutButton from '@/components/shared/LogoutButton'
+import { ensureProfile } from '@/lib/ensure-profile'
 
 export const metadata = { title: 'Mi perfil · Petfhans' }
 
@@ -19,13 +20,24 @@ export default async function OwnerProfilePage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
+  // Backfill profile if missing — covers users created without metadata role
+  await ensureProfile(user)
+
   const admin = createAdminClient()
   const { data: profile } = await admin.from('profiles')
-    .select('full_name, phone, avatar_url, clinics(name)')
+    .select('full_name, phone, avatar_url')
     .eq('user_id', user.id).single()
+  if (!profile) redirect('/auth/login')
 
-  type ProfileRow = { full_name: string | null; phone: string | null; avatar_url: string | null; clinics: { name: string } | null }
-  const clinicName = (profile as ProfileRow | null)?.clinics?.name
+  const { data: clinicLink } = await admin
+    .from('profile_clinics')
+    .select('clinics(name)')
+    .eq('user_id', user.id)
+    .limit(1)
+    .single()
+
+  type ClinicRow = { name: string }
+  const clinicName = (clinicLink?.clinics as unknown as ClinicRow | null)?.name
 
   async function saveProfile(formData: FormData) {
     'use server'
@@ -36,8 +48,13 @@ export default async function OwnerProfilePage({
     if (!u) redirect('/auth/login')
     const adminSb = createAdminClient()
     const { error: updateErr } = await adminSb.from('profiles')
-      .update({ full_name, phone: phone || null })
-      .eq('user_id', u.id)
+      .upsert({
+        user_id: u.id,
+        email: u.email ?? '',
+        role: (u.user_metadata?.role as string) || 'pet_owner',
+        full_name,
+        phone: phone || null,
+      }, { onConflict: 'user_id' })
     if (updateErr) redirect('/owner/profile?error=save')
     revalidatePath('/owner/profile')
     revalidatePath('/owner/dashboard')
@@ -166,6 +183,20 @@ export default async function OwnerProfilePage({
               <button type="submit" className="btn-save">Cambiar contraseña</button>
             </form>
           </div>
+
+          {/* Soporte */}
+          <Link href="/owner/support" className="card" style={{ display:'flex', alignItems:'center', gap:14, textDecoration:'none' }}>
+            <div style={{
+              width:42, height:42, borderRadius:12, flexShrink:0,
+              background:'#fff8e6', display:'flex', alignItems:'center', justifyContent:'center',
+              color:'#b07800', fontSize:22, fontWeight:700,
+            }}>?</div>
+            <div style={{ flex:1, minWidth:0 }}>
+              <p style={{ fontSize:14, fontWeight:700, color:'#1c1c1e', margin:'0 0 2px' }}>¿Eres veterinario o tienes una clínica?</p>
+              <p style={{ fontSize:12, color:'#8e8e93', margin:0 }}>Solicita verificación y contacta con soporte</p>
+            </div>
+            <span style={{ color:'#c7c7cc', fontSize:20, flexShrink:0 }}>›</span>
+          </Link>
 
           {/* Cerrar sesión */}
           <LogoutButton variant="danger" />

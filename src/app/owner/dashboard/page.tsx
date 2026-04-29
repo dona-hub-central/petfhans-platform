@@ -4,30 +4,61 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import PetAvatar from '@/components/shared/PetAvatar'
 import LogoutButton from '@/components/owner/LogoutButton'
-import { Building2, PawPrint, Calendar, Store } from 'lucide-react'
+import { Building2, PawPrint, Calendar, Store, Plus } from 'lucide-react'
 import type { Pet, PetWithNextVisit } from '@/types'
+import { ensureProfile } from '@/lib/ensure-profile'
 
 export default async function OwnerDashboard() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: profile } = await supabase.from('profiles')
-    .select('*, clinics(id, name, slug)').eq('user_id', user.id).single()
+  // Backfill profile if missing
+  const ensured = await ensureProfile(user)
+  if (!ensured) redirect('/auth/login')
+
+  const admin = createAdminClient()
+  const { data: profile } = await admin.from('profiles')
+    .select('id, full_name').eq('user_id', user.id).single()
 
   if (!profile) redirect('/auth/login')
 
-  const admin = createAdminClient()
+  const { data: clinicLink } = await admin
+    .from('profile_clinics')
+    .select('clinics(id, name, slug)')
+    .eq('user_id', user.id)
+    .limit(1)
+    .single()
 
-  // Use pet_access as authoritative source — owners only see pets explicitly granted
+  // Primary: pets with explicit pet_access grant
   const { data: access } = await admin.from('pet_access')
     .select('pet_id').eq('owner_id', profile.id)
-  const accessPetIds = (access ?? []).map(a => a.pet_id)
+  const accessPetIds = new Set((access ?? []).map(a => a.pet_id))
+
+  // Fallback: pets owned directly (pre-pet_access registrations or silent upsert failures)
+  const { data: ownedPets } = await admin.from('pets')
+    .select('id').eq('owner_id', profile.id).eq('is_active', true)
+  const ownedIds = (ownedPets ?? []).map(p => p.id)
+
+  // Backfill missing pet_access entries so future loads use the fast path
+  const missing = ownedIds.filter(id => !accessPetIds.has(id))
+  if (missing.length > 0) {
+    await admin.from('pet_access').upsert(
+      missing.map(pet_id => ({
+        owner_id:  profile.id,
+        pet_id,
+        clinic_id: null,
+        linked_by: profile.id,
+      })),
+      { onConflict: 'owner_id,pet_id', ignoreDuplicates: true }
+    )
+    missing.forEach(id => accessPetIds.add(id))
+  }
 
   let pets: Pet[] = []
-  if (accessPetIds.length > 0) {
+  if (accessPetIds.size > 0) {
     const { data } = await admin.from('pets')
-      .select('*').in('id', accessPetIds).eq('is_active', true)
+      .select('*').in('id', [...accessPetIds]).eq('is_active', true)
     pets = (data ?? []) as Pet[]
   }
 
@@ -45,8 +76,8 @@ export default async function OwnerDashboard() {
   const petsWithInfo = pets.map(pet => ({ ...pet, nextVisit: nextVisitMap[pet.id] ?? null }))
 
   const speciesLabel: Record<string, string> = { dog: 'Perro', cat: 'Gato', bird: 'Ave', rabbit: 'Conejo', other: 'Otro' }
-  type ProfileRow = { full_name: string | null; clinics: { id: string; name: string; slug: string } | null }
-  const clinic = (profile as ProfileRow | null)?.clinics
+  type ClinicRow = { id: string; name: string; slug: string }
+  const clinic = (clinicLink?.clinics as unknown as ClinicRow | null)
   const firstName = profile?.full_name?.split(' ')[0] ?? ''
 
   return (
@@ -126,7 +157,19 @@ export default async function OwnerDashboard() {
             Buscar clínicas
           </Link>
 
-          <p className="section-title">Mis mascotas</p>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }}>
+            <p className="section-title" style={{ margin:0 }}>Mis mascotas</p>
+            <Link href="/owner/pets/new"
+              style={{
+                display:'inline-flex', alignItems:'center', gap:5,
+                padding:'7px 14px', borderRadius:10,
+                background:'var(--pf-coral)', color:'#fff',
+                textDecoration:'none', fontSize:13, fontWeight:600,
+              }}>
+              <Plus size={14} strokeWidth={2.5} />
+              Añadir
+            </Link>
+          </div>
 
           {petsWithInfo.length === 0 ? (
             <div className="empty-pets">
@@ -134,7 +177,17 @@ export default async function OwnerDashboard() {
                 <PawPrint size={44} strokeWidth={1.5} />
               </div>
               <p style={{ fontSize:17, fontWeight:700, color:'var(--pf-ink)', margin:'0 0 4px', fontFamily:'var(--pf-font-display)' }}>Sin mascotas aún</p>
-              <p style={{ fontSize:14, color:'var(--pf-muted)', margin:0, fontFamily:'var(--pf-font-body)' }}>Tu clínica te asignará una pronto</p>
+              <p style={{ fontSize:14, color:'var(--pf-muted)', margin:'0 0 16px', fontFamily:'var(--pf-font-body)' }}>Registra a tu compañero para comenzar</p>
+              <Link href="/owner/pets/new"
+                style={{
+                  display:'inline-flex', alignItems:'center', gap:6,
+                  padding:'10px 20px', borderRadius:10,
+                  background:'var(--pf-coral)', color:'#fff',
+                  textDecoration:'none', fontSize:14, fontWeight:600,
+                }}>
+                <Plus size={15} strokeWidth={2.5} />
+                Añadir mascota
+              </Link>
             </div>
           ) : (
             <div className="dash-grid">
