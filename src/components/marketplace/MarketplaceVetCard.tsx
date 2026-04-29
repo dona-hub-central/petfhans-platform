@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import type { MarketplaceVet } from '@/types'
 
@@ -6,7 +8,7 @@ interface Props {
 }
 
 export default function MarketplaceVetCard({ vet }: Props) {
-  const initial = vet.full_name[0]?.toUpperCase() ?? '?'
+  const initial = vet.full_name?.[0]?.toUpperCase() ?? '?'
 
   return (
     <Link
