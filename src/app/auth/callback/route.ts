@@ -6,10 +6,10 @@ import { createAdminClient } from '@/lib/supabase/admin'
 export async function GET(req: NextRequest) {
   const { searchParams, origin } = req.nextUrl
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/owner/perfil'
+  const next = searchParams.get('next') ?? '/owner/dashboard'
 
   // Validate next is a safe relative path
-  const safeDest = next.startsWith('/') && !next.startsWith('//') ? next : '/owner/perfil'
+  const safeDest = next.startsWith('/') && !next.startsWith('//') ? next : '/owner/dashboard'
 
   if (code) {
     const cookieStore = await cookies()

@@ -107,7 +107,7 @@ function InviteForm() {
   const redirect = (role: string) => {
     window.location.href = ['vet_admin', 'veterinarian'].includes(role)
       ? '/vet/dashboard'
-      : '/owner/perfil'
+      : '/owner/dashboard'
   }
 
   const inputCls   = 'w-full px-4 py-3 rounded-lg border text-sm outline-none transition'
