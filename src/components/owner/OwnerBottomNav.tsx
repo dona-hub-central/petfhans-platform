@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { Home, Store, Calendar, MessageSquare, User, Plus } from 'lucide-react'
 
 const items = [
-  { href: '/owner/dashboard',       Icon: Home,          label: 'Inicio',      match: '/owner/dashboard' },
+  { href: '/owner/perfil',          Icon: Home,          label: 'Inicio',      match: '/owner/perfil' },
   { href: '/marketplace/clinicas',  Icon: Store,         label: 'Marketplace', match: '/marketplace' },
   { href: '/owner/appointments',    Icon: Calendar,      label: 'Mis citas',   match: '/owner/appointments' },
   { href: '/owner/messages',        Icon: MessageSquare, label: 'Mensajes',    match: '/owner/messages' },
@@ -18,6 +18,7 @@ export default function OwnerBottomNav() {
 
   return (
     <>
+      {/* Mobile bottom bar */}
       <nav className="pf-own-bot" aria-label="Navegación principal">
         <div className="pf-own-bot-inner">
           {items.slice(0, 2).map(item => (
@@ -42,8 +43,44 @@ export default function OwnerBottomNav() {
         </div>
       </nav>
 
+      {/* Desktop / Tablet sidebar */}
+      <aside className="pf-own-side" aria-label="Navegación principal">
+        <div className="pf-own-side-brand">
+          <span className="pf-own-side-logo">🐾</span>
+          <span className="pf-own-side-name">Petfhans</span>
+        </div>
+
+        <Link
+          href="/owner/appointments/new"
+          className="pf-own-side-cta"
+          data-active={fabActive ? 'true' : 'false'}
+        >
+          <Plus size={16} strokeWidth={2.5} />
+          Pedir cita
+        </Link>
+
+        <div className="pf-own-side-list">
+          {items.map(item => {
+            const active = path.startsWith(item.match) && !fabActive
+            const { Icon } = item
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="pf-own-side-item"
+                data-active={active ? 'true' : 'false'}
+              >
+                <Icon size={18} strokeWidth={active ? 2.25 : 1.75} />
+                <span>{item.label}</span>
+              </Link>
+            )
+          })}
+        </div>
+      </aside>
+
       <style>{`
         .pf-own-bot { display: none; }
+        .pf-own-side { display: none; }
 
         @media (max-width: 767px) {
           .pf-own-bot {
@@ -60,7 +97,6 @@ export default function OwnerBottomNav() {
             align-items: end;
             height: 64px;
           }
-
           .pf-own-link {
             display: flex; flex-direction: column; align-items: center; gap: 3px;
             padding: 10px 0; text-decoration: none;
@@ -91,6 +127,67 @@ export default function OwnerBottomNav() {
           }
           .pf-own-fab-label {
             transform: translateY(-14px);
+          }
+        }
+
+        @media (min-width: 768px) {
+          .pf-own-side {
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            width: 220px;
+            background: var(--pf-white);
+            border-right: 0.5px solid var(--pf-border);
+            padding: 22px 12px;
+            gap: 18px;
+            z-index: 40;
+          }
+          .pf-own-side-brand {
+            display: flex; align-items: center; gap: 10px;
+            padding: 4px 8px;
+          }
+          .pf-own-side-logo {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 36px; height: 36px; border-radius: 10px;
+            background: var(--pf-coral-soft);
+            font-size: 18px;
+          }
+          .pf-own-side-name {
+            font-family: var(--pf-font-display);
+            font-size: 18px; font-weight: 700; color: var(--pf-ink);
+            letter-spacing: -0.01em;
+          }
+          .pf-own-side-cta {
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            padding: 11px 14px; border-radius: 12px;
+            background: var(--pf-coral); color: #fff;
+            font-family: var(--pf-font-body);
+            font-size: 14px; font-weight: 600;
+            text-decoration: none;
+            transition: background .15s;
+          }
+          .pf-own-side-cta:hover { background: var(--pf-coral-dark); }
+          .pf-own-side-list {
+            display: flex; flex-direction: column; gap: 2px;
+          }
+          .pf-own-side-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 11px 14px; border-radius: 10px;
+            font-family: var(--pf-font-body);
+            font-size: 14px; font-weight: 500;
+            color: var(--pf-muted);
+            text-decoration: none;
+            transition: background .15s, color .15s;
+          }
+          .pf-own-side-item:hover {
+            background: var(--pf-surface);
+            color: var(--pf-ink);
+          }
+          .pf-own-side-item[data-active="true"] {
+            background: var(--pf-coral-soft);
+            color: var(--pf-coral);
+            font-weight: 700;
           }
         }
       `}</style>
