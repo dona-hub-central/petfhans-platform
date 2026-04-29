@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import PetAvatar from '@/components/shared/PetAvatar'
 import PetGallery from '@/components/owner/PetGallery'
 import BookAppointment from '@/components/owner/BookAppointment'
@@ -34,6 +34,7 @@ export default function OwnerPetView({ pet, records, photos, docs, appointments,
   clinicName: string
   clinicId?: string
 }) {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const validTabs: Tab[] = ['info', 'galeria', 'docs', 'historial', 'citas', 'recetas']
   const initialTab = (() => {
@@ -42,6 +43,55 @@ export default function OwnerPetView({ pet, records, photos, docs, appointments,
   })()
   const [tab, setTab] = useState<Tab>(initialTab)
   const nextVisit = records.find(r => r.next_visit && new Date(r.next_visit) > new Date())
+
+  // Edit state for the Ficha tab
+  const [editing, setEditing]     = useState(false)
+  const [saving, setSaving]       = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [form, setForm] = useState<{
+    name: string; breed: string; birth_date: string; weight: string
+    gender: string; neutered: boolean; microchip: string; notes: string
+  }>({
+    name:       pet.name       ?? '',
+    breed:      pet.breed      ?? '',
+    birth_date: pet.birth_date ?? '',
+    weight:     pet.weight != null ? String(pet.weight) : '',
+    gender:     pet.gender     ?? '',
+    neutered:   pet.neutered   ?? false,
+    microchip:  pet.microchip  ?? '',
+    notes:      pet.notes      ?? '',
+  })
+
+  async function handleSave() {
+    setSaving(true); setSaveError(null)
+    try {
+      const res = await fetch(`/api/owner/pets/${pet.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name:       form.name       || undefined,
+          breed:      form.breed      || null,
+          birth_date: form.birth_date || null,
+          weight:     form.weight ? parseFloat(form.weight) : null,
+          gender:     (form.gender as 'male' | 'female' | 'unknown') || null,
+          neutered:   form.neutered,
+          microchip:  form.microchip  || null,
+          notes:      form.notes      || null,
+        }),
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        setSaveError(data.error ?? 'Error al guardar')
+      } else {
+        setEditing(false)
+        router.refresh()
+      }
+    } catch {
+      setSaveError('Error de conexión')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   return (
     <>
@@ -66,6 +116,21 @@ export default function OwnerPetView({ pet, records, photos, docs, appointments,
         .mob-tab.active { color:#fff; border-bottom-color:#fff; }
 
         .scroll-area { flex:1; overflow-y:auto; padding:14px 14px 36px; -webkit-overflow-scrolling:touch; }
+
+        /* Edit form */
+        .pf-pet-edit-btn { padding:8px 16px; border-radius:10px; border:0.5px solid var(--pf-border); background:var(--pf-surface); font-family:var(--pf-font-body); font-size:13px; font-weight:600; color:var(--pf-ink); cursor:pointer; transition:background .15s, color .15s; }
+        .pf-pet-edit-btn:hover { background:var(--pf-coral-soft); color:var(--pf-coral); }
+        .pf-pet-form { display:flex; flex-direction:column; gap:14px; }
+        .pf-pet-form-title { font-family:var(--pf-font-display); font-size:17px; font-weight:700; color:var(--pf-ink); margin:0; }
+        .pf-pet-label { display:flex; flex-direction:column; gap:6px; font-family:var(--pf-font-body); font-size:11px; font-weight:700; color:var(--pf-muted); text-transform:uppercase; letter-spacing:.05em; }
+        .pf-pet-input { padding:10px 12px; border-radius:10px; border:0.5px solid var(--pf-border-md); background:var(--pf-white); font-family:var(--pf-font-body); font-size:14px; color:var(--pf-ink); outline:none; transition:border-color .15s; width:100%; box-sizing:border-box; }
+        .pf-pet-input:focus { border-color:var(--pf-coral); }
+        .pf-pet-textarea { min-height:80px; resize:vertical; }
+        .pf-pet-actions { display:flex; gap:10px; justify-content:flex-end; padding-top:4px; }
+        .pf-pet-cancel { padding:10px 18px; border-radius:10px; border:0.5px solid var(--pf-border); background:transparent; font-family:var(--pf-font-body); font-size:14px; font-weight:600; color:var(--pf-muted); cursor:pointer; }
+        .pf-pet-save { padding:10px 18px; border-radius:10px; border:none; background:var(--pf-coral); color:#fff; font-family:var(--pf-font-body); font-size:14px; font-weight:700; cursor:pointer; transition:background .15s; }
+        .pf-pet-save:hover:not(:disabled) { background:var(--pf-coral-dark); }
+        .pf-pet-save:disabled, .pf-pet-cancel:disabled { opacity:.6; cursor:not-allowed; }
 
         /* Cards */
         .card { background:var(--pf-white); border-radius:18px; overflow:hidden; margin-bottom:10px; }
@@ -176,7 +241,63 @@ export default function OwnerPetView({ pet, records, photos, docs, appointments,
 
             {/* Columna derecha — contenido principal */}
             <div>
-              {tab === 'info'     && <InfoDesktop pet={pet} clinicName={clinicName} nextVisit={nextVisit} records={records} />}
+              {tab === 'info' && !editing && <InfoDesktop pet={pet} clinicName={clinicName} nextVisit={nextVisit} records={records} onEdit={() => setEditing(true)} />}
+              {tab === 'info' && editing && (
+                <div className="pf-pet-form">
+                  <p className="pf-pet-form-title">Editar perfil de {pet.name}</p>
+                  {saveError && <p style={{ color:'var(--pf-coral)', fontSize:13, margin:'0 0 8px' }}>{saveError}</p>}
+                  {([
+                    { key:'name',       label:'Nombre',              type:'text',   placeholder:'' },
+                    { key:'breed',      label:'Raza',                type:'text',   placeholder:'Ej: Siamés' },
+                    { key:'birth_date', label:'Fecha de nacimiento', type:'date',   placeholder:'' },
+                    { key:'weight',     label:'Peso (kg)',           type:'number', placeholder:'Ej: 4.5' },
+                    { key:'microchip',  label:'Microchip',           type:'text',   placeholder:'Número de microchip' },
+                  ] as const).map(field => (
+                    <label key={field.key} className="pf-pet-label">
+                      {field.label}
+                      <input
+                        type={field.type}
+                        step={field.type === 'number' ? '0.1' : undefined}
+                        min={field.type === 'number' ? '0' : undefined}
+                        className="pf-pet-input"
+                        placeholder={field.placeholder}
+                        value={form[field.key] as string}
+                        onChange={e => setForm(f => ({ ...f, [field.key]: e.target.value }))}
+                      />
+                    </label>
+                  ))}
+                  <label className="pf-pet-label">Sexo
+                    <select className="pf-pet-input" value={form.gender}
+                      onChange={e => setForm(f => ({ ...f, gender: e.target.value }))}>
+                      <option value="">No especificado</option>
+                      <option value="male">Macho</option>
+                      <option value="female">Hembra</option>
+                      <option value="unknown">Desconocido</option>
+                    </select>
+                  </label>
+                  <label className="pf-pet-label">Castrado/a
+                    <select className="pf-pet-input"
+                      value={form.neutered ? 'true' : 'false'}
+                      onChange={e => setForm(f => ({ ...f, neutered: e.target.value === 'true' }))}>
+                      <option value="false">No</option>
+                      <option value="true">Sí</option>
+                    </select>
+                  </label>
+                  <label className="pf-pet-label">Notas personales
+                    <textarea className="pf-pet-input pf-pet-textarea"
+                      placeholder="Alergias, comportamiento, preferencias..."
+                      value={form.notes}
+                      onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
+                  </label>
+                  <div className="pf-pet-actions">
+                    <button onClick={() => { setEditing(false); setSaveError(null) }}
+                      className="pf-pet-cancel" disabled={saving}>Cancelar</button>
+                    <button onClick={handleSave} className="pf-pet-save" disabled={saving}>
+                      {saving ? 'Guardando...' : 'Guardar cambios'}
+                    </button>
+                  </div>
+                </div>
+              )}
               {tab === 'galeria'  && <PetGallery petId={pet.id} initialPhotos={photos} />}
               {tab === 'citas'    && <CitasTab petId={pet.id} petName={pet.name} clinicId={clinicId} appointments={appointments} />}
               {tab === 'docs'     && <DocsTab petId={pet.id} initialDocs={docs} />}
@@ -224,14 +345,18 @@ function DataCard({ pet, clinicName }: { pet: Pet; clinicName: string }) {
   )
 }
 
-function InfoDesktop({ pet, clinicName, nextVisit, records }: {
+function InfoDesktop({ pet, clinicName, nextVisit, records, onEdit }: {
   pet: Pet
   clinicName: string
   nextVisit: RecordWithVet | undefined
   records: RecordWithVet[]
+  onEdit: () => void
 }) {
   return (
     <>
+      <div style={{ display:'flex', justifyContent:'flex-end', marginBottom:12 }}>
+        <button onClick={onEdit} className="pf-pet-edit-btn">Editar perfil</button>
+      </div>
       {/* En mobile muestra todo junto, en desktop solo complementa */}
       <div style={{ display:'none' }} className="mobile-info-extra">
         <DataCard pet={pet} clinicName={clinicName} />
