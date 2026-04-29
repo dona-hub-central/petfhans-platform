@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
       .select('clinic_id')
       .eq('owner_id', profile.id)
     access?.forEach(a => {
-      if (!linkedIds.includes(a.clinic_id)) linkedIds.push(a.clinic_id)
+      if (a.clinic_id && !linkedIds.includes(a.clinic_id)) linkedIds.push(a.clinic_id)
     })
   } else {
     const { data: links } = await admin

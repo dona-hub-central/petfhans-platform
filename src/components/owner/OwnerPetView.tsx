@@ -1,16 +1,15 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import PetAvatar from '@/components/shared/PetAvatar'
 import PetGallery from '@/components/owner/PetGallery'
-import { createClient } from '@/lib/supabase/client'
 import BookAppointment from '@/components/owner/BookAppointment'
-import { PawPrint, Calendar, Camera, FileText, ClipboardList, Video, MapPin, type LucideIcon } from 'lucide-react'
+import { PawPrint, Calendar, Camera, FileText, ClipboardList, Video, MapPin, Sparkles, Pill, Microscope, Paperclip, Utensils, Activity, ShieldCheck, type LucideIcon } from 'lucide-react'
 import VideoCallRoom from '@/components/owner/VideoCallRoom'
 import EmergencyCall from '@/components/owner/EmergencyCall'
 import type { Pet, PetFile, PetFileWithUrl, RecordWithVet, AppointmentSummary } from '@/types'
 
-type Tab = 'info' | 'galeria' | 'docs' | 'historial' | 'citas'
+type Tab = 'info' | 'galeria' | 'docs' | 'historial' | 'citas' | 'recetas'
 
 const TABS: { key: Tab; Icon: LucideIcon; label: string }[] = [
   { key: 'info',      Icon: PawPrint,      label: 'Ficha' },
@@ -18,6 +17,7 @@ const TABS: { key: Tab; Icon: LucideIcon; label: string }[] = [
   { key: 'galeria',   Icon: Camera,        label: 'Galería' },
   { key: 'docs',      Icon: FileText,      label: 'Docs' },
   { key: 'historial', Icon: ClipboardList, label: 'Historial' },
+  { key: 'recetas',   Icon: Sparkles,      label: 'IA Tips' },
 ]
 
 const speciesLabel: Record<string, string> = {
@@ -39,7 +39,7 @@ export default function OwnerPetView({ pet, records, photos, docs, appointments,
   return (
     <>
       <style>{`
-        html, body { margin:0; padding:0; background:#f2f2f7; font-family:var(--pf-font-body); }
+        html, body { margin:0; padding:0; background:var(--pf-bg); font-family:var(--pf-font-body); }
 
         /* ── MOBILE (default) ── */
         .pet-shell { min-height:100svh; display:flex; flex-direction:column; }
@@ -52,10 +52,10 @@ export default function OwnerPetView({ pet, records, photos, docs, appointments,
         .pet-name { color:#fff; font-size:28px; font-weight:800; margin:0 0 3px; font-family:var(--pf-font-display); letter-spacing:-0.01em; }
         .pet-sub  { color:rgba(255,255,255,.8); font-size:13px; margin:0 0 8px; }
         .next-badge { display:inline-flex; align-items:center; gap:4px; background:rgba(255,255,255,.22); color:#fff; font-size:12px; font-weight:600; padding:4px 12px; border-radius:20px; }
-        .logout-hero-btn { border:1.5px solid rgba(255,255,255,.5); background:transparent; color:#fff; border-radius:20px; padding:5px 14px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; white-space:nowrap; }
 
-        .mob-tabs { display:flex; background:rgba(0,0,0,.15); }
-        .mob-tab { flex:1; border:none; background:none; cursor:pointer; color:rgba(255,255,255,.55); padding:11px 6px 9px; font-size:11px; font-weight:600; font-family:inherit; border-bottom:2.5px solid transparent; transition:all .15s; display:flex; flex-direction:column; align-items:center; gap:2px; }
+        .mob-tabs { display:flex; background:rgba(0,0,0,.15); overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+        .mob-tabs::-webkit-scrollbar { display:none; }
+        .mob-tab { flex:none; border:none; background:none; cursor:pointer; color:rgba(255,255,255,.55); padding:11px 14px 9px; font-size:11px; font-weight:600; font-family:inherit; border-bottom:2.5px solid transparent; transition:all .15s; display:flex; flex-direction:column; align-items:center; gap:2px; white-space:nowrap; }
         .mob-tab.active { color:#fff; border-bottom-color:#fff; }
 
         .scroll-area { flex:1; overflow-y:auto; padding:14px 14px 36px; -webkit-overflow-scrolling:touch; }
@@ -74,14 +74,13 @@ export default function OwnerPetView({ pet, records, photos, docs, appointments,
         .rec-vet { font-size:11px; color:var(--pf-muted); }
         .rec-reason { font-size:15px; font-weight:700; color:var(--pf-ink); margin:0 0 4px; }
         .rec-detail { font-size:12px; color:var(--pf-muted); margin:2px 0; }
-        .rec-next { font-size:12px; color:var(--pf-coral); font-weight:600; margin:8px 0 0; }
+        .rec-next { font-size:12px; color:var(--pf-coral); font-weight:600; margin:8px 0 0; display:flex; align-items:center; gap:4px; }
 
         /* ── DESKTOP (≥768px) ── */
         @media (min-width:768px) {
-          html, body { background:#f5f5f7; }
+          html, body { background:var(--pf-bg); }
           .pet-shell { min-height:100vh; flex-direction:column; max-width:1100px; margin:0 auto; padding:0 24px; }
 
-          /* Header desktop */
           .hero { background:none; border-radius:0; flex-shrink:0; }
           .hero-nav { padding:28px 0 0; }
           .back-link { color:var(--pf-coral); font-size:14px; }
@@ -91,15 +90,11 @@ export default function OwnerPetView({ pet, records, photos, docs, appointments,
           .pet-sub  { color:var(--pf-muted); }
           .next-badge { background:var(--pf-coral-soft); color:var(--pf-coral); }
 
-          /* Logout en desktop */
-          .logout-hero-btn { border:1.5px solid rgba(238,114,109,.4); color:var(--pf-coral); }
-
-          /* Tabs como pills horizontales */
-          .mob-tabs { background:none; border-bottom:0.5px solid var(--pf-border); margin-top:24px; gap:0; }
+          .mob-tabs { background:none; border-bottom:0.5px solid var(--pf-border); margin-top:24px; gap:0; overflow-x:visible; }
           .mob-tab { flex:none; padding:10px 20px 10px; color:var(--pf-muted); border-bottom:2.5px solid transparent; border-radius:0; font-size:13px; flex-direction:row; gap:6px; }
           .mob-tab.active { color:var(--pf-coral); border-bottom-color:var(--pf-coral); }
+          .mob-tab.active.ai-tab { color:var(--pf-info-fg); border-bottom-color:var(--pf-info-fg); }
 
-          /* Layout 2 columnas en desktop */
           .scroll-area { padding:24px 0 48px; flex:none; overflow-y:visible; }
           .desk-grid { display:grid; grid-template-columns:300px 1fr; gap:20px; align-items:start; }
           .card { border-radius:16px; box-shadow:0 1px 3px rgba(0,0,0,.07); }
@@ -113,12 +108,8 @@ export default function OwnerPetView({ pet, records, photos, docs, appointments,
       <div className="pet-shell">
         {/* HERO */}
         <div className="hero">
-          <div className="hero-nav" style={{ justifyContent:'space-between' }}>
+          <div className="hero-nav">
             <a href="/owner/dashboard" className="back-link">‹ Mis mascotas</a>
-            <button onClick={async () => { const s = createClient(); await s.auth.signOut(); window.location.href='/auth/login' }}
-              className="logout-hero-btn">
-              Cerrar sesión
-            </button>
           </div>
           <div className="hero-body">
             <PetAvatar petId={pet.id} species={pet.species} photoUrl={pet.photo_url} size={80} editable={true} />
@@ -130,7 +121,7 @@ export default function OwnerPetView({ pet, records, photos, docs, appointments,
               </p>
               {nextVisit && (
                 <span className="next-badge">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                  <Calendar size={12} strokeWidth={2.2} />
                   {nextVisit.next_visit && new Date(nextVisit.next_visit).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
                 </span>
               )}
@@ -140,7 +131,8 @@ export default function OwnerPetView({ pet, records, photos, docs, appointments,
           {/* Tabs */}
           <div className="mob-tabs">
             {TABS.map(({ key, Icon, label }) => (
-              <button key={key} onClick={() => setTab(key)} className={`mob-tab${tab===key?' active':''}`}>
+              <button key={key} onClick={() => setTab(key)}
+                className={`mob-tab${tab===key?' active':''}${key==='recetas'?' ai-tab':''}`}>
                 <Icon size={17} strokeWidth={2} />{label}
               </button>
             ))}
@@ -179,11 +171,10 @@ export default function OwnerPetView({ pet, records, photos, docs, appointments,
             <div>
               {tab === 'info'     && <InfoDesktop pet={pet} clinicName={clinicName} nextVisit={nextVisit} records={records} />}
               {tab === 'galeria'  && <PetGallery petId={pet.id} initialPhotos={photos} />}
-              {tab === 'citas'    && (
-                <CitasTab petId={pet.id} petName={pet.name} clinicId={clinicId} appointments={appointments} />
-              )}
-          {tab === 'docs'     && <DocsTab petId={pet.id} initialDocs={docs} />}
+              {tab === 'citas'    && <CitasTab petId={pet.id} petName={pet.name} clinicId={clinicId} appointments={appointments} />}
+              {tab === 'docs'     && <DocsTab petId={pet.id} initialDocs={docs} />}
               {tab === 'historial'&& <HistorialTab petId={pet.id} records={records} />}
+              {tab === 'recetas'  && <RecetasTab petId={pet.id} />}
             </div>
           </div>
         </div>
@@ -241,13 +232,13 @@ function InfoDesktop({ pet, clinicName, nextVisit, records }: {
       {pet.notes && (
         <div className="card">
           <p className="card-title">Notas</p>
-          <p style={{ padding:'10px 16px 14px', fontSize:14, color:'#3c3c43', lineHeight:1.6, margin:0 }}>{pet.notes}</p>
+          <p style={{ padding:'10px 16px 14px', fontSize:14, color:'var(--pf-ink)', lineHeight:1.6, margin:0 }}>{pet.notes}</p>
         </div>
       )}
       {nextVisit && (
         <div className="card" style={{ padding:'16px 18px', display:'flex', alignItems:'center', gap:12, background:'var(--pf-coral-soft)' }}>
-          <div style={{ width:44, height:44, borderRadius:14, background:'#fff', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--pf-coral)', flexShrink:0 }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          <div style={{ width:44, height:44, borderRadius:14, background:'var(--pf-white)', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--pf-coral)', flexShrink:0 }}>
+            <Calendar size={22} strokeWidth={2} />
           </div>
           <div>
             <p style={{ fontSize:11, color:'var(--pf-coral-dark)', fontWeight:700, margin:'0 0 2px', textTransform:'uppercase', letterSpacing:'.07em' }}>Próxima visita</p>
@@ -261,12 +252,12 @@ function InfoDesktop({ pet, clinicName, nextVisit, records }: {
         <div className="card">
           <p className="card-title">Últimas consultas</p>
           {records.slice(0,3).map((r:any) => (
-            <div key={r.id} style={{ padding:'10px 16px', borderTop:'1px solid #f2f2f7' }}>
+            <div key={r.id} style={{ padding:'10px 16px', borderTop:'1px solid var(--pf-bg)' }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                <p style={{ fontSize:13, fontWeight:600, color:'#1c1c1e', margin:0 }}>{r.reason}</p>
-                <span style={{ fontSize:11, color:'#8e8e93' }}>{new Date(r.visit_date).toLocaleDateString('es-ES',{day:'2-digit',month:'short'})}</span>
+                <p style={{ fontSize:13, fontWeight:600, color:'var(--pf-ink)', margin:0 }}>{r.reason}</p>
+                <span style={{ fontSize:11, color:'var(--pf-muted)' }}>{new Date(r.visit_date).toLocaleDateString('es-ES',{day:'2-digit',month:'short'})}</span>
               </div>
-              {r.diagnosis && <p style={{ fontSize:12, color:'#8e8e93', margin:'2px 0 0' }}>Dx: {r.diagnosis}</p>}
+              {r.diagnosis && <p style={{ fontSize:12, color:'var(--pf-muted)', margin:'2px 0 0' }}>Dx: {r.diagnosis}</p>}
             </div>
           ))}
         </div>
@@ -274,6 +265,12 @@ function InfoDesktop({ pet, clinicName, nextVisit, records }: {
     </>
   )
 }
+
+const DOC_TYPES: { value: string; Icon: LucideIcon; label: string }[] = [
+  { value: 'prescription', Icon: Pill,       label: 'Receta' },
+  { value: 'exam',         Icon: Microscope, label: 'Examen' },
+  { value: 'other',        Icon: Paperclip,  label: 'Otro'   },
+]
 
 function DocsTab({ petId, initialDocs }: { petId: string; initialDocs: PetFile[] }) {
   const [docs, setDocs] = useState(initialDocs)
@@ -306,45 +303,52 @@ function DocsTab({ petId, initialDocs }: { petId: string; initialDocs: PetFile[]
     <>
       <button onClick={() => setShowForm(!showForm)} style={{
         width:'100%', border:'none', borderRadius:18, padding:'14px 16px',
-        background:'#EE726D', color:'#fff', fontFamily:'inherit',
+        background:'var(--pf-coral)', color:'var(--pf-white)', fontFamily:'inherit',
         fontSize:15, fontWeight:700, cursor:'pointer', marginBottom:12,
       }}>+ Añadir documento</button>
 
       {showForm && (
-        <form onSubmit={upload} style={{ background:'#fff', borderRadius:18, padding:18, marginBottom:12 }}>
-          <p style={{ fontWeight:700, fontSize:15, color:'#1c1c1e', margin:'0 0 12px' }}>Nuevo documento</p>
+        <form onSubmit={upload} style={{ background:'var(--pf-white)', borderRadius:18, padding:18, marginBottom:12 }}>
+          <p style={{ fontWeight:700, fontSize:15, color:'var(--pf-ink)', margin:'0 0 12px' }}>Nuevo documento</p>
           <div style={{ display:'flex', gap:8, marginBottom:12 }}>
-            {[['prescription','💊 Receta'],['exam','🔬 Examen'],['other','📎 Otro']].map(([v,l]) => (
-              <button key={v} type="button" onClick={() => setFileType(v)}
+            {DOC_TYPES.map(({ value, Icon, label }) => (
+              <button key={value} type="button" onClick={() => setFileType(value)}
                 style={{ flex:1, border:'none', borderRadius:12, padding:'10px 4px', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'inherit',
-                  background: fileType===v ? '#fff0ef' : '#f2f2f7', color: fileType===v ? '#EE726D' : '#8e8e93',
-                  outline: fileType===v ? '2px solid #EE726D' : 'none' }}>{l}</button>
+                  display:'flex', flexDirection:'column', alignItems:'center', gap:4,
+                  background: fileType===value ? 'var(--pf-coral-soft)' : 'var(--pf-surface)',
+                  color:      fileType===value ? 'var(--pf-coral)'      : 'var(--pf-muted)',
+                  outline:    fileType===value ? '2px solid var(--pf-coral)' : 'none' }}>
+                <Icon size={15} strokeWidth={2} />{label}
+              </button>
             ))}
           </div>
           <input type="text" placeholder="Descripción (opcional)" value={notes} onChange={e => setNotes(e.target.value)}
-            style={{ width:'100%', border:'none', background:'#f2f2f7', borderRadius:12, padding:'12px 14px', fontSize:14, fontFamily:'inherit', marginBottom:10, boxSizing:'border-box' }} />
+            style={{ width:'100%', border:'none', background:'var(--pf-surface)', borderRadius:12, padding:'12px 14px', fontSize:14, fontFamily:'inherit', marginBottom:10, boxSizing:'border-box' }} />
           <div onClick={() => inputRef.current?.click()} style={{
-            border:'2px dashed #d1d1d6', borderRadius:12, padding:'18px', textAlign:'center', cursor:'pointer', marginBottom:12, background:'#f9f9f9',
+            border:'2px dashed var(--pf-border-md)', borderRadius:12, padding:'18px', textAlign:'center', cursor:'pointer', marginBottom:12, background:'var(--pf-surface)',
           }}>
-            <p style={{ margin:0, fontSize:13, color: file ? '#1c1c1e' : '#8e8e93', fontWeight: file ? 600 : 400 }}>
+            <p style={{ margin:0, fontSize:13, color: file ? 'var(--pf-ink)' : 'var(--pf-muted)', fontWeight: file ? 600 : 400 }}>
               {file ? `✓ ${file.name}` : 'Toca para seleccionar archivo'}
             </p>
             <input ref={inputRef} type="file" style={{ display:'none' }} accept=".pdf,.doc,.docx,image/*"
               onChange={e => { setFile(e.target.files?.[0] || null); setError('') }} />
           </div>
-          {error && <p style={{ color:'#dc2626', fontSize:13, margin:'0 0 10px' }}>{error}</p>}
+          {error && <p style={{ color:'var(--pf-danger-fg)', fontSize:13, margin:'0 0 10px' }}>{error}</p>}
           <div style={{ display:'flex', gap:8 }}>
             <button type="button" onClick={() => { setShowForm(false); setError('') }}
-              style={{ flex:1, border:'none', borderRadius:12, padding:13, background:'#f2f2f7', color:'#8e8e93', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>Cancelar</button>
+              style={{ flex:1, border:'none', borderRadius:12, padding:13, background:'var(--pf-surface)', color:'var(--pf-muted)', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>Cancelar</button>
             <button type="submit" disabled={uploading}
-              style={{ flex:2, border:'none', borderRadius:12, padding:13, background:'#EE726D', color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:'inherit', opacity: uploading ? .6 : 1 }}>
+              style={{ flex:2, border:'none', borderRadius:12, padding:13, background:'var(--pf-coral)', color:'var(--pf-white)', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:'inherit', opacity: uploading ? .6 : 1 }}>
               {uploading ? 'Subiendo…' : 'Subir'}</button>
           </div>
         </form>
       )}
 
       {docs.length === 0 && !showForm
-        ? <div className="empty-box"><p style={{ fontSize:36, margin:'0 0 8px' }}>📎</p><p style={{ fontSize:14, color:'#8e8e93', margin:0 }}>Sin documentos aún</p></div>
+        ? <div className="empty-box">
+            <Paperclip size={28} strokeWidth={1.5} style={{ color:'var(--pf-muted)', marginBottom:8 }} />
+            <p style={{ fontSize:14, color:'var(--pf-muted)', margin:0 }}>Sin documentos aún</p>
+          </div>
         : docs.map((d) => <DocCard key={d.id} doc={d} />)
       }
     </>
@@ -375,30 +379,33 @@ function HistorialTab({ petId, records }: { petId: string; records: RecordWithVe
   return (
     <>
       <button onClick={() => setShowNote(!showNote)} style={{
-        width:'100%', border:'2px solid #EE726D', borderRadius:18, padding:'13px 16px',
-        background:'#fff', color:'#EE726D', fontFamily:'inherit', fontSize:14, fontWeight:700, cursor:'pointer', marginBottom:12,
+        width:'100%', border:'2px solid var(--pf-coral)', borderRadius:18, padding:'13px 16px',
+        background:'var(--pf-white)', color:'var(--pf-coral)', fontFamily:'inherit', fontSize:14, fontWeight:700, cursor:'pointer', marginBottom:12,
       }}>+ Añadir observación</button>
-      {ok && <p style={{ color:'#16a34a', fontSize:13, textAlign:'center', margin:'0 0 10px' }}>✓ Guardado</p>}
+      {ok && <p style={{ color:'var(--pf-success-fg)', fontSize:13, textAlign:'center', margin:'0 0 10px' }}>✓ Guardado</p>}
       {showNote && (
-        <form onSubmit={submit} style={{ background:'#fff', borderRadius:18, padding:16, marginBottom:12 }}>
+        <form onSubmit={submit} style={{ background:'var(--pf-white)', borderRadius:18, padding:16, marginBottom:12 }}>
           <textarea placeholder="Escribe una observación sobre tu mascota…" value={note} onChange={e => setNote(e.target.value)} rows={3}
-            style={{ width:'100%', border:'none', background:'#f2f2f7', borderRadius:12, padding:'12px 14px', fontSize:14, fontFamily:'inherit', resize:'none', marginBottom:10, boxSizing:'border-box' }} />
-          <label style={{ display:'block', border:'2px dashed #d1d1d6', borderRadius:12, padding:'12px', textAlign:'center', cursor:'pointer', marginBottom:12, background:'#f9f9f9', fontSize:13, color: file ? '#1c1c1e' : '#8e8e93' }}>
+            style={{ width:'100%', border:'none', background:'var(--pf-surface)', borderRadius:12, padding:'12px 14px', fontSize:14, fontFamily:'inherit', resize:'none', marginBottom:10, boxSizing:'border-box' }} />
+          <label style={{ display:'block', border:'2px dashed var(--pf-border-md)', borderRadius:12, padding:'12px', textAlign:'center', cursor:'pointer', marginBottom:12, background:'var(--pf-surface)', fontSize:13, color: file ? 'var(--pf-ink)' : 'var(--pf-muted)' }}>
             {file ? `✓ ${file.name}` : 'Adjuntar archivo (opcional)'}
             <input type="file" style={{ display:'none' }} onChange={e => setFile(e.target.files?.[0] || null)} />
           </label>
           <div style={{ display:'flex', gap:8 }}>
             <button type="button" onClick={() => setShowNote(false)}
-              style={{ flex:1, border:'none', borderRadius:12, padding:13, background:'#f2f2f7', color:'#8e8e93', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>Cancelar</button>
+              style={{ flex:1, border:'none', borderRadius:12, padding:13, background:'var(--pf-surface)', color:'var(--pf-muted)', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>Cancelar</button>
             <button type="submit" disabled={saving}
-              style={{ flex:2, border:'none', borderRadius:12, padding:13, background:'#EE726D', color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:'inherit', opacity: saving ? .6 : 1 }}>
+              style={{ flex:2, border:'none', borderRadius:12, padding:13, background:'var(--pf-coral)', color:'var(--pf-white)', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:'inherit', opacity: saving ? .6 : 1 }}>
               {saving ? 'Guardando…' : 'Guardar'}</button>
           </div>
         </form>
       )}
 
       {records.length === 0
-        ? <div className="empty-box"><p style={{ fontSize:36, margin:'0 0 8px' }}>📋</p><p style={{ fontSize:14, color:'#8e8e93', margin:0 }}>Sin consultas registradas</p></div>
+        ? <div className="empty-box">
+            <ClipboardList size={28} strokeWidth={1.5} style={{ color:'var(--pf-muted)', marginBottom:8 }} />
+            <p style={{ fontSize:14, color:'var(--pf-muted)', margin:0 }}>Sin consultas registradas</p>
+          </div>
         : records.map((r) => (
           <div key={r.id} className="rec-card">
             <div className="rec-top">
@@ -408,7 +415,12 @@ function HistorialTab({ petId, records }: { petId: string; records: RecordWithVe
             <p className="rec-reason">{r.reason}</p>
             {r.diagnosis && <p className="rec-detail">Diagnóstico: {r.diagnosis}</p>}
             {r.treatment && <p className="rec-detail">Tratamiento: {r.treatment}</p>}
-            {r.next_visit && <p className="rec-next">📅 Próxima: {new Date(r.next_visit).toLocaleDateString('es-ES', { day:'numeric', month:'long' })}</p>}
+            {r.next_visit && (
+              <p className="rec-next">
+                <Calendar size={12} strokeWidth={2} />
+                Próxima: {new Date(r.next_visit).toLocaleDateString('es-ES', { day:'numeric', month:'long' })}
+              </p>
+            )}
           </div>
         ))
       }
@@ -416,13 +428,17 @@ function HistorialTab({ petId, records }: { petId: string; records: RecordWithVe
   )
 }
 
+const DOC_CFG: Record<string, { Icon: LucideIcon; label: string; color: string; bg: string }> = {
+  prescription: { Icon: Pill,       label: 'Receta',  color: 'var(--pf-info-fg)',  bg: 'var(--pf-info)'    },
+  exam:         { Icon: Microscope, label: 'Examen',  color: '#2563eb',             bg: '#eff6ff'            },
+  photo:        { Icon: Camera,     label: 'Foto',    color: '#16a34a',              bg: '#f0fdf4'            },
+  video:        { Icon: Video,      label: 'Vídeo',   color: '#dc2626',              bg: '#fef2f2'            },
+  other:        { Icon: Paperclip,  label: 'Archivo', color: 'var(--pf-muted)',     bg: 'var(--pf-surface)' },
+}
+
 function DocCard({ doc }: { doc: PetFile }) {
   const [opening, setOpening] = useState(false)
-  const cfg: Record<string, [string, string, string]> = {
-    prescription:['💊','Receta','#7c3aed'], exam:['🔬','Examen','#2563eb'],
-    photo:['📷','Foto','#16a34a'], video:['🎥','Vídeo','#dc2626'], other:['📎','Archivo','#64748b'],
-  }
-  const [icon, label, color] = cfg[doc.file_type] ?? cfg.other
+  const { Icon, label, color, bg } = DOC_CFG[doc.file_type] ?? DOC_CFG.other
   const open = async () => {
     setOpening(true)
     const res = await fetch(`/api/files/${doc.id}`)
@@ -432,15 +448,17 @@ function DocCard({ doc }: { doc: PetFile }) {
   }
   return (
     <button onClick={open} disabled={opening} style={{
-      background:'#fff', borderRadius:18, padding:'14px 16px', display:'flex', alignItems:'center', gap:12,
+      background:'var(--pf-white)', borderRadius:18, padding:'14px 16px', display:'flex', alignItems:'center', gap:12,
       border:'none', width:'100%', textAlign:'left', cursor:'pointer', marginBottom:8, fontFamily:'inherit',
     }}>
-      <div style={{ width:44, height:44, borderRadius:12, flexShrink:0, background:color+'15', display:'flex', alignItems:'center', justifyContent:'center', fontSize:22 }}>{icon}</div>
-      <div style={{ flex:1, minWidth:0 }}>
-        <p style={{ fontSize:13, fontWeight:600, color:'#1c1c1e', margin:'0 0 3px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{doc.notes || doc.file_name}</p>
-        <span style={{ fontSize:10, fontWeight:600, color, background:color+'15', padding:'2px 7px', borderRadius:6 }}>{label}</span>
+      <div style={{ width:44, height:44, borderRadius:12, flexShrink:0, background:bg, display:'flex', alignItems:'center', justifyContent:'center', color }}>
+        <Icon size={20} strokeWidth={1.75} />
       </div>
-      <span style={{ color:'#c7c7cc', fontSize:20, flexShrink:0 }}>{opening ? '⏳' : '›'}</span>
+      <div style={{ flex:1, minWidth:0 }}>
+        <p style={{ fontSize:13, fontWeight:600, color:'var(--pf-ink)', margin:'0 0 3px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{doc.notes || doc.file_name}</p>
+        <span style={{ fontSize:10, fontWeight:600, color, background:bg, padding:'2px 7px', borderRadius:6 }}>{label}</span>
+      </div>
+      <span style={{ color:'var(--pf-hint)', fontSize:20, flexShrink:0 }}>{opening ? '…' : '›'}</span>
     </button>
   )
 }
@@ -451,10 +469,10 @@ function getAge(d: string) {
 }
 
 const APPT_STATUS: Record<string, { label: string; bg: string; color: string }> = {
-  pending:   { label: 'Pendiente',  bg: '#fff8e6', color: '#b07800' },
-  confirmed: { label: 'Confirmada', bg: '#edfaf1', color: '#1a7a3c' },
-  cancelled: { label: 'Cancelada',  bg: '#fee2e2', color: '#dc2626' },
-  completed: { label: 'Completada', bg: '#f0f4ff', color: '#2563eb' },
+  pending:   { label: 'Pendiente',  bg: 'var(--pf-warning)', color: 'var(--pf-warning-fg)' },
+  confirmed: { label: 'Confirmada', bg: 'var(--pf-success)', color: 'var(--pf-success-fg)' },
+  cancelled: { label: 'Cancelada',  bg: 'var(--pf-danger)',  color: 'var(--pf-danger-fg)'  },
+  completed: { label: 'Completada', bg: 'var(--pf-info)',    color: 'var(--pf-info-fg)'    },
 }
 
 function CitasTab({ petId, petName, clinicId, appointments }: {
@@ -471,36 +489,38 @@ function CitasTab({ petId, petName, clinicId, appointments }: {
       {/* Scheduled booking form */}
       {clinicId
         ? <BookAppointment petId={petId} petName={petName} clinicId={clinicId} />
-        : <div className="empty-box"><p style={{ fontSize: 32, margin: '0 0 8px' }}>📅</p><p style={{ fontSize: 14, color: '#8e8e93', margin: 0 }}>Sin clínica asignada</p></div>
+        : <div className="empty-box">
+            <Calendar size={28} strokeWidth={1.5} style={{ color:'var(--pf-muted)', marginBottom:8 }} />
+            <p style={{ fontSize: 14, color: 'var(--pf-muted)', margin: 0 }}>Sin clínica asignada</p>
+          </div>
       }
 
-      {/* Upcoming appointments */}
       {upcoming.length > 0 && (
         <div style={{ marginBottom: 10 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: '#8e8e93', textTransform: 'uppercase', letterSpacing: '.07em', margin: '0 2px 8px' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--pf-muted)', textTransform: 'uppercase', letterSpacing: '.07em', margin: '0 2px 8px' }}>
             Próximas
           </p>
           {upcoming.map((a) => {
             const st = APPT_STATUS[a.status] ?? APPT_STATUS.pending
             const dateLabel = new Date(a.appointment_date + 'T12:00').toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
             return (
-              <div key={a.id} style={{ background: '#fff', borderRadius: 16, padding: '14px 16px', marginBottom: 8 }}>
+              <div key={a.id} style={{ background: 'var(--pf-white)', borderRadius: 16, padding: '14px 16px', marginBottom: 8 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     {a.is_virtual
                       ? <Video size={13} strokeWidth={2} style={{ color: '#6366f1' }} />
-                      : <MapPin size={13} strokeWidth={2} style={{ color: '#EE726D' }} />
+                      : <MapPin size={13} strokeWidth={2} style={{ color: 'var(--pf-coral)' }} />
                     }
-                    <span style={{ fontSize: 13, fontWeight: 700, color: '#1c1c1e' }}>{dateLabel}</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--pf-ink)' }}>{dateLabel}</span>
                   </div>
                   <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 9px', borderRadius: 20, background: st.bg, color: st.color }}>
                     {st.label}
                   </span>
                 </div>
-                <p style={{ fontSize: 12, color: '#8e8e93', margin: '0 0 4px' }}>
+                <p style={{ fontSize: 12, color: 'var(--pf-muted)', margin: '0 0 4px' }}>
                   {a.appointment_time.slice(0, 5)} · {a.is_virtual ? 'Videollamada' : 'Presencial'}
                 </p>
-                <p style={{ fontSize: 13, color: '#3c3c43', margin: '0 0 10px', lineHeight: 1.5 }}>{a.reason}</p>
+                <p style={{ fontSize: 13, color: 'var(--pf-ink)', margin: '0 0 10px', lineHeight: 1.5 }}>{a.reason}</p>
                 {a.is_virtual && a.status === 'confirmed' && (
                   <VideoCallRoom
                     appointmentId={a.id}
@@ -514,7 +534,7 @@ function CitasTab({ petId, petName, clinicId, appointments }: {
                   </p>
                 )}
                 {a.notes && (
-                  <p style={{ fontSize: 12, color: '#1a7a3c', margin: '6px 0 0', fontStyle: 'italic' }}>
+                  <p style={{ fontSize: 12, color: 'var(--pf-success-fg)', margin: '6px 0 0', fontStyle: 'italic' }}>
                     Nota del veterinario: {a.notes}
                   </p>
                 )}
@@ -524,27 +544,26 @@ function CitasTab({ petId, petName, clinicId, appointments }: {
         </div>
       )}
 
-      {/* Past appointments */}
       {past.length > 0 && (
         <div>
-          <p style={{ fontSize: 11, fontWeight: 700, color: '#8e8e93', textTransform: 'uppercase', letterSpacing: '.07em', margin: '0 2px 8px' }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--pf-muted)', textTransform: 'uppercase', letterSpacing: '.07em', margin: '0 2px 8px' }}>
             Historial de citas
           </p>
           {past.map((a) => {
             const st = APPT_STATUS[a.status] ?? APPT_STATUS.completed
             return (
-              <div key={a.id} style={{ background: '#fff', borderRadius: 16, padding: '12px 16px', marginBottom: 8, opacity: 0.8 }}>
+              <div key={a.id} style={{ background: 'var(--pf-white)', borderRadius: 16, padding: '12px 16px', marginBottom: 8, opacity: 0.8 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#1c1c1e' }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--pf-ink)' }}>
                     {new Date(a.appointment_date + 'T12:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </span>
                   <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 9px', borderRadius: 20, background: st.bg, color: st.color }}>
                     {st.label}
                   </span>
                 </div>
-                <p style={{ fontSize: 12, color: '#8e8e93', margin: 0 }}>{a.reason}</p>
+                <p style={{ fontSize: 12, color: 'var(--pf-muted)', margin: 0 }}>{a.reason}</p>
                 {a.cancellation_reason && (
-                  <p style={{ fontSize: 11, color: '#dc2626', margin: '4px 0 0' }}>Motivo: {a.cancellation_reason}</p>
+                  <p style={{ fontSize: 11, color: 'var(--pf-danger-fg)', margin: '4px 0 0' }}>Motivo: {a.cancellation_reason}</p>
                 )}
               </div>
             )
@@ -554,12 +573,96 @@ function CitasTab({ petId, petName, clinicId, appointments }: {
 
       {appointments.length === 0 && (
         <div className="empty-box">
-          <p style={{ fontSize: 32, margin: '0 0 8px' }}>📅</p>
-          <p style={{ fontSize: 14, color: '#8e8e93', margin: 0 }}>Sin citas registradas</p>
+          <Calendar size={28} strokeWidth={1.5} style={{ color:'var(--pf-muted)', marginBottom:8 }} />
+          <p style={{ fontSize: 14, color: 'var(--pf-muted)', margin: 0 }}>Sin citas registradas</p>
         </div>
       )}
     </>
   )
 }
 
+/* ── RecetasTab ── */
 
+type Tip = { id: string; title: string; content: string }
+
+const TIP_STYLES: { bg: string; color: string; border: string; Icon: LucideIcon }[] = [
+  { bg: '#f0fdf4',              color: '#15803d',             border: '#bbf7d0',             Icon: Utensils   },
+  { bg: 'var(--pf-coral-soft)', color: 'var(--pf-coral)',     border: 'var(--pf-coral-mid)', Icon: Activity   },
+  { bg: '#fffbeb',              color: '#d97706',             border: '#fde68a',             Icon: ShieldCheck },
+  { bg: 'var(--pf-info)',       color: 'var(--pf-info-fg)',   border: '#c4b5fd',             Icon: Sparkles   },
+]
+
+function RecetasTab({ petId }: { petId: string }) {
+  const [tips, setTips]       = useState<Tip[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError]     = useState('')
+
+  useEffect(() => {
+    fetch(`/api/owner/pet-tips?pet_id=${petId}`, { credentials: 'include' })
+      .then(r => r.json())
+      .then(d => { if (d.tips) setTips(d.tips); else setError(d.error || 'Error al cargar consejos') })
+      .catch(() => setError('Error de conexión'))
+      .finally(() => setLoading(false))
+  }, [petId])
+
+  if (loading) return (
+    <>
+      <style>{`@keyframes pf-pulse{0%,100%{opacity:1}50%{opacity:.45}}.tip-sk{border-radius:10px;animation:pf-pulse 1.6s ease-in-out infinite;background:var(--pf-border);}`}</style>
+      <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:16 }}>
+        <div style={{ width:32, height:32, borderRadius:10, background:'var(--pf-info)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <Sparkles size={16} strokeWidth={2} style={{ color:'var(--pf-info-fg)' }} />
+        </div>
+        <div>
+          <p style={{ fontSize:13, fontWeight:700, color:'var(--pf-ink)', margin:0 }}>Consejos personalizados</p>
+          <p style={{ fontSize:11, color:'var(--pf-muted)', margin:0 }}>Generando con IA…</p>
+        </div>
+      </div>
+      {[0,1,2,3].map(i => (
+        <div key={i} style={{ background:'var(--pf-surface)', borderRadius:18, padding:16, marginBottom:10 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12 }}>
+            <div className="tip-sk" style={{ width:34, height:34, flexShrink:0 }} />
+            <div className="tip-sk" style={{ height:14, width:120 }} />
+          </div>
+          <div className="tip-sk" style={{ height:12, width:'100%', marginBottom:6 }} />
+          <div className="tip-sk" style={{ height:12, width:'75%' }} />
+        </div>
+      ))}
+    </>
+  )
+
+  if (error) return (
+    <div className="empty-box">
+      <Sparkles size={28} strokeWidth={1.5} style={{ color:'var(--pf-muted)', marginBottom:8 }} />
+      <p style={{ fontSize:14, color:'var(--pf-muted)', margin:0 }}>{error}</p>
+    </div>
+  )
+
+  return (
+    <>
+      <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:16 }}>
+        <div style={{ width:32, height:32, borderRadius:10, background:'var(--pf-info)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <Sparkles size={16} strokeWidth={2} style={{ color:'var(--pf-info-fg)' }} />
+        </div>
+        <div>
+          <p style={{ fontSize:13, fontWeight:700, color:'var(--pf-ink)', margin:0 }}>Consejos personalizados</p>
+          <p style={{ fontSize:11, color:'var(--pf-muted)', margin:0 }}>Generados por IA a partir de su perfil</p>
+        </div>
+      </div>
+      {tips.map((tip, i) => {
+        const s = TIP_STYLES[i % TIP_STYLES.length]
+        const { Icon } = s
+        return (
+          <div key={tip.id} style={{ background:s.bg, border:`1px solid ${s.border}`, borderRadius:18, padding:16, marginBottom:10 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
+              <div style={{ width:34, height:34, borderRadius:10, background:'rgba(255,255,255,.7)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                <Icon size={17} strokeWidth={2} style={{ color:s.color }} />
+              </div>
+              <p style={{ fontSize:14, fontWeight:700, color:s.color, margin:0 }}>{tip.title}</p>
+            </div>
+            <p style={{ fontSize:13, color:'var(--pf-ink)', lineHeight:1.6, margin:0 }}>{tip.content}</p>
+          </div>
+        )
+      })}
+    </>
+  )
+}

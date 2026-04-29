@@ -15,6 +15,7 @@ export default async function OwnerSupportPage() {
   const admin = createAdminClient()
   const { data: profile } = await admin.from('profiles')
     .select('full_name').eq('user_id', user.id).single()
+  if (!profile) redirect('/auth/login')
 
   return (
     <div className="min-h-screen p-4" style={{ background: 'var(--pf-bg)', paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
