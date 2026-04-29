@@ -23,7 +23,7 @@ export default async function OwnerSupportPage() {
         <SupportRequestForm
           defaultEmail={user.email ?? ''}
           defaultName={profile?.full_name ?? undefined}
-          backHref="/owner/profile"
+          backHref="/owner/settings"
           backLabel="Volver al perfil"
         />
       </div>
