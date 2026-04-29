@@ -11,9 +11,6 @@ export async function PATCH(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
 
-  const activeClinicId = req.headers.get('x-active-clinic-id')
-  if (!activeClinicId) return NextResponse.json({ error: 'Sin clínica activa' }, { status: 403 })
-
   const admin = createAdminClient()
   const { data: profile } = await admin
     .from('profiles')
@@ -24,6 +21,16 @@ export async function PATCH(
   if (!profile || profile.role !== 'vet_admin') {
     return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
   }
+
+  const { data: clinicLink } = await admin
+    .from('profile_clinics')
+    .select('clinic_id')
+    .eq('user_id', user.id)
+    .limit(1)
+    .single()
+  if (!clinicLink?.clinic_id) return NextResponse.json({ error: 'Sin clínica activa' }, { status: 403 })
+
+  const activeClinicId = clinicLink.clinic_id
 
   const { id } = await params
   const { data: careRequest } = await admin

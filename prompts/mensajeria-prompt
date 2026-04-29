@@ -1,0 +1,454 @@
+# Prompt — Sistema de Mensajería Owner ↔ Clínica
+
+## Contexto del análisis
+
+**No es un bug — es funcionalidad faltante.**
+
+La BD de Petfhans tiene 20 tablas pero ninguna para mensajería bidireccional.
+El único flujo de comunicación owner → clínica que existe hoy es
+`care_requests` y es un handshake puntual:
+
+- Owner envía UN mensaje (`reason`) al solicitar atención
+- Clínica responde con accept/reject/block + UN mensaje (`rejection_note`)
+- La conversación termina ahí
+
+**Casos de uso no soportados actualmente:**
+- Owner ya vinculado pregunta sobre un tratamiento del historial
+- Owner pide formalizar una cita presencial
+- Owner pregunta seguimiento de una receta o examen
+- Vet responde una pregunta sin necesidad de crear `care_request`
+- Comunicación continua después del handshake inicial
+
+---
+
+## Diseño propuesto — sistema de hilos de conversación
+
+Antes de empezar, lee:
+```
+CLAUDE.md
+skills-ai/spec-driven-development/SKILL.md
+skills-ai/api-and-interface-design/SKILL.md
+skills-ai/security-and-hardening/SKILL.md
+skills-ai/security-invitation-flow/SKILL.md
+skills-ai/incremental-implementation/SKILL.md
+```
+
+**Modelo de datos:**
+
+```
+conversations              ← un hilo entre un owner y una clínica
+  ├── id
+  ├── owner_id              FK profiles
+  ├── clinic_id             FK clinics
+  ├── pet_id                FK pets (opcional, contexto)
+  ├── subject               string (asunto del hilo)
+  ├── status                'open' | 'closed' | 'archived'
+  ├── last_message_at       timestamptz
+  ├── created_at
+  └── unique(owner_id, clinic_id, pet_id, subject)
+
+conversation_messages       ← cada mensaje del hilo
+  ├── id
+  ├── conversation_id       FK conversations
+  ├── sender_profile_id     FK profiles (owner, vet o vet_admin)
+  ├── sender_role           'pet_owner' | 'veterinarian' | 'vet_admin'
+  ├── body                  text
+  ├── attachment_path       text NULL (Supabase Storage)
+  ├── read_by_recipient     boolean
+  ├── created_at
+
+conversation_participants   ← quién está en el hilo (vets que pueden ver)
+  ├── conversation_id       FK
+  ├── profile_id            FK profiles
+  └── primary key (conversation_id, profile_id)
+```
+
+**Reglas de negocio:**
+
+1. Un hilo se crea cuando:
+   - El owner ya está vinculado a la clínica via `profile_clinics`
+   - **O** el owner está creando una `care_request` (el primer mensaje del owner inicia el hilo)
+2. Un owner solo puede crear hilos con clínicas donde tiene relación
+3. Cualquier vet o vet_admin de la clínica puede leer y responder
+4. El owner solo puede mensajear con clínicas a las que pertenece o donde tiene `care_request` activa
+5. No se puede crear un hilo si la clínica bloqueó al owner (tabla `clinic_blocks`)
+6. Adjuntos: solo imágenes, PDF, máx 10MB por mensaje
+7. El hilo se cierra automáticamente si el owner se desvincula de la clínica
+
+---
+
+## TAREA 1 — Migración de schema
+
+**Archivo nuevo:** `supabase/migrations/020_conversations.sql`
+
+```sql
+-- Tabla de hilos
+CREATE TABLE conversations (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id        UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  clinic_id       UUID NOT NULL REFERENCES clinics(id) ON DELETE CASCADE,
+  pet_id          UUID REFERENCES pets(id) ON DELETE SET NULL,
+  subject         TEXT NOT NULL CHECK (length(subject) BETWEEN 1 AND 200),
+  status          TEXT NOT NULL DEFAULT 'open'
+                    CHECK (status IN ('open', 'closed', 'archived')),
+  last_message_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_conversations_owner ON conversations(owner_id);
+CREATE INDEX idx_conversations_clinic ON conversations(clinic_id);
+CREATE INDEX idx_conversations_pet ON conversations(pet_id) WHERE pet_id IS NOT NULL;
+CREATE INDEX idx_conversations_last_message ON conversations(last_message_at DESC);
+
+-- Tabla de mensajes
+CREATE TABLE conversation_messages (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+  sender_profile_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  sender_role     TEXT NOT NULL
+                    CHECK (sender_role IN ('pet_owner', 'veterinarian', 'vet_admin')),
+  body            TEXT NOT NULL CHECK (length(body) BETWEEN 1 AND 5000),
+  attachment_path TEXT,
+  read_by_recipient BOOLEAN NOT NULL DEFAULT false,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_messages_conversation ON conversation_messages(conversation_id, created_at);
+CREATE INDEX idx_messages_unread ON conversation_messages(conversation_id, read_by_recipient)
+  WHERE read_by_recipient = false;
+
+-- Trigger para actualizar last_message_at
+CREATE OR REPLACE FUNCTION bump_conversation_last_message()
+RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE conversations
+  SET last_message_at = NEW.created_at
+  WHERE id = NEW.conversation_id;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_bump_last_message
+AFTER INSERT ON conversation_messages
+FOR EACH ROW EXECUTE FUNCTION bump_conversation_last_message();
+
+-- RLS conversations
+ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
+
+-- Owner ve sus propios hilos
+CREATE POLICY "owner_sees_own_conversations" ON conversations
+  FOR SELECT
+  USING (owner_id = (SELECT id FROM profiles WHERE user_id = auth.uid()));
+
+-- Vet/vet_admin ven hilos de su clínica
+CREATE POLICY "clinic_staff_sees_clinic_conversations" ON conversations
+  FOR SELECT
+  USING (
+    clinic_id IN (
+      SELECT clinic_id FROM profile_clinics
+      WHERE user_id = auth.uid()
+      AND role IN ('vet_admin', 'veterinarian')
+    )
+  );
+
+-- Owner crea hilos con sus clínicas
+CREATE POLICY "owner_creates_conversation" ON conversations
+  FOR INSERT
+  WITH CHECK (
+    owner_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
+    AND clinic_id IN (
+      SELECT clinic_id FROM profile_clinics WHERE user_id = auth.uid()
+    )
+  );
+
+-- Vet_admin actualiza estado del hilo
+CREATE POLICY "clinic_staff_updates_conversation" ON conversations
+  FOR UPDATE
+  USING (
+    clinic_id IN (
+      SELECT clinic_id FROM profile_clinics
+      WHERE user_id = auth.uid()
+      AND role = 'vet_admin'
+    )
+  );
+
+-- RLS conversation_messages
+ALTER TABLE conversation_messages ENABLE ROW LEVEL SECURITY;
+
+-- Lectura: si puedes ver el hilo, ves los mensajes
+CREATE POLICY "see_messages_of_visible_conversations" ON conversation_messages
+  FOR SELECT
+  USING (
+    conversation_id IN (
+      SELECT id FROM conversations
+      WHERE owner_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
+      OR clinic_id IN (
+        SELECT clinic_id FROM profile_clinics WHERE user_id = auth.uid()
+      )
+    )
+  );
+
+-- Insert: solo participantes del hilo
+CREATE POLICY "send_message_in_visible_conversation" ON conversation_messages
+  FOR INSERT
+  WITH CHECK (
+    sender_profile_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
+    AND conversation_id IN (
+      SELECT id FROM conversations
+      WHERE status = 'open'
+      AND (
+        owner_id = (SELECT id FROM profiles WHERE user_id = auth.uid())
+        OR clinic_id IN (
+          SELECT clinic_id FROM profile_clinics WHERE user_id = auth.uid()
+        )
+      )
+    )
+  );
+```
+
+Ejecuta la migración via MCP de Supabase.
+Verifica:
+```sql
+SELECT COUNT(*) FROM information_schema.tables
+WHERE table_name IN ('conversations', 'conversation_messages');
+-- debe devolver 2
+
+SELECT COUNT(*) FROM pg_policies
+WHERE tablename IN ('conversations', 'conversation_messages');
+-- debe devolver 5 o más
+```
+
+Commit: `feat(messaging): add conversations and conversation_messages tables`
+
+---
+
+## TAREA 2 — API routes
+
+Lee primero `skills-ai/api-and-interface-design/SKILL.md` para el patrón estándar.
+
+### `POST /api/conversations`
+Crea un hilo nuevo. Owner especifica clinic_id, pet_id (opcional), subject
+y el primer mensaje.
+
+```typescript
+// Body con Zod:
+const Schema = z.object({
+  clinic_id: z.string().uuid(),
+  pet_id:    z.string().uuid().optional(),
+  subject:   z.string().min(1).max(200).trim(),
+  body:      z.string().min(1).max(5000).trim(),
+})
+
+// Validaciones:
+// 1. Auth via supabase.auth.getUser()
+// 2. profile null guard
+// 3. Verificar que el owner pertenece a esa clínica via profile_clinics
+//    (excepto si es el primer mensaje vía care_request — fuera de scope para esta tarea)
+// 4. Verificar que la clínica no bloqueó al owner (clinic_blocks)
+// 5. Insert conversation + insert primer message en transacción
+```
+
+### `GET /api/conversations`
+Lista los hilos del usuario autenticado, ordenados por `last_message_at desc`.
+Paginación con `.range(offset, offset+19)`.
+
+```typescript
+// Query params: page (default 0), status (default 'open')
+// Owner: ve sus hilos
+// Vet/vet_admin: ve los hilos de la clínica activa
+// Incluir en la respuesta:
+//   - subject, last_message_at, status
+//   - count de mensajes no leídos para el rol del usuario
+//   - nombre del otro lado (para owner: nombre de clínica; para vet: nombre de owner)
+```
+
+### `GET /api/conversations/[id]`
+Devuelve un hilo con sus mensajes paginados.
+
+```typescript
+// Params: id del hilo
+// Query: before (para paginación inversa, mensajes más antiguos primero)
+// Verifica acceso vía RLS — si no devuelve fila, 404
+// Marca como leídos los mensajes recibidos por este usuario
+```
+
+### `POST /api/conversations/[id]/messages`
+Envía un mensaje al hilo.
+
+```typescript
+const Schema = z.object({
+  body: z.string().min(1).max(5000).trim(),
+  attachment_path: z.string().optional(),
+})
+
+// 1. Verificar que el hilo está 'open'
+// 2. Verificar acceso vía SELECT del hilo
+// 3. Determinar sender_role del profile actual
+// 4. Insert mensaje
+// 5. El trigger actualiza last_message_at
+// 6. Disparar email a la otra parte vía Resend
+//    - Si sender_role = pet_owner → email a vet_admin de la clínica
+//    - Si sender_role = vet/vet_admin → email al owner
+```
+
+### `PATCH /api/conversations/[id]`
+Cambia el estado del hilo (cerrar/archivar). Solo vet_admin.
+
+```typescript
+const Schema = z.object({
+  status: z.enum(['open', 'closed', 'archived']),
+})
+// Solo vet_admin de la clínica
+```
+
+`npx tsc --noEmit` después de cada route.
+Commit por route: `feat(messaging): add [route]`
+
+---
+
+## TAREA 3 — UI del owner
+
+Antes de empezar, lee:
+```
+skills-ai/frontend-design-quality/SKILL.md
+skills-ai/frontend-ui-engineering/SKILL.md
+```
+
+**Páginas nuevas:**
+```
+src/app/owner/messages/page.tsx           ← lista de hilos del owner
+src/app/owner/messages/[id]/page.tsx      ← detalle del hilo + composer
+src/app/owner/messages/new/page.tsx       ← crear hilo nuevo
+```
+
+**Componentes nuevos:**
+```
+src/components/owner/ConversationList.tsx
+src/components/owner/ConversationThread.tsx
+src/components/owner/MessageComposer.tsx
+```
+
+**Patrones visuales:**
+- Lista de hilos: usa el patrón de fila con avatar de clínica + último mensaje + timestamp + badge de no leídos
+- Detalle del hilo: burbujas estilo chat, las del owner alineadas a la derecha en coral, las de la clínica a la izquierda en surface
+- Composer: textarea con auto-grow + botón de adjuntar + botón enviar
+- Empty state si no hay hilos: link a `/marketplace/clinicas` para iniciar
+
+**Acceso al módulo:**
+Añadir un nuevo tab "Mensajes" en la navegación inferior del owner,
+antes o después de "Mis citas".
+
+Commit: `feat(messaging): owner UI for conversations`
+
+---
+
+## TAREA 4 — UI del vet
+
+**Páginas nuevas:**
+```
+src/app/vet/messages/page.tsx           ← lista de hilos de la clínica activa
+src/app/vet/messages/[id]/page.tsx      ← detalle del hilo
+```
+
+**Componentes:**
+- Reutilizar `ConversationThread` y `MessageComposer` del owner si es viable
+- Lista filtrable por estado (open / closed / archived)
+- Indicador de hilos sin responder (last_message no leído por la clínica)
+
+**Sidebar:** añadir item "Mensajes" en VetLayout con badge de no leídos.
+
+Commit: `feat(messaging): vet UI for conversations`
+
+---
+
+## TAREA 5 — Notificaciones por email
+
+Reutiliza el patrón de Resend que ya existe en `src/lib/email.ts`.
+
+Templates nuevos:
+- `new_message_to_owner.html` — "Tienes un mensaje nuevo de {clinic_name}"
+- `new_message_to_clinic.html` — "{owner_name} te envió un mensaje sobre {pet_name}"
+
+Cada template incluye:
+- Quien envía
+- Asunto del hilo
+- Preview del mensaje (primeras 200 chars)
+- Botón "Ver mensaje" → link directo al hilo
+
+Aplica el patrón del audit `BUG-009`: nada de `.catch(() => {})` silencioso.
+Loguea el error si falla el email pero no falla la inserción del mensaje.
+
+Commit: `feat(messaging): email notifications for new messages`
+
+---
+
+## TAREA 6 — Acceso a mensajería para usuarios huérfanos
+
+Para el caso de usuarios como kitty (clinic_id = null, sin profile_clinics):
+
+**Decisión de producto:** un owner huérfano NO puede crear hilos de mensajería
+con clínicas. Debe primero hacer una `care_request` (handshake) y ser aceptado.
+La mensajería se desbloquea cuando hay vinculación.
+
+**Empty state en `/owner/messages`:**
+```tsx
+{noClinicsYet && (
+  <div style={{ textAlign: 'center', padding: '48px 20px' }}>
+    <p style={{ font: 'var(--pf-text-h3)', color: 'var(--pf-ink)', margin: '0 0 8px' }}>
+      Aún no puedes enviar mensajes
+    </p>
+    <p style={{ font: 'var(--pf-text-body)', color: 'var(--pf-muted)', margin: '0 0 20px' }}>
+      Para conversar con una clínica primero debes solicitar atención
+      a través del marketplace
+    </p>
+    <Link href="/marketplace/clinicas" className="pf-btn pf-btn-primary">
+      Buscar clínica
+    </Link>
+  </div>
+)}
+```
+
+Esto evita que la mensajería sea un canal abierto sin contexto.
+
+Commit: `feat(messaging): empty state for orphan owners`
+
+---
+
+## Verificación final
+
+```bash
+npx tsc --noEmit
+npm run build
+```
+
+Prueba manual:
+1. Como owner vinculado a una clínica: crea un hilo desde `/owner/messages/new`
+2. Como vet de esa clínica: ve el hilo en `/vet/messages` y responde
+3. Como owner: vuelve y ve la respuesta + email
+4. Como vet_admin: cierra el hilo
+5. Como owner huérfano (kitty): `/owner/messages` muestra el empty state correcto
+
+PR: `feat(messaging): owner ↔ clinic conversations system`
+
+---
+
+## Restricciones
+
+- ❌ No tocar `care_requests` ni `clinic_join_requests` — son flujos separados
+- ❌ No agregar realtime/WebSockets en esta sesión (puede ser fase posterior)
+- ❌ No instalar dependencias nuevas
+- ✅ Un commit por tarea principal
+- ✅ Cada migración SQL ejecutada y verificada antes de continuar
+- ✅ `npx tsc --noEmit` después de cada route y componente
+- ✅ RLS verificado con queries de prueba antes de marcar como listo
+
+---
+
+## Decisiones diferidas a fases posteriores
+
+- Realtime con Supabase Realtime para que los mensajes lleguen sin recargar
+- Indicador de "escribiendo..."
+- Reacciones a mensajes
+- Edición/borrado de mensajes
+- Búsqueda dentro de hilos
+- Push notifications móviles
