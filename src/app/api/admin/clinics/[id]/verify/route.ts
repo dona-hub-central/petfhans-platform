@@ -10,7 +10,9 @@ export async function PATCH(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
 
-  const { data: profile } = await supabase
+  const admin = createAdminClient()
+
+  const { data: profile } = await admin
     .from('profiles').select('role').eq('user_id', user.id).single()
   if (!profile) return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 403 })
   if (profile.role !== 'superadmin') {
@@ -23,7 +25,6 @@ export async function PATCH(
     return NextResponse.json({ error: 'verified debe ser boolean' }, { status: 422 })
   }
 
-  const admin = createAdminClient()
   const { error } = await admin.from('clinics').update({ verified }).eq('id', id)
 
   if (error) {
