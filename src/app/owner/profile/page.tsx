@@ -27,6 +27,7 @@ export default async function OwnerProfilePage({
   const { data: profile } = await admin.from('profiles')
     .select('full_name, phone, avatar_url')
     .eq('user_id', user.id).single()
+  if (!profile) redirect('/auth/login')
 
   const { data: clinicLink } = await admin
     .from('profile_clinics')
