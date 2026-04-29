@@ -232,13 +232,13 @@ function InfoDesktop({ pet, clinicName, nextVisit, records }: {
       {pet.notes && (
         <div className="card">
           <p className="card-title">Notas</p>
-          <p style={{ padding:'10px 16px 14px', fontSize:14, color:'#3c3c43', lineHeight:1.6, margin:0 }}>{pet.notes}</p>
+          <p style={{ padding:'10px 16px 14px', fontSize:14, color:'var(--pf-ink)', lineHeight:1.6, margin:0 }}>{pet.notes}</p>
         </div>
       )}
       {nextVisit && (
         <div className="card" style={{ padding:'16px 18px', display:'flex', alignItems:'center', gap:12, background:'var(--pf-coral-soft)' }}>
-          <div style={{ width:44, height:44, borderRadius:14, background:'#fff', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--pf-coral)', flexShrink:0 }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          <div style={{ width:44, height:44, borderRadius:14, background:'var(--pf-white)', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--pf-coral)', flexShrink:0 }}>
+            <Calendar size={22} strokeWidth={2} />
           </div>
           <div>
             <p style={{ fontSize:11, color:'var(--pf-coral-dark)', fontWeight:700, margin:'0 0 2px', textTransform:'uppercase', letterSpacing:'.07em' }}>Próxima visita</p>
@@ -252,12 +252,12 @@ function InfoDesktop({ pet, clinicName, nextVisit, records }: {
         <div className="card">
           <p className="card-title">Últimas consultas</p>
           {records.slice(0,3).map((r:any) => (
-            <div key={r.id} style={{ padding:'10px 16px', borderTop:'1px solid #f2f2f7' }}>
+            <div key={r.id} style={{ padding:'10px 16px', borderTop:'1px solid var(--pf-bg)' }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                <p style={{ fontSize:13, fontWeight:600, color:'#1c1c1e', margin:0 }}>{r.reason}</p>
-                <span style={{ fontSize:11, color:'#8e8e93' }}>{new Date(r.visit_date).toLocaleDateString('es-ES',{day:'2-digit',month:'short'})}</span>
+                <p style={{ fontSize:13, fontWeight:600, color:'var(--pf-ink)', margin:0 }}>{r.reason}</p>
+                <span style={{ fontSize:11, color:'var(--pf-muted)' }}>{new Date(r.visit_date).toLocaleDateString('es-ES',{day:'2-digit',month:'short'})}</span>
               </div>
-              {r.diagnosis && <p style={{ fontSize:12, color:'#8e8e93', margin:'2px 0 0' }}>Dx: {r.diagnosis}</p>}
+              {r.diagnosis && <p style={{ fontSize:12, color:'var(--pf-muted)', margin:'2px 0 0' }}>Dx: {r.diagnosis}</p>}
             </div>
           ))}
         </div>
@@ -442,10 +442,10 @@ function getAge(d: string) {
 }
 
 const APPT_STATUS: Record<string, { label: string; bg: string; color: string }> = {
-  pending:   { label: 'Pendiente',  bg: '#fff8e6', color: '#b07800' },
-  confirmed: { label: 'Confirmada', bg: '#edfaf1', color: '#1a7a3c' },
-  cancelled: { label: 'Cancelada',  bg: '#fee2e2', color: '#dc2626' },
-  completed: { label: 'Completada', bg: '#f0f4ff', color: '#2563eb' },
+  pending:   { label: 'Pendiente',  bg: 'var(--pf-warning)', color: 'var(--pf-warning-fg)' },
+  confirmed: { label: 'Confirmada', bg: 'var(--pf-success)', color: 'var(--pf-success-fg)' },
+  cancelled: { label: 'Cancelada',  bg: 'var(--pf-danger)',  color: 'var(--pf-danger-fg)'  },
+  completed: { label: 'Completada', bg: 'var(--pf-info)',    color: 'var(--pf-info-fg)'    },
 }
 
 function CitasTab({ petId, petName, clinicId, appointments }: {
