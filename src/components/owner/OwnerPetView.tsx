@@ -1,16 +1,15 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import PetAvatar from '@/components/shared/PetAvatar'
 import PetGallery from '@/components/owner/PetGallery'
-import { createClient } from '@/lib/supabase/client'
 import BookAppointment from '@/components/owner/BookAppointment'
-import { PawPrint, Calendar, Camera, FileText, ClipboardList, Video, MapPin, type LucideIcon } from 'lucide-react'
+import { PawPrint, Calendar, Camera, FileText, ClipboardList, Video, MapPin, Sparkles, Pill, Microscope, Paperclip, Utensils, Activity, ShieldCheck, type LucideIcon } from 'lucide-react'
 import VideoCallRoom from '@/components/owner/VideoCallRoom'
 import EmergencyCall from '@/components/owner/EmergencyCall'
 import type { Pet, PetFile, PetFileWithUrl, RecordWithVet, AppointmentSummary } from '@/types'
 
-type Tab = 'info' | 'galeria' | 'docs' | 'historial' | 'citas'
+type Tab = 'info' | 'galeria' | 'docs' | 'historial' | 'citas' | 'recetas'
 
 const TABS: { key: Tab; Icon: LucideIcon; label: string }[] = [
   { key: 'info',      Icon: PawPrint,      label: 'Ficha' },
@@ -18,6 +17,7 @@ const TABS: { key: Tab; Icon: LucideIcon; label: string }[] = [
   { key: 'galeria',   Icon: Camera,        label: 'Galería' },
   { key: 'docs',      Icon: FileText,      label: 'Docs' },
   { key: 'historial', Icon: ClipboardList, label: 'Historial' },
+  { key: 'recetas',   Icon: Sparkles,      label: 'IA Tips' },
 ]
 
 const speciesLabel: Record<string, string> = {
@@ -39,7 +39,7 @@ export default function OwnerPetView({ pet, records, photos, docs, appointments,
   return (
     <>
       <style>{`
-        html, body { margin:0; padding:0; background:#f2f2f7; font-family:var(--pf-font-body); }
+        html, body { margin:0; padding:0; background:var(--pf-bg); font-family:var(--pf-font-body); }
 
         /* ── MOBILE (default) ── */
         .pet-shell { min-height:100svh; display:flex; flex-direction:column; }
@@ -52,10 +52,10 @@ export default function OwnerPetView({ pet, records, photos, docs, appointments,
         .pet-name { color:#fff; font-size:28px; font-weight:800; margin:0 0 3px; font-family:var(--pf-font-display); letter-spacing:-0.01em; }
         .pet-sub  { color:rgba(255,255,255,.8); font-size:13px; margin:0 0 8px; }
         .next-badge { display:inline-flex; align-items:center; gap:4px; background:rgba(255,255,255,.22); color:#fff; font-size:12px; font-weight:600; padding:4px 12px; border-radius:20px; }
-        .logout-hero-btn { border:1.5px solid rgba(255,255,255,.5); background:transparent; color:#fff; border-radius:20px; padding:5px 14px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; white-space:nowrap; }
 
-        .mob-tabs { display:flex; background:rgba(0,0,0,.15); }
-        .mob-tab { flex:1; border:none; background:none; cursor:pointer; color:rgba(255,255,255,.55); padding:11px 6px 9px; font-size:11px; font-weight:600; font-family:inherit; border-bottom:2.5px solid transparent; transition:all .15s; display:flex; flex-direction:column; align-items:center; gap:2px; }
+        .mob-tabs { display:flex; background:rgba(0,0,0,.15); overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+        .mob-tabs::-webkit-scrollbar { display:none; }
+        .mob-tab { flex:none; border:none; background:none; cursor:pointer; color:rgba(255,255,255,.55); padding:11px 14px 9px; font-size:11px; font-weight:600; font-family:inherit; border-bottom:2.5px solid transparent; transition:all .15s; display:flex; flex-direction:column; align-items:center; gap:2px; white-space:nowrap; }
         .mob-tab.active { color:#fff; border-bottom-color:#fff; }
 
         .scroll-area { flex:1; overflow-y:auto; padding:14px 14px 36px; -webkit-overflow-scrolling:touch; }
@@ -74,14 +74,13 @@ export default function OwnerPetView({ pet, records, photos, docs, appointments,
         .rec-vet { font-size:11px; color:var(--pf-muted); }
         .rec-reason { font-size:15px; font-weight:700; color:var(--pf-ink); margin:0 0 4px; }
         .rec-detail { font-size:12px; color:var(--pf-muted); margin:2px 0; }
-        .rec-next { font-size:12px; color:var(--pf-coral); font-weight:600; margin:8px 0 0; }
+        .rec-next { font-size:12px; color:var(--pf-coral); font-weight:600; margin:8px 0 0; display:flex; align-items:center; gap:4px; }
 
         /* ── DESKTOP (≥768px) ── */
         @media (min-width:768px) {
-          html, body { background:#f5f5f7; }
+          html, body { background:var(--pf-bg); }
           .pet-shell { min-height:100vh; flex-direction:column; max-width:1100px; margin:0 auto; padding:0 24px; }
 
-          /* Header desktop */
           .hero { background:none; border-radius:0; flex-shrink:0; }
           .hero-nav { padding:28px 0 0; }
           .back-link { color:var(--pf-coral); font-size:14px; }
@@ -91,15 +90,11 @@ export default function OwnerPetView({ pet, records, photos, docs, appointments,
           .pet-sub  { color:var(--pf-muted); }
           .next-badge { background:var(--pf-coral-soft); color:var(--pf-coral); }
 
-          /* Logout en desktop */
-          .logout-hero-btn { border:1.5px solid rgba(238,114,109,.4); color:var(--pf-coral); }
-
-          /* Tabs como pills horizontales */
-          .mob-tabs { background:none; border-bottom:0.5px solid var(--pf-border); margin-top:24px; gap:0; }
+          .mob-tabs { background:none; border-bottom:0.5px solid var(--pf-border); margin-top:24px; gap:0; overflow-x:visible; }
           .mob-tab { flex:none; padding:10px 20px 10px; color:var(--pf-muted); border-bottom:2.5px solid transparent; border-radius:0; font-size:13px; flex-direction:row; gap:6px; }
           .mob-tab.active { color:var(--pf-coral); border-bottom-color:var(--pf-coral); }
+          .mob-tab.active.ai-tab { color:var(--pf-info-fg); border-bottom-color:var(--pf-info-fg); }
 
-          /* Layout 2 columnas en desktop */
           .scroll-area { padding:24px 0 48px; flex:none; overflow-y:visible; }
           .desk-grid { display:grid; grid-template-columns:300px 1fr; gap:20px; align-items:start; }
           .card { border-radius:16px; box-shadow:0 1px 3px rgba(0,0,0,.07); }
@@ -113,12 +108,8 @@ export default function OwnerPetView({ pet, records, photos, docs, appointments,
       <div className="pet-shell">
         {/* HERO */}
         <div className="hero">
-          <div className="hero-nav" style={{ justifyContent:'space-between' }}>
+          <div className="hero-nav">
             <a href="/owner/dashboard" className="back-link">‹ Mis mascotas</a>
-            <button onClick={async () => { const s = createClient(); await s.auth.signOut(); window.location.href='/auth/login' }}
-              className="logout-hero-btn">
-              Cerrar sesión
-            </button>
           </div>
           <div className="hero-body">
             <PetAvatar petId={pet.id} species={pet.species} photoUrl={pet.photo_url} size={80} editable={true} />
@@ -130,7 +121,7 @@ export default function OwnerPetView({ pet, records, photos, docs, appointments,
               </p>
               {nextVisit && (
                 <span className="next-badge">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                  <Calendar size={12} strokeWidth={2.2} />
                   {nextVisit.next_visit && new Date(nextVisit.next_visit).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}
                 </span>
               )}
@@ -140,7 +131,8 @@ export default function OwnerPetView({ pet, records, photos, docs, appointments,
           {/* Tabs */}
           <div className="mob-tabs">
             {TABS.map(({ key, Icon, label }) => (
-              <button key={key} onClick={() => setTab(key)} className={`mob-tab${tab===key?' active':''}`}>
+              <button key={key} onClick={() => setTab(key)}
+                className={`mob-tab${tab===key?' active':''}${key==='recetas'?' ai-tab':''}`}>
                 <Icon size={17} strokeWidth={2} />{label}
               </button>
             ))}
@@ -179,11 +171,10 @@ export default function OwnerPetView({ pet, records, photos, docs, appointments,
             <div>
               {tab === 'info'     && <InfoDesktop pet={pet} clinicName={clinicName} nextVisit={nextVisit} records={records} />}
               {tab === 'galeria'  && <PetGallery petId={pet.id} initialPhotos={photos} />}
-              {tab === 'citas'    && (
-                <CitasTab petId={pet.id} petName={pet.name} clinicId={clinicId} appointments={appointments} />
-              )}
-          {tab === 'docs'     && <DocsTab petId={pet.id} initialDocs={docs} />}
+              {tab === 'citas'    && <CitasTab petId={pet.id} petName={pet.name} clinicId={clinicId} appointments={appointments} />}
+              {tab === 'docs'     && <DocsTab petId={pet.id} initialDocs={docs} />}
               {tab === 'historial'&& <HistorialTab petId={pet.id} records={records} />}
+              {tab === 'recetas'  && <RecetasTab petId={pet.id} />}
             </div>
           </div>
         </div>
