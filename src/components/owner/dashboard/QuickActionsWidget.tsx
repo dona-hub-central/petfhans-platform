@@ -14,11 +14,12 @@ const ACTIONS: {
   label: string
   Icon: typeof MessageCircle
   requiresPet: boolean
+  isAi?: boolean
 }[] = [
   { key: 'messages',    label: 'Mensajes',    Icon: MessageCircle, requiresPet: false },
   { key: 'marketplace', label: 'Marketplace', Icon: Store,         requiresPet: false },
   { key: 'docs',        label: 'Documentos',  Icon: FileUp,        requiresPet: true  },
-  { key: 'recetas',     label: 'Recetas IA',  Icon: Sparkles,      requiresPet: true  },
+  { key: 'recetas',     label: 'Recetas IA',  Icon: Sparkles,      requiresPet: true, isAi: true },
   { key: 'fotos',       label: 'Subir fotos', Icon: Camera,        requiresPet: true  },
 ]
 
@@ -64,12 +65,12 @@ export default function QuickActionsWidget({
         <p className="pf-quick-title">Acciones rápidas</p>
 
         <div className="pf-quick-grid">
-          {ACTIONS.map(({ key, label, Icon }) => (
+          {ACTIONS.map(({ key, label, Icon, isAi }) => (
             <button
               key={key}
               type="button"
               onClick={() => handleAction(key)}
-              className="pf-quick-btn"
+              className={`pf-quick-btn${isAi ? ' pf-quick-btn-ai' : ''}`}
             >
               <span className="pf-quick-icon-wrap">
                 <Icon size={22} strokeWidth={1.75} />
@@ -102,7 +103,7 @@ export default function QuickActionsWidget({
         .pf-quick-card {
           background: var(--pf-white);
           border-radius: 20px;
-          padding: 18px;
+          padding: 20px;
           border: 0.5px solid var(--pf-border);
           box-shadow: var(--pf-shadow-sm);
         }
@@ -136,6 +137,12 @@ export default function QuickActionsWidget({
           background: var(--pf-coral-soft);
           border-color: var(--pf-coral-mid);
           color: var(--pf-coral);
+        }
+        .pf-quick-btn-ai .pf-quick-icon-wrap { color: var(--pf-info-fg); }
+        .pf-quick-btn-ai:hover {
+          background: var(--pf-info);
+          border-color: var(--pf-info-fg);
+          color: var(--pf-info-fg);
         }
         .pf-quick-btn:active { transform: scale(.97); }
         .pf-quick-icon-wrap {

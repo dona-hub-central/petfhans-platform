@@ -92,8 +92,8 @@ export default function AiTipsWidget({ pet }: { pet: Pet | undefined }) {
         .pf-tips-icon {
           display: inline-flex; align-items: center; justify-content: center;
           width: 26px; height: 26px; border-radius: 8px;
-          background: var(--pf-coral-soft);
-          color: var(--pf-coral);
+          background: var(--pf-info);
+          color: var(--pf-info-fg);
         }
         .pf-tips-label {
           font-family: var(--pf-font-body);
@@ -129,7 +129,7 @@ export default function AiTipsWidget({ pet }: { pet: Pet | undefined }) {
           display: flex; gap: 10px; align-items: flex-start;
         }
         .pf-tips-bullet {
-          color: var(--pf-coral);
+          color: var(--pf-info-fg);
           font-size: 14px;
           margin-top: 2px;
           flex-shrink: 0;

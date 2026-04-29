@@ -174,7 +174,7 @@ export default function PetSummaryWidget({
         .pf-summary-card {
           background: var(--pf-white);
           border-radius: 20px;
-          padding: 18px;
+          padding: 20px;
           border: 0.5px solid var(--pf-border);
           box-shadow: var(--pf-shadow-sm);
         }
@@ -250,7 +250,7 @@ export default function PetSummaryWidget({
         .pf-summary-stat { text-align: center; }
         .pf-summary-stat-value {
           font-family: var(--pf-font-display);
-          font-size: 22px; font-weight: 700; color: var(--pf-coral);
+          font-size: 22px; font-weight: 700; color: var(--pf-ink);
           margin: 0;
           letter-spacing: -0.01em;
         }
