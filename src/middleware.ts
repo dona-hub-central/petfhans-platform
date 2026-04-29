@@ -25,12 +25,6 @@ export async function middleware(request: NextRequest) {
   requestHeaders.set('x-subdomain', subdomain)
   requestHeaders.set('x-hostname', hostname)
 
-  // Propagar cookie active_clinic_id como header para que las API routes lo lean
-  const activeClinicId = request.cookies.get('active_clinic_id')?.value
-  if (activeClinicId) {
-    requestHeaders.set('x-active-clinic-id', activeClinicId)
-  }
-
   let supabaseResponse = NextResponse.next({
     request: { headers: requestHeaders },
   })
@@ -74,13 +68,21 @@ export async function middleware(request: NextRequest) {
   if (user) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role, clinic_id, clinics(slug)')
+      .select('role')
       .eq('user_id', user.id)
       .single()
 
     const role = profile?.role
-    type ProfileRow = { role: string; clinic_id: string | null; clinics: { slug: string } | null }
-    const clinicSlug = (profile as ProfileRow | null)?.clinics?.slug
+
+    // Get clinic slug from profile_clinics (profiles.clinic_id is deprecated/null after migration 019)
+    const { data: clinicLink } = await supabase
+      .from('profile_clinics')
+      .select('clinics(slug)')
+      .eq('user_id', user.id)
+      .limit(1)
+      .single()
+    type ClinicLinkRow = { clinics: { slug: string } | null }
+    const clinicSlug = (clinicLink as unknown as ClinicLinkRow | null)?.clinics?.slug
 
     // Super admin → solo puede entrar a admin.*
     if (subdomain === 'admin' && role !== 'superadmin') {
