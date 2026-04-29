@@ -162,7 +162,7 @@ export default async function AdminVetsPage({
                 </div>
                 <div className="adm-clinic-row-right">
                   <RoleBadge role={vet.clinic_role} />
-                  <VerifiedBadge verified={!!vet.clinic?.verified} />
+                  <VerifiedBadge verified={!!vet.clinic?.verified} clinicId={vet.clinic?.id} />
                 </div>
               </div>
             )) : (
@@ -194,14 +194,25 @@ function RoleBadge({ role }: { role: string }) {
   return <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ background: s.bg, color: s.color }}>{s.label}</span>
 }
 
-function VerifiedBadge({ verified }: { verified: boolean }) {
-  return (
+function VerifiedBadge({ verified, clinicId }: { verified: boolean; clinicId?: string }) {
+  if (verified) {
+    return (
+      <span className="text-xs px-2.5 py-1 rounded-full font-medium"
+        style={{ background: '#edfaf1', color: '#1a7a3c' }}>
+        Verificado
+      </span>
+    )
+  }
+  return clinicId ? (
+    <Link href={`/admin/clinics/${clinicId}`}
+      className="text-xs px-2.5 py-1 rounded-full font-medium"
+      style={{ background: '#fff8e6', color: '#b07800', textDecoration: 'none' }}>
+      Sin verificar →
+    </Link>
+  ) : (
     <span className="text-xs px-2.5 py-1 rounded-full font-medium"
-      style={{
-        background: verified ? '#edfaf1' : '#fff8e6',
-        color:      verified ? '#1a7a3c' : '#b07800',
-      }}>
-      {verified ? 'Verificado' : 'Sin verificar'}
+      style={{ background: '#fff8e6', color: '#b07800' }}>
+      Sin verificar
     </span>
   )
 }

@@ -32,12 +32,13 @@ export async function POST(req: NextRequest) {
   }
 
   // Grant owner explicit access so the pet shows in their dashboard
-  await admin.from('pet_access').upsert({
+  const { error: accessError } = await admin.from('pet_access').upsert({
     owner_id:  profile.id,
     pet_id:    pet.id,
     clinic_id: null,
     linked_by: profile.id,
-  }, { onConflict: 'owner_id,pet_id' })
+  }, { onConflict: 'owner_id,pet_id', ignoreDuplicates: true })
+  if (accessError) console.error('[owner/pets] pet_access upsert error:', accessError.message)
 
   return NextResponse.json({ success: true, pet_id: pet.id })
 }

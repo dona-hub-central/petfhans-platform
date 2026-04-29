@@ -10,10 +10,6 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
-  const { data: profile } = await supabase.from('profiles')
-    .select('id, role').eq('user_id', user.id).single()
-  if (!profile) return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 403 })
-
   const formData = await req.formData()
   const file      = formData.get('file') as File
   const petId     = formData.get('pet_id') as string
@@ -24,26 +20,33 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient()
 
-  // Para dueños: verificar acceso explícito y usar clinic_id de la mascota
-  // Para staff: usar la clínica activa del header
+  const { data: profile } = await admin.from('profiles')
+    .select('id, role').eq('user_id', user.id).single()
+  if (!profile) return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 403 })
+
+  // Para dueños: verificar acceso y tomar clinic_id de la mascota
+  // Para staff: usar profile_clinics
   let clinicId: string | null | undefined
   if (profile.role === 'pet_owner') {
-    const { data: access } = await admin.from('pet_access')
-      .select('pet_id')
-      .eq('owner_id', profile.id)
-      .eq('pet_id', petId)
-      .single()
-    if (!access) return NextResponse.json({ error: 'Sin acceso a esta mascota' }, { status: 403 })
-
+    const { data: accessRow } = await admin.from('pet_access')
+      .select('pet_id').eq('owner_id', profile.id).eq('pet_id', petId).maybeSingle()
+    if (!accessRow) {
+      const { data: owned } = await admin.from('pets')
+        .select('id').eq('id', petId).eq('owner_id', profile.id).maybeSingle()
+      if (!owned) return NextResponse.json({ error: 'Sin acceso a esta mascota' }, { status: 403 })
+    }
     const { data: pet } = await admin.from('pets').select('clinic_id').eq('id', petId).single()
-    clinicId = pet?.clinic_id
+    clinicId = pet?.clinic_id ?? null
   } else {
-    clinicId = req.headers.get('x-active-clinic-id')
+    const { data: clinicLink } = await admin
+      .from('profile_clinics').select('clinic_id').eq('user_id', user.id).limit(1).single()
+    clinicId = clinicLink?.clinic_id
     if (!clinicId) return NextResponse.json({ error: 'Sin clínica activa' }, { status: 403 })
   }
 
-  // Subir a Supabase Storage
-  const filePath = `${clinicId}/${petId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
+  // Usar petId como prefijo si la mascota no tiene clínica (registro directo del owner)
+  const prefix = clinicId ?? `owner-${profile.id}`
+  const filePath = `${prefix}/${petId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
   const buffer = Buffer.from(await file.arrayBuffer())
 
   const { data: uploadData, error: uploadErr } = await admin.storage

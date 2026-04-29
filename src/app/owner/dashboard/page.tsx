@@ -30,15 +30,35 @@ export default async function OwnerDashboard() {
     .limit(1)
     .single()
 
-  // Use pet_access as authoritative source — owners only see pets explicitly granted
+  // Primary: pets with explicit pet_access grant
   const { data: access } = await admin.from('pet_access')
     .select('pet_id').eq('owner_id', profile.id)
-  const accessPetIds = (access ?? []).map(a => a.pet_id)
+  const accessPetIds = new Set((access ?? []).map(a => a.pet_id))
+
+  // Fallback: pets owned directly (pre-pet_access registrations or silent upsert failures)
+  const { data: ownedPets } = await admin.from('pets')
+    .select('id').eq('owner_id', profile.id).eq('is_active', true)
+  const ownedIds = (ownedPets ?? []).map(p => p.id)
+
+  // Backfill missing pet_access entries so future loads use the fast path
+  const missing = ownedIds.filter(id => !accessPetIds.has(id))
+  if (missing.length > 0) {
+    await admin.from('pet_access').upsert(
+      missing.map(pet_id => ({
+        owner_id:  profile.id,
+        pet_id,
+        clinic_id: null,
+        linked_by: profile.id,
+      })),
+      { onConflict: 'owner_id,pet_id', ignoreDuplicates: true }
+    )
+    missing.forEach(id => accessPetIds.add(id))
+  }
 
   let pets: Pet[] = []
-  if (accessPetIds.length > 0) {
+  if (accessPetIds.size > 0) {
     const { data } = await admin.from('pets')
-      .select('*').in('id', accessPetIds).eq('is_active', true)
+      .select('*').in('id', [...accessPetIds]).eq('is_active', true)
     pets = (data ?? []) as Pet[]
   }
 

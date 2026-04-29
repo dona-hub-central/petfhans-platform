@@ -20,10 +20,14 @@ export async function GET(req: NextRequest) {
     .select('id').eq('user_id', user.id).single()
   if (!profile) return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 403 })
 
-  // Verify pet_access ownership
-  const { data: access } = await admin.from('pet_access')
+  // Verify access: pet_access row or direct pets.owner_id
+  const { data: accessRow } = await admin.from('pet_access')
     .select('pet_id').eq('owner_id', profile.id).eq('pet_id', petId).maybeSingle()
-  if (!access) return NextResponse.json({ error: 'Sin acceso a esta mascota' }, { status: 403 })
+  if (!accessRow) {
+    const { data: owned } = await admin.from('pets')
+      .select('id').eq('id', petId).eq('owner_id', profile.id).maybeSingle()
+    if (!owned) return NextResponse.json({ error: 'Sin acceso a esta mascota' }, { status: 403 })
+  }
 
   const { data: pet } = await admin.from('pets').select('*').eq('id', petId).single()
   if (!pet) return NextResponse.json({ error: 'Mascota no encontrada' }, { status: 404 })

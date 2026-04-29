@@ -14,7 +14,15 @@ export async function POST(req: NextRequest) {
       .select('id, role').eq('user_id', user.id).single()
     if (!profile) return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 403 })
 
-    const activeClinicId = req.headers.get('x-active-clinic-id')
+    // Get clinic from profile_clinics (server-side, no cookie dependency)
+    const { data: clinicLink } = await supabase
+      .from('profile_clinics')
+      .select('clinic_id')
+      .eq('user_id', user.id)
+      .in('role', ['vet_admin', 'veterinarian'])
+      .limit(1)
+      .single()
+    const activeClinicId = clinicLink?.clinic_id
     if (!activeClinicId) return NextResponse.json({ error: 'Sin clínica activa' }, { status: 403 })
 
     const { email, role, pet_id, pet_ids } = await req.json()

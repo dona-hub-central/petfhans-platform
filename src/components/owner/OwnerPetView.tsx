@@ -17,7 +17,7 @@ const TABS: { key: Tab; Icon: LucideIcon; label: string }[] = [
   { key: 'galeria',   Icon: Camera,        label: 'Galería' },
   { key: 'docs',      Icon: FileText,      label: 'Docs' },
   { key: 'historial', Icon: ClipboardList, label: 'Historial' },
-  { key: 'recetas',   Icon: Sparkles,      label: 'IA Tips' },
+  { key: 'recetas',   Icon: Sparkles,      label: 'Recetas' },
 ]
 
 const speciesLabel: Record<string, string> = {
@@ -484,14 +484,38 @@ function CitasTab({ petId, petName, clinicId, appointments }: {
   return (
     <>
       {/* Emergency / instant call panel */}
-      <EmergencyCall petId={petId} petName={petName} clinicId={clinicId} />
+      <div style={{ marginBottom: 24 }}>
+        <EmergencyCall petId={petId} petName={petName} clinicId={clinicId} />
+      </div>
+
+      {/* Section label before scheduled appointments */}
+      <p style={{
+        fontSize: 11, fontWeight: 700, color: 'var(--pf-muted)',
+        textTransform: 'uppercase', letterSpacing: '.07em', margin: '0 2px 10px',
+      }}>
+        Mis citas
+      </p>
 
       {/* Scheduled booking form */}
       {clinicId
         ? <BookAppointment petId={petId} petName={petName} clinicId={clinicId} />
         : <div className="empty-box">
             <Calendar size={28} strokeWidth={1.5} style={{ color:'var(--pf-muted)', marginBottom:8 }} />
-            <p style={{ fontSize: 14, color: 'var(--pf-muted)', margin: 0 }}>Sin clínica asignada</p>
+            <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--pf-ink)', margin: '0 0 4px' }}>
+              Aún no tienes una clínica
+            </p>
+            <p style={{ fontSize: 13, color: 'var(--pf-muted)', margin: '0 0 14px' }}>
+              Busca una clínica en el marketplace para poder pedir citas
+            </p>
+            <a href="/marketplace/clinicas"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '8px 16px', borderRadius: 10,
+                background: 'var(--pf-coral)', color: '#fff',
+                textDecoration: 'none', fontSize: 13, fontWeight: 600,
+              }}>
+              Buscar clínica →
+            </a>
           </div>
       }
 

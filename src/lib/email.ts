@@ -288,6 +288,119 @@ export async function sendSupportRequestConfirmationEmail({
   })
 }
 
+// =============================================
+// Email: Nuevo mensaje al owner desde la clínica
+// =============================================
+export async function sendNewMessageToOwnerEmail({
+  to,
+  ownerName,
+  clinicName,
+  petName,
+  subject,
+  preview,
+  threadUrl,
+}: {
+  to: string
+  ownerName: string
+  clinicName: string
+  petName?: string
+  subject: string
+  preview: string
+  threadUrl: string
+}) {
+  const firstName = ownerName.split(' ')[0]
+  return resend().emails.send({
+    from: FROM,
+    to,
+    subject: `${clinicName} te envió un mensaje`,
+    html: `
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8">
+<style>
+  body { margin:0; background:#f7f6f4; font-family:'Helvetica Neue',Arial,sans-serif; }
+  .wrap { max-width:520px; margin:40px auto; padding:0 20px; }
+  .card { background:#fff; border-radius:16px; padding:36px; border:1px solid #ebebeb; }
+  h1 { font-size:20px; color:#1a1a1a; margin:0 0 12px; }
+  p { font-size:15px; color:#555; line-height:1.6; margin:0 0 16px; }
+  .preview { background:#f7f6f4; border-radius:10px; padding:14px 16px; font-size:14px; color:#444; margin:20px 0; border-left:3px solid #EE726D; }
+  .btn { display:block; text-align:center; background:#EE726D; color:#fff !important; text-decoration:none; font-weight:700; font-size:15px; padding:16px; border-radius:12px; margin:24px 0 8px; }
+  .footer { text-align:center; font-size:12px; color:#aaa; margin-top:24px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div style="text-align:center;margin-bottom:24px;font-size:36px;">💬</div>
+    <h1>Hola ${firstName}, tienes un mensaje nuevo</h1>
+    <p><strong>${clinicName}</strong> respondió en el hilo <em>"${subject}"</em>${petName ? ` sobre <strong>${petName}</strong>` : ''}.</p>
+    <div class="preview">${preview}${preview.length >= 200 ? '…' : ''}</div>
+    <a href="${threadUrl}" class="btn">Ver mensaje →</a>
+    <p style="font-size:12px;color:#aaa;text-align:center;">Petfhans · Plataforma veterinaria</p>
+  </div>
+  <div class="footer">© ${new Date().getFullYear()} Petfhans</div>
+</div>
+</body>
+</html>`,
+  })
+}
+
+// =============================================
+// Email: Nuevo mensaje a la clínica desde el owner
+// =============================================
+export async function sendNewMessageToClinicEmail({
+  to,
+  ownerName,
+  clinicName,
+  petName,
+  subject,
+  preview,
+  threadUrl,
+}: {
+  to: string
+  ownerName: string
+  clinicName: string
+  petName?: string
+  subject: string
+  preview: string
+  threadUrl: string
+}) {
+  return resend().emails.send({
+    from: FROM,
+    to,
+    subject: `${ownerName} te envió un mensaje`,
+    html: `
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8">
+<style>
+  body { margin:0; background:#f7f6f4; font-family:'Helvetica Neue',Arial,sans-serif; }
+  .wrap { max-width:520px; margin:40px auto; padding:0 20px; }
+  .card { background:#fff; border-radius:16px; padding:36px; border:1px solid #ebebeb; }
+  h1 { font-size:20px; color:#1a1a1a; margin:0 0 12px; }
+  p { font-size:15px; color:#555; line-height:1.6; margin:0 0 16px; }
+  .preview { background:#f7f6f4; border-radius:10px; padding:14px 16px; font-size:14px; color:#444; margin:20px 0; border-left:3px solid #6366f1; }
+  .btn { display:block; text-align:center; background:#6366f1; color:#fff !important; text-decoration:none; font-weight:700; font-size:15px; padding:16px; border-radius:12px; margin:24px 0 8px; }
+  .footer { text-align:center; font-size:12px; color:#aaa; margin-top:24px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div style="text-align:center;margin-bottom:24px;font-size:36px;">💬</div>
+    <h1>Mensaje nuevo en ${clinicName}</h1>
+    <p><strong>${ownerName}</strong> envió un mensaje en el hilo <em>"${subject}"</em>${petName ? ` sobre <strong>${petName}</strong>` : ''}.</p>
+    <div class="preview">${preview}${preview.length >= 200 ? '…' : ''}</div>
+    <a href="${threadUrl}" class="btn">Ver mensaje →</a>
+    <p style="font-size:12px;color:#aaa;text-align:center;">Petfhans · Plataforma veterinaria</p>
+  </div>
+  <div class="footer">© ${new Date().getFullYear()} Petfhans</div>
+</div>
+</body>
+</html>`,
+  })
+}
+
 export async function sendWelcomeEmail({
   to,
   name,

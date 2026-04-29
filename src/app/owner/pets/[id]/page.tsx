@@ -23,10 +23,19 @@ export default async function OwnerPetPage({ params }: { params: Promise<{ id: s
     .limit(1)
     .single()
 
-  // Verify this owner has explicit access to the pet via pet_access
-  const { data: access } = await admin.from('pet_access')
-    .select('pet_id').eq('owner_id', profile.id).eq('pet_id', id).maybeSingle()
-  if (!access) redirect('/owner/dashboard')
+  // Verify access: either via pet_access or direct ownership (pre-pet_access registrations)
+  const [{ data: accessRow }, { data: ownedPet }] = await Promise.all([
+    admin.from('pet_access').select('pet_id').eq('owner_id', profile.id).eq('pet_id', id).maybeSingle(),
+    admin.from('pets').select('id').eq('id', id).eq('owner_id', profile.id).maybeSingle(),
+  ])
+  if (!accessRow && !ownedPet) redirect('/owner/dashboard')
+  // Backfill pet_access if missing so future loads are consistent
+  if (!accessRow && ownedPet) {
+    await admin.from('pet_access').upsert(
+      { owner_id: profile.id, pet_id: id, clinic_id: null, linked_by: profile.id },
+      { onConflict: 'owner_id,pet_id', ignoreDuplicates: true }
+    )
+  }
 
   const { data: pet } = await admin.from('pets').select('*').eq('id', id).single()
   if (!pet) redirect('/owner/dashboard')
