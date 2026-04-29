@@ -581,4 +581,88 @@ function CitasTab({ petId, petName, clinicId, appointments }: {
   )
 }
 
+/* ── RecetasTab ── */
 
+type Tip = { id: string; title: string; content: string }
+
+const TIP_STYLES: { bg: string; color: string; border: string; Icon: LucideIcon }[] = [
+  { bg: '#f0fdf4',              color: '#15803d',             border: '#bbf7d0',             Icon: Utensils   },
+  { bg: 'var(--pf-coral-soft)', color: 'var(--pf-coral)',     border: 'var(--pf-coral-mid)', Icon: Activity   },
+  { bg: '#fffbeb',              color: '#d97706',             border: '#fde68a',             Icon: ShieldCheck },
+  { bg: 'var(--pf-info)',       color: 'var(--pf-info-fg)',   border: '#c4b5fd',             Icon: Sparkles   },
+]
+
+function RecetasTab({ petId }: { petId: string }) {
+  const [tips, setTips]       = useState<Tip[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError]     = useState('')
+
+  useEffect(() => {
+    fetch(`/api/owner/pet-tips?pet_id=${petId}`, { credentials: 'include' })
+      .then(r => r.json())
+      .then(d => { if (d.tips) setTips(d.tips); else setError(d.error || 'Error al cargar consejos') })
+      .catch(() => setError('Error de conexión'))
+      .finally(() => setLoading(false))
+  }, [petId])
+
+  if (loading) return (
+    <>
+      <style>{`@keyframes pf-pulse{0%,100%{opacity:1}50%{opacity:.45}}.tip-sk{border-radius:10px;animation:pf-pulse 1.6s ease-in-out infinite;background:var(--pf-border);}`}</style>
+      <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:16 }}>
+        <div style={{ width:32, height:32, borderRadius:10, background:'var(--pf-info)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <Sparkles size={16} strokeWidth={2} style={{ color:'var(--pf-info-fg)' }} />
+        </div>
+        <div>
+          <p style={{ fontSize:13, fontWeight:700, color:'var(--pf-ink)', margin:0 }}>Consejos personalizados</p>
+          <p style={{ fontSize:11, color:'var(--pf-muted)', margin:0 }}>Generando con IA…</p>
+        </div>
+      </div>
+      {[0,1,2,3].map(i => (
+        <div key={i} style={{ background:'var(--pf-surface)', borderRadius:18, padding:16, marginBottom:10 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12 }}>
+            <div className="tip-sk" style={{ width:34, height:34, flexShrink:0 }} />
+            <div className="tip-sk" style={{ height:14, width:120 }} />
+          </div>
+          <div className="tip-sk" style={{ height:12, width:'100%', marginBottom:6 }} />
+          <div className="tip-sk" style={{ height:12, width:'75%' }} />
+        </div>
+      ))}
+    </>
+  )
+
+  if (error) return (
+    <div className="empty-box">
+      <Sparkles size={28} strokeWidth={1.5} style={{ color:'var(--pf-muted)', marginBottom:8 }} />
+      <p style={{ fontSize:14, color:'var(--pf-muted)', margin:0 }}>{error}</p>
+    </div>
+  )
+
+  return (
+    <>
+      <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:16 }}>
+        <div style={{ width:32, height:32, borderRadius:10, background:'var(--pf-info)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <Sparkles size={16} strokeWidth={2} style={{ color:'var(--pf-info-fg)' }} />
+        </div>
+        <div>
+          <p style={{ fontSize:13, fontWeight:700, color:'var(--pf-ink)', margin:0 }}>Consejos personalizados</p>
+          <p style={{ fontSize:11, color:'var(--pf-muted)', margin:0 }}>Generados por IA a partir de su perfil</p>
+        </div>
+      </div>
+      {tips.map((tip, i) => {
+        const s = TIP_STYLES[i % TIP_STYLES.length]
+        const { Icon } = s
+        return (
+          <div key={tip.id} style={{ background:s.bg, border:`1px solid ${s.border}`, borderRadius:18, padding:16, marginBottom:10 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
+              <div style={{ width:34, height:34, borderRadius:10, background:'rgba(255,255,255,.7)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                <Icon size={17} strokeWidth={2} style={{ color:s.color }} />
+              </div>
+              <p style={{ fontSize:14, fontWeight:700, color:s.color, margin:0 }}>{tip.title}</p>
+            </div>
+            <p style={{ fontSize:13, color:'var(--pf-ink)', lineHeight:1.6, margin:0 }}>{tip.content}</p>
+          </div>
+        )
+      })}
+    </>
+  )
+}
