@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import AdminLayout from '@/components/admin/AdminLayout'
+import VerifyClinicButton from '@/components/admin/VerifyClinicButton'
 import { Building2, CheckCircle } from 'lucide-react'
 import type { Profile } from '@/types'
 
@@ -90,13 +91,16 @@ export default async function ClinicDetailPage({
                 </span>
               </div>
             </div>
-            <span className="text-sm px-3 py-1 rounded-full font-medium flex-shrink-0"
-              style={{
-                background: clinic.subscription_status === 'active' ? '#edfaf1' : clinic.subscription_status === 'trial' ? '#fff8e6' : '#fee2e2',
-                color: clinic.subscription_status === 'active' ? '#1a7a3c' : clinic.subscription_status === 'trial' ? '#b07800' : '#dc2626',
-              }}>
-              {clinic.subscription_status}
-            </span>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className="text-sm px-3 py-1 rounded-full font-medium"
+                style={{
+                  background: clinic.subscription_status === 'active' ? '#edfaf1' : clinic.subscription_status === 'trial' ? '#fff8e6' : '#fee2e2',
+                  color: clinic.subscription_status === 'active' ? '#1a7a3c' : clinic.subscription_status === 'trial' ? '#b07800' : '#dc2626',
+                }}>
+                {clinic.subscription_status}
+              </span>
+              <VerifyClinicButton clinicId={clinic.id} verified={!!clinic.verified} />
+            </div>
           </div>
 
           <div className="clinic-det-stats">
