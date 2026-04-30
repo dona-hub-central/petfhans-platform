@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import PetAvatar from '@/components/shared/PetAvatar'
 import PetGallery from '@/components/owner/PetGallery'
 import BookAppointment from '@/components/owner/BookAppointment'
-import { PawPrint, Calendar, Camera, FileText, ClipboardList, Video, MapPin, Sparkles, Pill, Microscope, Paperclip, Utensils, Activity, ShieldCheck, type LucideIcon } from 'lucide-react'
+import { PawPrint, Calendar, Camera, FileText, ClipboardList, Video, MapPin, Sparkles, Pill, Microscope, Paperclip, Utensils, Activity, ShieldCheck, BookOpen, Shield, Stethoscope, File, Upload, ChevronLeft, Star, Clock, FolderOpen, type LucideIcon } from 'lucide-react'
 import VideoCallRoom from '@/components/owner/VideoCallRoom'
 import EmergencyCall from '@/components/owner/EmergencyCall'
 import type { Pet, PetFile, PetFileWithUrl, RecordWithVet, AppointmentSummary } from '@/types'
@@ -131,6 +131,33 @@ export default function OwnerPetView({ pet, records, photos, docs, appointments,
         .pf-pet-save { padding:10px 18px; border-radius:10px; border:none; background:var(--pf-coral); color:#fff; font-family:var(--pf-font-body); font-size:14px; font-weight:700; cursor:pointer; transition:background .15s; }
         .pf-pet-save:hover:not(:disabled) { background:var(--pf-coral-dark); }
         .pf-pet-save:disabled, .pf-pet-cancel:disabled { opacity:.6; cursor:not-allowed; }
+
+        /* Doc category grid */
+        .doc-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+        .doc-cat-card { background:var(--pf-white); border:none; border-radius:18px; padding:18px 8px; display:flex; flex-direction:column; align-items:center; gap:8px; cursor:pointer; font-family:inherit; transition:box-shadow .15s; text-align:center; }
+        .doc-cat-card:hover { box-shadow:0 2px 12px rgba(0,0,0,.08); }
+        .doc-cat-icon { width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .doc-cat-name { font-size:12px; font-weight:700; color:var(--pf-ink); line-height:1.3; }
+        .doc-cat-count { font-size:11px; color:var(--pf-muted); }
+
+        /* Recipe cards */
+        .recipe-card { background:var(--pf-white); border:none; border-radius:18px; padding:14px; display:flex; align-items:center; gap:12px; width:100%; text-align:left; cursor:pointer; font-family:inherit; margin-bottom:8px; transition:box-shadow .15s; }
+        .recipe-card:hover { box-shadow:0 2px 12px rgba(0,0,0,.08); }
+        .recipe-emoji { width:56px; height:56px; border-radius:14px; background:var(--pf-coral-soft); display:flex; align-items:center; justify-content:center; font-size:26px; flex-shrink:0; }
+        .recipe-title { font-size:14px; font-weight:700; color:var(--pf-ink); margin:0 0 3px; line-height:1.3; }
+        .recipe-sub { font-size:12px; color:var(--pf-muted); margin:0 0 6px; line-height:1.4; }
+        .recipe-meta { display:flex; align-items:center; gap:4px; font-size:11px; color:var(--pf-muted); font-weight:600; }
+
+        /* Segmented control */
+        .seg-ctrl { display:flex; background:var(--pf-surface); border-radius:12px; padding:3px; margin-bottom:14px; }
+        .seg-btn { flex:1; border:none; border-radius:9px; padding:9px 8px; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; transition:background .15s,color .15s; }
+        .seg-btn.active { background:var(--pf-white); color:var(--pf-ink); box-shadow:0 1px 4px rgba(0,0,0,.08); }
+        .seg-btn:not(.active) { background:transparent; color:var(--pf-muted); }
+
+        /* Tip block */
+        .tip-block { background:#FFF8E7; border-radius:14px; padding:14px 16px; margin-top:14px; }
+        .tip-block-title { font-size:13px; font-weight:700; color:#B45309; margin:0 0 6px; display:flex; align-items:center; gap:6px; }
+        .tip-block-body { font-size:13px; color:var(--pf-ink); line-height:1.6; margin:0; }
 
         /* Cards */
         .card { background:var(--pf-white); border-radius:18px; overflow:hidden; margin-bottom:10px; }
@@ -302,7 +329,7 @@ export default function OwnerPetView({ pet, records, photos, docs, appointments,
               {tab === 'citas'    && <CitasTab petId={pet.id} petName={pet.name} clinicId={clinicId} appointments={appointments} />}
               {tab === 'docs'     && <DocsTab petId={pet.id} initialDocs={docs} />}
               {tab === 'historial'&& <HistorialTab petId={pet.id} records={records} />}
-              {tab === 'recetas'  && <RecetasTab petId={pet.id} />}
+              {tab === 'recetas'  && <RecetasTab petId={pet.id} petName={pet.name} petSpecies={pet.species} />}
             </div>
           </div>
         </div>
@@ -398,21 +425,35 @@ function InfoDesktop({ pet, clinicName, nextVisit, records, onEdit }: {
   )
 }
 
-const DOC_TYPES: { value: string; Icon: LucideIcon; label: string }[] = [
-  { value: 'prescription', Icon: Pill,       label: 'Receta' },
-  { value: 'exam',         Icon: Microscope, label: 'Examen' },
-  { value: 'other',        Icon: Paperclip,  label: 'Otro'   },
+const DOC_CATEGORIES: { key: string; label: string; Icon: LucideIcon; color: string; bg: string }[] = [
+  { key: 'passport',               label: 'Pasaporte',            Icon: BookOpen,    color: '#EE726D', bg: '#FFF0EF' },
+  { key: 'insurance',              label: 'Seguros',              Icon: Shield,      color: '#0d9488', bg: '#f0fdfa' },
+  { key: 'health_booklet',         label: 'Cartilla sanitaria',   Icon: Stethoscope, color: '#1e40af', bg: '#eff6ff' },
+  { key: 'medical_tests',          label: 'Pruebas médicas',      Icon: Microscope,  color: '#7c3aed', bg: '#f5f3ff' },
+  { key: 'vet_prescriptions',      label: 'Recetas veterinarias', Icon: Pill,        color: '#EE726D', bg: '#FFF0EF' },
+  { key: 'uploaded_prescriptions', label: 'Recetas subidas',      Icon: Upload,      color: '#0d9488', bg: '#f0fdfa' },
+  { key: 'other',                  label: 'Otros',                Icon: File,        color: '#1e40af', bg: '#eff6ff' },
 ]
+
+type DocsView = 'grid' | 'category'
 
 function DocsTab({ petId, initialDocs }: { petId: string; initialDocs: PetFile[] }) {
   const [docs, setDocs] = useState(initialDocs)
+  const [view, setView] = useState<DocsView>('grid')
+  const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [uploading, setUploading] = useState(false)
-  const [fileType, setFileType] = useState('prescription')
+  const [selectedCategory, setSelectedCategory] = useState('other')
   const [notes, setNotes] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [error, setError] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
+
+  const openUpload = (preselect: string | null) => {
+    setSelectedCategory(preselect ?? 'other')
+    setFile(null); setNotes(''); setError('')
+    setShowForm(true)
+  }
 
   const upload = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -420,69 +461,126 @@ function DocsTab({ petId, initialDocs }: { petId: string; initialDocs: PetFile[]
     setUploading(true); setError('')
     const fd = new FormData()
     fd.append('file', file); fd.append('pet_id', petId)
-    fd.append('file_type', fileType); fd.append('notes', notes)
+    fd.append('file_type', 'other'); fd.append('notes', notes)
+    fd.append('category', selectedCategory)
     try {
       const res = await fetch('/api/files/upload', { method: 'POST', body: fd, credentials: 'include' })
       const data = await res.json()
       if (!res.ok) { setError(data.error || 'Error'); setUploading(false); return }
       setDocs(prev => [data.file, ...prev])
-      setShowForm(false); setFile(null); setNotes('')
+      setShowForm(false)
     } catch (err) { setError(err instanceof Error ? err.message : 'Error') }
     setUploading(false)
   }
 
+  const activeCatData = DOC_CATEGORIES.find(c => c.key === activeCategory)
+  const categoryDocs = docs.filter(d => (d.category || 'other') === activeCategory)
+
+  const UploadForm = (
+    <form onSubmit={upload} style={{ background:'var(--pf-white)', borderRadius:18, padding:18, marginBottom:12 }}>
+      <p style={{ fontWeight:700, fontSize:15, color:'var(--pf-ink)', margin:'0 0 12px' }}>Subir documento</p>
+      <p style={{ fontSize:11, fontWeight:700, color:'var(--pf-muted)', textTransform:'uppercase', letterSpacing:'.05em', margin:'0 0 8px' }}>Categoría</p>
+      <div style={{ display:'flex', flexWrap:'wrap', gap:6, marginBottom:12 }}>
+        {DOC_CATEGORIES.map(({ key, label, Icon, color, bg }) => (
+          <button key={key} type="button" onClick={() => setSelectedCategory(key)}
+            style={{ border:'none', borderRadius:10, padding:'7px 12px', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'inherit',
+              display:'flex', alignItems:'center', gap:5,
+              background: selectedCategory === key ? bg : 'var(--pf-surface)',
+              color:      selectedCategory === key ? color : 'var(--pf-muted)',
+              outline:    selectedCategory === key ? `2px solid ${color}` : 'none' }}>
+            <Icon size={13} strokeWidth={2} />{label}
+          </button>
+        ))}
+      </div>
+      <input type="text" placeholder="Descripción (opcional)" value={notes} onChange={e => setNotes(e.target.value)}
+        style={{ width:'100%', border:'none', background:'var(--pf-surface)', borderRadius:12, padding:'12px 14px', fontSize:14, fontFamily:'inherit', marginBottom:10, boxSizing:'border-box' }} />
+      <div onClick={() => inputRef.current?.click()} style={{
+        border:'2px dashed var(--pf-border-md)', borderRadius:12, padding:'18px', textAlign:'center', cursor:'pointer', marginBottom:12, background:'var(--pf-surface)',
+      }}>
+        <p style={{ margin:0, fontSize:13, color: file ? 'var(--pf-ink)' : 'var(--pf-muted)', fontWeight: file ? 600 : 400 }}>
+          {file ? `✓ ${file.name}` : 'Toca para seleccionar archivo'}
+        </p>
+        <input ref={inputRef} type="file" style={{ display:'none' }} accept=".pdf,.doc,.docx,image/*"
+          onChange={e => { setFile(e.target.files?.[0] || null); setError('') }} />
+      </div>
+      {error && <p style={{ color:'var(--pf-danger-fg)', fontSize:13, margin:'0 0 10px' }}>{error}</p>}
+      <div style={{ display:'flex', gap:8 }}>
+        <button type="button" onClick={() => { setShowForm(false); setError('') }}
+          style={{ flex:1, border:'none', borderRadius:12, padding:13, background:'var(--pf-surface)', color:'var(--pf-muted)', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>Cancelar</button>
+        <button type="submit" disabled={uploading}
+          style={{ flex:2, border:'none', borderRadius:12, padding:13, background:'var(--pf-coral)', color:'var(--pf-white)', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:'inherit', opacity: uploading ? .6 : 1 }}>
+          {uploading ? 'Subiendo…' : 'Subir'}
+        </button>
+      </div>
+    </form>
+  )
+
+  /* ── Category detail view ── */
+  if (view === 'category' && activeCatData) {
+    const { Icon, color } = activeCatData
+    return (
+      <>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:16 }}>
+          <button onClick={() => { setView('grid'); setActiveCategory(null); setShowForm(false) }}
+            style={{ border:'none', background:'none', cursor:'pointer', display:'flex', alignItems:'center', gap:6, color:'var(--pf-coral)', fontFamily:'inherit', fontWeight:600, fontSize:14, padding:0 }}>
+            <ChevronLeft size={18} strokeWidth={2.5} />Volver
+          </button>
+          <button onClick={() => openUpload(activeCategory)}
+            style={{ border:'none', borderRadius:12, padding:'8px 16px', background:'var(--pf-coral)', color:'#fff', fontFamily:'inherit', fontSize:13, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
+            <Upload size={14} strokeWidth={2.5} />Subir
+          </button>
+        </div>
+
+        <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:16 }}>
+          <div style={{ width:40, height:40, borderRadius:12, background:activeCatData.bg, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+            <Icon size={20} strokeWidth={1.75} style={{ color }} />
+          </div>
+          <p style={{ fontSize:18, fontWeight:700, color:'var(--pf-ink)', margin:0, fontFamily:'var(--pf-font-display)' }}>
+            {activeCatData.label}
+          </p>
+        </div>
+
+        {showForm && UploadForm}
+
+        {categoryDocs.length === 0 && !showForm
+          ? <div style={{ border:'1.5px dashed var(--pf-border-md)', borderRadius:18, padding:'48px 24px', textAlign:'center' }}>
+              <FolderOpen size={32} strokeWidth={1.25} style={{ color:'var(--pf-muted)', marginBottom:10 }} />
+              <p style={{ fontSize:14, color:'var(--pf-muted)', margin:0 }}>No hay documentos en {activeCatData.label}</p>
+            </div>
+          : categoryDocs.map(d => <DocCard key={d.id} doc={d} catColor={color} catBg={activeCatData.bg} />)
+        }
+      </>
+    )
+  }
+
+  /* ── Category grid view ── */
   return (
     <>
-      <button onClick={() => setShowForm(!showForm)} style={{
-        width:'100%', border:'none', borderRadius:18, padding:'14px 16px',
-        background:'var(--pf-coral)', color:'var(--pf-white)', fontFamily:'inherit',
-        fontSize:15, fontWeight:700, cursor:'pointer', marginBottom:12,
-      }}>+ Añadir documento</button>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
+        <p style={{ fontSize:16, fontWeight:700, color:'var(--pf-ink)', margin:0, fontFamily:'var(--pf-font-display)' }}>Documentos</p>
+        <button onClick={() => openUpload(null)}
+          style={{ border:'none', borderRadius:12, padding:'8px 16px', background:'var(--pf-coral)', color:'#fff', fontFamily:'inherit', fontSize:13, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', gap:6 }}>
+          <Upload size={14} strokeWidth={2.5} />Subir
+        </button>
+      </div>
 
-      {showForm && (
-        <form onSubmit={upload} style={{ background:'var(--pf-white)', borderRadius:18, padding:18, marginBottom:12 }}>
-          <p style={{ fontWeight:700, fontSize:15, color:'var(--pf-ink)', margin:'0 0 12px' }}>Nuevo documento</p>
-          <div style={{ display:'flex', gap:8, marginBottom:12 }}>
-            {DOC_TYPES.map(({ value, Icon, label }) => (
-              <button key={value} type="button" onClick={() => setFileType(value)}
-                style={{ flex:1, border:'none', borderRadius:12, padding:'10px 4px', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'inherit',
-                  display:'flex', flexDirection:'column', alignItems:'center', gap:4,
-                  background: fileType===value ? 'var(--pf-coral-soft)' : 'var(--pf-surface)',
-                  color:      fileType===value ? 'var(--pf-coral)'      : 'var(--pf-muted)',
-                  outline:    fileType===value ? '2px solid var(--pf-coral)' : 'none' }}>
-                <Icon size={15} strokeWidth={2} />{label}
-              </button>
-            ))}
-          </div>
-          <input type="text" placeholder="Descripción (opcional)" value={notes} onChange={e => setNotes(e.target.value)}
-            style={{ width:'100%', border:'none', background:'var(--pf-surface)', borderRadius:12, padding:'12px 14px', fontSize:14, fontFamily:'inherit', marginBottom:10, boxSizing:'border-box' }} />
-          <div onClick={() => inputRef.current?.click()} style={{
-            border:'2px dashed var(--pf-border-md)', borderRadius:12, padding:'18px', textAlign:'center', cursor:'pointer', marginBottom:12, background:'var(--pf-surface)',
-          }}>
-            <p style={{ margin:0, fontSize:13, color: file ? 'var(--pf-ink)' : 'var(--pf-muted)', fontWeight: file ? 600 : 400 }}>
-              {file ? `✓ ${file.name}` : 'Toca para seleccionar archivo'}
-            </p>
-            <input ref={inputRef} type="file" style={{ display:'none' }} accept=".pdf,.doc,.docx,image/*"
-              onChange={e => { setFile(e.target.files?.[0] || null); setError('') }} />
-          </div>
-          {error && <p style={{ color:'var(--pf-danger-fg)', fontSize:13, margin:'0 0 10px' }}>{error}</p>}
-          <div style={{ display:'flex', gap:8 }}>
-            <button type="button" onClick={() => { setShowForm(false); setError('') }}
-              style={{ flex:1, border:'none', borderRadius:12, padding:13, background:'var(--pf-surface)', color:'var(--pf-muted)', fontSize:14, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>Cancelar</button>
-            <button type="submit" disabled={uploading}
-              style={{ flex:2, border:'none', borderRadius:12, padding:13, background:'var(--pf-coral)', color:'var(--pf-white)', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:'inherit', opacity: uploading ? .6 : 1 }}>
-              {uploading ? 'Subiendo…' : 'Subir'}</button>
-          </div>
-        </form>
-      )}
+      {showForm && UploadForm}
 
-      {docs.length === 0 && !showForm
-        ? <div className="empty-box">
-            <Paperclip size={28} strokeWidth={1.5} style={{ color:'var(--pf-muted)', marginBottom:8 }} />
-            <p style={{ fontSize:14, color:'var(--pf-muted)', margin:0 }}>Sin documentos aún</p>
-          </div>
-        : docs.map((d) => <DocCard key={d.id} doc={d} />)
-      }
+      <div className="doc-grid">
+        {DOC_CATEGORIES.map(({ key, label, Icon, color, bg }) => {
+          const count = docs.filter(d => (d.category || 'other') === key).length
+          return (
+            <button key={key} className="doc-cat-card"
+              onClick={() => { setActiveCategory(key); setView('category'); setShowForm(false) }}>
+              <div className="doc-cat-icon" style={{ background: bg }}>
+                <Icon size={24} strokeWidth={1.75} style={{ color }} />
+              </div>
+              <span className="doc-cat-name">{label}</span>
+              <span className="doc-cat-count">{count} {count === 1 ? 'archivo' : 'archivos'}</span>
+            </button>
+          )
+        })}
+      </div>
     </>
   )
 }
@@ -560,17 +658,12 @@ function HistorialTab({ petId, records }: { petId: string; records: RecordWithVe
   )
 }
 
-const DOC_CFG: Record<string, { Icon: LucideIcon; label: string; color: string; bg: string }> = {
-  prescription: { Icon: Pill,       label: 'Receta',  color: 'var(--pf-info-fg)',  bg: 'var(--pf-info)'    },
-  exam:         { Icon: Microscope, label: 'Examen',  color: '#2563eb',             bg: '#eff6ff'            },
-  photo:        { Icon: Camera,     label: 'Foto',    color: '#16a34a',              bg: '#f0fdf4'            },
-  video:        { Icon: Video,      label: 'Vídeo',   color: '#dc2626',              bg: '#fef2f2'            },
-  other:        { Icon: Paperclip,  label: 'Archivo', color: 'var(--pf-muted)',     bg: 'var(--pf-surface)' },
-}
-
-function DocCard({ doc }: { doc: PetFile }) {
+function DocCard({ doc, catColor, catBg }: { doc: PetFile; catColor?: string; catBg?: string }) {
   const [opening, setOpening] = useState(false)
-  const { Icon, label, color, bg } = DOC_CFG[doc.file_type] ?? DOC_CFG.other
+  const catCfg = DOC_CATEGORIES.find(c => c.key === (doc.category || 'other')) ?? DOC_CATEGORIES[DOC_CATEGORIES.length - 1]
+  const color = catColor ?? catCfg.color
+  const bg    = catBg    ?? catCfg.bg
+  const { Icon } = catCfg
   const open = async () => {
     setOpening(true)
     const res = await fetch(`/api/files/${doc.id}`)
@@ -588,7 +681,7 @@ function DocCard({ doc }: { doc: PetFile }) {
       </div>
       <div style={{ flex:1, minWidth:0 }}>
         <p style={{ fontSize:13, fontWeight:600, color:'var(--pf-ink)', margin:'0 0 3px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{doc.notes || doc.file_name}</p>
-        <span style={{ fontSize:10, fontWeight:600, color, background:bg, padding:'2px 7px', borderRadius:6 }}>{label}</span>
+        <span style={{ fontSize:10, fontWeight:600, color, background:bg, padding:'2px 7px', borderRadius:6 }}>{catCfg.label}</span>
       </div>
       <span style={{ color:'var(--pf-hint)', fontSize:20, flexShrink:0 }}>{opening ? '…' : '›'}</span>
     </button>
@@ -739,48 +832,131 @@ function CitasTab({ petId, petName, clinicId, appointments }: {
 
 /* ── RecetasTab ── */
 
-type Tip = { id: string; title: string; content: string }
+type PetRecipe = {
+  id: string
+  title: string
+  subtitle: string
+  type: 'comida_natural' | 'snack'
+  prep_time: number
+  rating: number
+  emoji: string
+  ingredients: string[]
+  preparation: string[]
+  nutritional_tip: string
+}
 
-const TIP_STYLES: { bg: string; color: string; border: string; Icon: LucideIcon }[] = [
-  { bg: '#f0fdf4',              color: '#15803d',             border: '#bbf7d0',             Icon: Utensils   },
-  { bg: 'var(--pf-coral-soft)', color: 'var(--pf-coral)',     border: 'var(--pf-coral-mid)', Icon: Activity   },
-  { bg: '#fffbeb',              color: '#d97706',             border: '#fde68a',             Icon: ShieldCheck },
-  { bg: 'var(--pf-info)',       color: 'var(--pf-info-fg)',   border: '#c4b5fd',             Icon: Sparkles   },
-]
+const SPECIES_LABELS: Record<string, string> = { dog: 'Perro', cat: 'Gato', bird: 'Ave', rabbit: 'Conejo', other: 'Mascota' }
 
-function RecetasTab({ petId }: { petId: string }) {
-  const [tips, setTips]       = useState<Tip[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError]     = useState('')
+function RecipeDetail({ recipe, onBack }: { recipe: PetRecipe; onBack: () => void }) {
+  const [activeTab, setActiveTab] = useState<'ingredients' | 'preparation'>('ingredients')
+  return (
+    <>
+      <button onClick={onBack}
+        style={{ border:'none', background:'none', cursor:'pointer', display:'flex', alignItems:'center', gap:6, color:'var(--pf-coral)', fontFamily:'inherit', fontWeight:600, fontSize:14, padding:'0 0 16px', marginLeft:-2 }}>
+        <ChevronLeft size={18} strokeWidth={2.5} />Volver
+      </button>
+
+      {/* Header */}
+      <div style={{ display:'flex', gap:14, alignItems:'flex-start', marginBottom:20 }}>
+        <div style={{ width:72, height:72, borderRadius:18, background:'var(--pf-coral-soft)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:36, flexShrink:0 }}>
+          {recipe.emoji}
+        </div>
+        <div style={{ flex:1 }}>
+          <p style={{ fontSize:17, fontWeight:800, color:'var(--pf-ink)', margin:'0 0 4px', fontFamily:'var(--pf-font-display)', lineHeight:1.25 }}>{recipe.title}</p>
+          <p style={{ fontSize:13, color:'var(--pf-muted)', margin:'0 0 8px', lineHeight:1.4 }}>{recipe.subtitle}</p>
+          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+            <span style={{ display:'flex', alignItems:'center', gap:4, fontSize:12, color:'var(--pf-muted)', fontWeight:600 }}>
+              <Clock size={13} strokeWidth={2} />{recipe.prep_time} min
+            </span>
+            <span style={{ display:'flex', gap:1 }}>
+              {[1,2,3,4,5].map(s => (
+                <Star key={s} size={13} strokeWidth={0} fill={s <= recipe.rating ? '#FBBF24' : '#E5E7EB'} />
+              ))}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="seg-ctrl" style={{ marginBottom:14 }}>
+        <button className={`seg-btn${activeTab === 'ingredients' ? ' active' : ''}`}
+          onClick={() => setActiveTab('ingredients')}>Ingredientes</button>
+        <button className={`seg-btn${activeTab === 'preparation' ? ' active' : ''}`}
+          onClick={() => setActiveTab('preparation')}>Preparación</button>
+      </div>
+
+      <div style={{ background:'var(--pf-white)', borderRadius:16, padding:'14px 16px', marginBottom:4 }}>
+        {activeTab === 'ingredients'
+          ? recipe.ingredients.map((ing, i) => (
+              <div key={i} style={{ display:'flex', gap:10, paddingBottom:10, marginBottom: i < recipe.ingredients.length - 1 ? 10 : 0, borderBottom: i < recipe.ingredients.length - 1 ? '1px solid var(--pf-bg)' : 'none' }}>
+                <span style={{ width:8, height:8, borderRadius:'50%', background:'var(--pf-coral)', flexShrink:0, marginTop:5 }} />
+                <p style={{ fontSize:14, color:'var(--pf-ink)', margin:0, lineHeight:1.5 }}>{ing}</p>
+              </div>
+            ))
+          : recipe.preparation.map((step, i) => (
+              <div key={i} style={{ display:'flex', gap:12, paddingBottom:12, marginBottom: i < recipe.preparation.length - 1 ? 12 : 0, borderBottom: i < recipe.preparation.length - 1 ? '1px solid var(--pf-bg)' : 'none' }}>
+                <span style={{ width:22, height:22, borderRadius:'50%', background:'var(--pf-coral-soft)', color:'var(--pf-coral)', fontSize:11, fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                  {i + 1}
+                </span>
+                <p style={{ fontSize:14, color:'var(--pf-ink)', margin:0, lineHeight:1.5 }}>{step}</p>
+              </div>
+            ))
+        }
+      </div>
+
+      {/* Nutritional tip */}
+      <div className="tip-block">
+        <p className="tip-block-title">💡 Consejo nutricional</p>
+        <p className="tip-block-body">{recipe.nutritional_tip}</p>
+      </div>
+    </>
+  )
+}
+
+function RecetasTab({ petId, petName, petSpecies }: { petId: string; petName: string; petSpecies: string }) {
+  const [recipes, setRecipes]       = useState<PetRecipe[]>([])
+  const [loading, setLoading]       = useState(true)
+  const [error, setError]           = useState('')
+  const [activeType, setActiveType] = useState<'comida_natural' | 'snack'>('comida_natural')
+  const [selected, setSelected]     = useState<PetRecipe | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
-    fetch(`/api/owner/pet-tips?pet_id=${petId}`, { credentials: 'include' })
+    setLoading(true); setError('')
+    fetch(`/api/owner/pet-recipes?pet_id=${petId}`, { credentials: 'include' })
       .then(r => r.json())
-      .then(d => { if (d.tips) setTips(d.tips); else setError(d.error || 'Error al cargar consejos') })
+      .then(d => { if (d.recipes) setRecipes(d.recipes); else setError(d.error || 'Error al cargar recetas') })
       .catch(() => setError('Error de conexión'))
       .finally(() => setLoading(false))
-  }, [petId])
+  }, [petId, refreshKey])
 
+  if (selected) return <RecipeDetail recipe={selected} onBack={() => setSelected(null)} />
+
+  const speciesLabel = SPECIES_LABELS[petSpecies] ?? 'Mascota'
+  const filtered = recipes.filter(r => r.type === activeType)
+
+  /* Loading skeleton */
   if (loading) return (
     <>
       <style>{`@keyframes pf-pulse{0%,100%{opacity:1}50%{opacity:.45}}.tip-sk{border-radius:10px;animation:pf-pulse 1.6s ease-in-out infinite;background:var(--pf-border);}`}</style>
-      <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:16 }}>
-        <div style={{ width:32, height:32, borderRadius:10, background:'var(--pf-info)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-          <Sparkles size={16} strokeWidth={2} style={{ color:'var(--pf-info-fg)' }} />
-        </div>
+      <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:16 }}>
         <div>
-          <p style={{ fontSize:13, fontWeight:700, color:'var(--pf-ink)', margin:0 }}>Consejos personalizados</p>
-          <p style={{ fontSize:11, color:'var(--pf-muted)', margin:0 }}>Generando con IA…</p>
+          <div className="tip-sk" style={{ height:20, width:180, marginBottom:8 }} />
+          <div className="tip-sk" style={{ height:13, width:220 }} />
         </div>
       </div>
-      {[0,1,2,3].map(i => (
-        <div key={i} style={{ background:'var(--pf-surface)', borderRadius:18, padding:16, marginBottom:10 }}>
-          <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12 }}>
-            <div className="tip-sk" style={{ width:34, height:34, flexShrink:0 }} />
-            <div className="tip-sk" style={{ height:14, width:120 }} />
+      <div className="seg-ctrl" style={{ marginBottom:14 }}>
+        <button className="seg-btn active">🍲 Comida natural</button>
+        <button className="seg-btn">🍖 Snacks caseros</button>
+      </div>
+      {[0,1,2].map(i => (
+        <div key={i} style={{ background:'var(--pf-white)', borderRadius:18, padding:14, marginBottom:8, display:'flex', gap:12 }}>
+          <div className="tip-sk" style={{ width:56, height:56, borderRadius:14, flexShrink:0 }} />
+          <div style={{ flex:1 }}>
+            <div className="tip-sk" style={{ height:14, width:'70%', marginBottom:8 }} />
+            <div className="tip-sk" style={{ height:12, width:'90%', marginBottom:6 }} />
+            <div className="tip-sk" style={{ height:11, width:60 }} />
           </div>
-          <div className="tip-sk" style={{ height:12, width:'100%', marginBottom:6 }} />
-          <div className="tip-sk" style={{ height:12, width:'75%' }} />
         </div>
       ))}
     </>
@@ -789,36 +965,60 @@ function RecetasTab({ petId }: { petId: string }) {
   if (error) return (
     <div className="empty-box">
       <Sparkles size={28} strokeWidth={1.5} style={{ color:'var(--pf-muted)', marginBottom:8 }} />
-      <p style={{ fontSize:14, color:'var(--pf-muted)', margin:0 }}>{error}</p>
+      <p style={{ fontSize:14, color:'var(--pf-muted)', margin:'0 0 12px' }}>{error}</p>
+      <button onClick={() => setRefreshKey(k => k + 1)}
+        style={{ border:'none', borderRadius:10, padding:'8px 16px', background:'var(--pf-coral)', color:'#fff', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>
+        Reintentar
+      </button>
     </div>
   )
 
   return (
     <>
-      <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:16 }}>
-        <div style={{ width:32, height:32, borderRadius:10, background:'var(--pf-info)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-          <Sparkles size={16} strokeWidth={2} style={{ color:'var(--pf-info-fg)' }} />
-        </div>
+      {/* Header */}
+      <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:14 }}>
         <div>
-          <p style={{ fontSize:13, fontWeight:700, color:'var(--pf-ink)', margin:0 }}>Consejos personalizados</p>
-          <p style={{ fontSize:11, color:'var(--pf-muted)', margin:0 }}>Generados por IA a partir de su perfil</p>
+          <p style={{ fontSize:17, fontWeight:800, color:'var(--pf-ink)', margin:'0 0 3px', fontFamily:'var(--pf-font-display)' }}>
+            Recetas para {speciesLabel}
+          </p>
+          <p style={{ fontSize:12, color:'var(--pf-muted)', margin:0 }}>
+            Personalizadas para {petName}
+          </p>
         </div>
+        <button onClick={() => setRefreshKey(k => k + 1)}
+          style={{ border:'0.5px solid var(--pf-border-md)', borderRadius:10, padding:'7px 13px', background:'var(--pf-white)', color:'var(--pf-ink)', fontFamily:'inherit', fontSize:12, fontWeight:600, cursor:'pointer', display:'flex', alignItems:'center', gap:5, flexShrink:0 }}>
+          <Sparkles size={13} strokeWidth={2} style={{ color:'var(--pf-info-fg)' }} />Generar nuevas
+        </button>
       </div>
-      {tips.map((tip, i) => {
-        const s = TIP_STYLES[i % TIP_STYLES.length]
-        const { Icon } = s
-        return (
-          <div key={tip.id} style={{ background:s.bg, border:`1px solid ${s.border}`, borderRadius:18, padding:16, marginBottom:10 }}>
-            <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:8 }}>
-              <div style={{ width:34, height:34, borderRadius:10, background:'rgba(255,255,255,.7)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                <Icon size={17} strokeWidth={2} style={{ color:s.color }} />
-              </div>
-              <p style={{ fontSize:14, fontWeight:700, color:s.color, margin:0 }}>{tip.title}</p>
-            </div>
-            <p style={{ fontSize:13, color:'var(--pf-ink)', lineHeight:1.6, margin:0 }}>{tip.content}</p>
+
+      {/* Segmented control */}
+      <div className="seg-ctrl">
+        <button className={`seg-btn${activeType === 'comida_natural' ? ' active' : ''}`}
+          onClick={() => setActiveType('comida_natural')}>🍲 Comida natural</button>
+        <button className={`seg-btn${activeType === 'snack' ? ' active' : ''}`}
+          onClick={() => setActiveType('snack')}>🍖 Snacks caseros</button>
+      </div>
+
+      {/* Recipe list */}
+      {filtered.length === 0
+        ? <div className="empty-box">
+            <Utensils size={28} strokeWidth={1.5} style={{ color:'var(--pf-muted)', marginBottom:8 }} />
+            <p style={{ fontSize:14, color:'var(--pf-muted)', margin:0 }}>No hay recetas en esta categoría</p>
           </div>
-        )
-      })}
+        : filtered.map(r => (
+            <button key={r.id} className="recipe-card" onClick={() => setSelected(r)}>
+              <div className="recipe-emoji">{r.emoji}</div>
+              <div style={{ flex:1, minWidth:0 }}>
+                <p className="recipe-title">{r.title}</p>
+                <p className="recipe-sub">{r.subtitle}</p>
+                <span className="recipe-meta">
+                  <Clock size={12} strokeWidth={2} />{r.prep_time} min
+                </span>
+              </div>
+              <ChevronLeft size={18} strokeWidth={2} style={{ color:'var(--pf-hint)', transform:'rotate(180deg)', flexShrink:0 }} />
+            </button>
+          ))
+      }
     </>
   )
 }

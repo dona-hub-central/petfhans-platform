@@ -106,6 +106,7 @@ export interface PetFile {
   mime_type: string
   file_path?: string
   notes: string | null
+  category: string
   created_at: string
 }
 
