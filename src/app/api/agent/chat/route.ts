@@ -11,8 +11,11 @@ async function handler(req: NextRequest): Promise<NextResponse> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
+  // createAdminClient bypasses RLS so the profile row is always readable
+  const admin = createAdminClient()
+
   // C-3: verificar que el usuario es superadmin
-  const { data: profile } = await supabase.from('profiles')
+  const { data: profile } = await admin.from('profiles')
     .select('role').eq('user_id', user.id).single()
   if (profile?.role !== 'superadmin') {
     return NextResponse.json({ error: 'Acceso restringido a superadmin' }, { status: 403 })
@@ -22,36 +25,37 @@ async function handler(req: NextRequest): Promise<NextResponse> {
   if (!message) return NextResponse.json({ error: 'Mensaje vacío' }, { status: 400 })
 
   // C-3: requerir selección explícita de clínica — nunca cargar todas
-  if (!clinic_id) {
+  // test=true (botón "Probar" de la config) no necesita clínica
+  if (!clinic_id && !test) {
     return NextResponse.json({ error: 'Selecciona una clínica para consultar' }, { status: 400 })
   }
-
-  const admin = createAdminClient()
 
   const { data: agent } = await admin.from('ai_agent').select('*').eq('id', 'default').single()
   if (!agent?.openai_api_key) return NextResponse.json({ error: 'Sin API key' }, { status: 400 })
   if (!agent.is_active && !test) return NextResponse.json({ error: 'Agente inactivo' }, { status: 400 })
 
-  // C-3: verificar que la clínica existe y obtener solo sus metadatos
-  const { data: clinic } = await admin.from('clinics')
-    .select('id, name, slug, subscription_plan').eq('id', clinic_id).single()
-  if (!clinic) return NextResponse.json({ error: 'Clínica no encontrada' }, { status: 404 })
+  let dbContext = ''
+  if (clinic_id) {
+    // C-3: verificar que la clínica existe y obtener solo sus metadatos
+    const { data: clinic } = await admin.from('clinics')
+      .select('id, name, slug, subscription_plan').eq('id', clinic_id).single()
+    if (!clinic) return NextResponse.json({ error: 'Clínica no encontrada' }, { status: 404 })
 
-  // C-3: cargar datos SOLO de la clínica seleccionada, sin registros médicos individuales
-  const [{ data: pets }, { data: appointments }] = await Promise.all([
-    admin.from('pets')
-      .select('id, name, species, breed, birth_date, weight, gender, neutered')
-      .eq('clinic_id', clinic_id)
-      .eq('is_active', true)
-      .limit(100),
-    admin.from('appointments')
-      .select('id, appointment_date, appointment_time, status, reason, is_virtual')
-      .eq('clinic_id', clinic_id)
-      .order('appointment_date', { ascending: false })
-      .limit(50),
-  ])
+    // C-3: cargar datos SOLO de la clínica seleccionada, sin registros médicos individuales
+    const [{ data: pets }, { data: appointments }] = await Promise.all([
+      admin.from('pets')
+        .select('id, name, species, breed, birth_date, weight, gender, neutered')
+        .eq('clinic_id', clinic_id)
+        .eq('is_active', true)
+        .limit(100),
+      admin.from('appointments')
+        .select('id, appointment_date, appointment_time, status, reason, is_virtual')
+        .eq('clinic_id', clinic_id)
+        .order('appointment_date', { ascending: false })
+        .limit(50),
+    ])
 
-  const dbContext = `
+    dbContext = `
 === CLÍNICA SELECCIONADA: ${clinic.name} (${clinic.slug}) ===
 Plan: ${clinic.subscription_plan}
 Fecha: ${new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
@@ -65,12 +69,13 @@ ${pets?.map((p: { name: string; species: string; breed?: string; birth_date?: st
 CITAS RECIENTES (${appointments?.length ?? 0}):
 ${appointments?.map((a: { appointment_date: string; status: string; reason: string }) => `[${a.appointment_date}] ${a.status} | ${a.reason}`).join('\n') ?? 'Sin citas'}
 === FIN ===`
+  }
 
   const skillsText = (agent.skills ?? []).length > 0
     ? `\n\nCAPACIDADES:\n${(agent.skills as string[]).map((s: string) => `• ${s}`).join('\n')}`
     : ''
 
-  const systemPrompt = (agent.system_prompt || 'Eres Dr. Petfhans, veterinario experto.') + skillsText + '\n\n' + dbContext
+  const systemPrompt = (agent.system_prompt || 'Eres Dr. Petfhans, veterinario experto.') + skillsText + (dbContext ? '\n\n' + dbContext : '')
 
   const messages = [
     { role: 'system', content: systemPrompt },
