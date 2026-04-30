@@ -7,6 +7,8 @@ import type { Appointment, AppointmentStatus } from '@/types'
 
 export const metadata = { title: 'Mis citas · Petfhans' }
 
+export const dynamic = 'force-dynamic'
+
 const STATUS_LABEL: Record<AppointmentStatus, { label: string; color: string; bg: string }> = {
   pending:   { label: 'Pendiente',   color: '#b07800', bg: '#fff8e6' },
   confirmed: { label: 'Confirmada',  color: '#1a7a3c', bg: '#edfaf1' },
@@ -19,10 +21,16 @@ type AppointmentRow = Appointment & {
   clinics?: { name: string } | null
 }
 
-export default async function OwnerAppointmentsPage() {
+export default async function OwnerAppointmentsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ new?: string }>
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
+
+  const { new: newId } = await searchParams
 
   const admin = createAdminClient()
   const { data: profile } = await admin.from('profiles')
@@ -60,13 +68,23 @@ export default async function OwnerAppointmentsPage() {
         </Link>
       </header>
 
+      {newId && (
+        <div style={{
+          background: '#edfaf1', border: '1px solid #86efac', borderRadius: 12,
+          padding: '12px 16px', marginBottom: 16, fontSize: 14,
+          color: '#15803d', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8,
+        }}>
+          ✓ Solicitud enviada. La clínica confirmará pronto tu cita.
+        </div>
+      )}
+
       {upcoming.length === 0 && past.length === 0 ? (
         <EmptyState />
       ) : (
         <>
           {upcoming.length > 0 && (
             <Section title="Próximas">
-              {upcoming.map(a => <AppointmentCard key={a.id} a={a} />)}
+              {upcoming.map(a => <AppointmentCard key={a.id} a={a} highlight={a.id === newId} />)}
             </Section>
           )}
           {past.length > 0 && (
@@ -91,13 +109,13 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   )
 }
 
-function AppointmentCard({ a, muted = false }: { a: AppointmentRow; muted?: boolean }) {
+function AppointmentCard({ a, muted = false, highlight = false }: { a: AppointmentRow; muted?: boolean; highlight?: boolean }) {
   const status = STATUS_LABEL[a.status]
   const date = new Date(a.appointment_date + 'T' + a.appointment_time)
   return (
     <div style={{
       background: 'var(--pf-white)', borderRadius: 14,
-      border: '0.5px solid var(--pf-border)',
+      border: highlight ? '1.5px solid var(--pf-coral)' : '0.5px solid var(--pf-border)',
       padding: 14, display: 'flex', alignItems: 'center', gap: 12,
       opacity: muted ? 0.75 : 1,
     }}>

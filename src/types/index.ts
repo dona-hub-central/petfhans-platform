@@ -169,6 +169,8 @@ export interface ClinicPublicProfile {
   specialties?: string[]
   species?: PetSpecies[]
   hours?: string
+  allows_virtual?: boolean
+  allows_presential?: boolean
 }
 
 export interface MarketplaceClinic {
