@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import PetfhansLogo from '@/components/shared/PetfhansLogo'
 
 type InvitationData = {
   email: string
@@ -122,7 +123,7 @@ function InviteForm() {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--pf-bg)' }}>
         <div className="text-center">
-          <div className="mb-3"><img src="/logo-icon.svg" width={48} height={48} alt="Petfhans" style={{ borderRadius: 12 }} /></div>
+          <div className="mb-3" style={{ display: 'flex', justifyContent: 'center' }}><PetfhansLogo size="md" showTagline /></div>
           <p className="text-sm" style={{ color: 'var(--pf-muted)' }}>Validando invitación...</p>
         </div>
       </div>
@@ -156,9 +157,8 @@ function InviteForm() {
         <div className="w-full max-w-md">
           <div className="bg-white rounded-2xl border p-8" style={{ borderColor: 'var(--pf-border)' }}>
             <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-3"
-                style={{ background: 'var(--pf-coral-soft)' }}>
-                <img src="/logo-icon.svg" width={40} height={40} alt="Petfhans" />
+              <div className="mb-3" style={{ display: 'flex', justifyContent: 'center' }}>
+                <PetfhansLogo size="md" />
               </div>
               <h1 className="text-xl font-bold" style={{ color: 'var(--pf-ink)' }}>
                 {clinicName} te invita

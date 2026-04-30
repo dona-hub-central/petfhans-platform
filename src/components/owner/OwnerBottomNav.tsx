@@ -2,7 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Store, Calendar, User, Plus, PawPrint } from 'lucide-react'
+import { Store, Calendar, User, Plus } from 'lucide-react'
+import PetfhansLogo from '@/components/shared/PetfhansLogo'
 
 const items = [
   { href: '/marketplace/clinicas', Icon: Store,    label: 'Marketplace', match: '/marketplace' },
@@ -46,10 +47,7 @@ export default function OwnerBottomNav() {
       {/* Desktop / Tablet sidebar */}
       <aside className="pf-own-side" aria-label="Navegación principal">
         <Link href="/owner/dashboard" className="pf-own-side-brand">
-          <span className="pf-own-side-logo">
-            <PawPrint size={18} strokeWidth={2.25} />
-          </span>
-          <span className="pf-own-side-name">Petfhans</span>
+          <PetfhansLogo size="sm" showTagline align="left" />
         </Link>
 
         <Link

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { X, Plus, ChevronLeft } from 'lucide-react'
+import PetfhansLogo from '@/components/shared/PetfhansLogo'
 
 const ROLE_REDIRECTS: Record<string, string> = {
   superadmin:   '/admin',
@@ -178,9 +179,7 @@ function LoginForm() {
     return (
       <div className="pf-login-page">
         <div style={{ textAlign: 'center' }}>
-          <div className="pf-login-logo-wrap">
-            <img src="/logo-icon.svg" width={36} height={36} alt="Petfhans" />
-          </div>
+          <PetfhansLogo size="md" showTagline />
           <p style={{ fontFamily: 'var(--pf-font-body)', fontSize: 13, color: 'var(--pf-muted)', marginTop: 12 }}>
             Cargando...
           </p>
@@ -201,11 +200,7 @@ function LoginForm() {
 
         {/* Logo */}
         <div className="pf-login-brand">
-          <div className="pf-login-logo-wrap">
-            <img src="/logo-icon.svg" width={36} height={36} alt="Petfhans" />
-          </div>
-          <h1 className="pf-login-title">Petfhans</h1>
-          <p className="pf-login-sub">Plataforma veterinaria</p>
+          <PetfhansLogo size="lg" showTagline />
         </div>
 
         {/* Status banners */}
@@ -377,23 +372,7 @@ function LoginForm() {
           box-shadow: var(--pf-shadow-sm);
           padding: 32px 28px;
         }
-        .pf-login-brand { text-align: center; margin-bottom: 24px; }
-        .pf-login-logo-wrap {
-          display: inline-flex; align-items: center; justify-content: center;
-          width: 56px; height: 56px; border-radius: 16px;
-          background: var(--pf-coral-soft);
-          margin-bottom: 12px;
-        }
-        .pf-login-title {
-          font-family: var(--pf-font-display);
-          font-size: 22px; font-weight: 700; color: var(--pf-ink);
-          margin: 0; letter-spacing: -0.01em;
-        }
-        .pf-login-sub {
-          font-family: var(--pf-font-body);
-          font-size: 13px; color: var(--pf-muted);
-          margin: 4px 0 0;
-        }
+        .pf-login-brand { text-align: center; margin-bottom: 28px; }
 
         /* Banners */
         .pf-login-banner {
