@@ -2,14 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Store, Calendar, MessageSquare, User, Plus, PawPrint } from 'lucide-react'
+import { Store, Calendar, User, Plus } from 'lucide-react'
+import PetfhansLogo from '@/components/shared/PetfhansLogo'
 
 const items = [
-  { href: '/owner/perfil',          Icon: Home,          label: 'Inicio',      match: '/owner/perfil' },
-  { href: '/marketplace/clinicas',  Icon: Store,         label: 'Marketplace', match: '/marketplace' },
-  { href: '/owner/appointments',    Icon: Calendar,      label: 'Mis citas',   match: '/owner/appointments' },
-  { href: '/owner/messages',        Icon: MessageSquare, label: 'Mensajes',    match: '/owner/messages' },
-  { href: '/owner/profile',         Icon: User,          label: 'Perfil',      match: '/owner/profile' },
+  { href: '/marketplace/clinicas', Icon: Store,    label: 'Marketplace', match: '/marketplace' },
+  { href: '/owner/appointments',   Icon: Calendar, label: 'Mis citas',   match: '/owner/appointments' },
+  { href: '/owner/dashboard',      Icon: User,     label: 'Perfil',      match: '/owner/dashboard' },
 ] as const
 
 export default function OwnerBottomNav() {
@@ -21,7 +20,8 @@ export default function OwnerBottomNav() {
       {/* Mobile bottom bar */}
       <nav className="pf-own-bot" aria-label="Navegación principal">
         <div className="pf-own-bot-inner">
-          {items.slice(0, 2).map(item => (
+          {/* 1 item before FAB */}
+          {items.slice(0, 1).map(item => (
             <BottomLink key={item.href} item={item} active={path.startsWith(item.match) && !fabActive} />
           ))}
 
@@ -37,7 +37,8 @@ export default function OwnerBottomNav() {
             <span className="pf-own-fab-label">Pedir cita</span>
           </Link>
 
-          {items.slice(2).map(item => (
+          {/* 2 items after FAB */}
+          {items.slice(1).map(item => (
             <BottomLink key={item.href} item={item} active={path.startsWith(item.match) && !fabActive} />
           ))}
         </div>
@@ -45,12 +46,9 @@ export default function OwnerBottomNav() {
 
       {/* Desktop / Tablet sidebar */}
       <aside className="pf-own-side" aria-label="Navegación principal">
-        <div className="pf-own-side-brand">
-          <span className="pf-own-side-logo">
-            <PawPrint size={18} strokeWidth={2.25} />
-          </span>
-          <span className="pf-own-side-name">Petfhans</span>
-        </div>
+        <Link href="/owner/dashboard" className="pf-own-side-brand">
+          <PetfhansLogo size="sm" showTagline align="left" />
+        </Link>
 
         <Link
           href="/owner/appointments/new"
@@ -95,7 +93,7 @@ export default function OwnerBottomNav() {
           .pf-own-bot-inner {
             position: relative;
             display: grid;
-            grid-template-columns: 1fr 1fr 1.2fr 1fr 1fr 1fr;
+            grid-template-columns: 1fr 1.2fr 1fr 1fr;
             align-items: end;
             height: 64px;
           }
@@ -148,6 +146,7 @@ export default function OwnerBottomNav() {
           .pf-own-side-brand {
             display: flex; align-items: center; gap: 10px;
             padding: 4px 8px;
+            text-decoration: none;
           }
           .pf-own-side-logo {
             display: inline-flex; align-items: center; justify-content: center;
@@ -201,7 +200,7 @@ function BottomLink({
   item,
   active,
 }: {
-  item: { href: string; Icon: typeof Home; label: string }
+  item: { href: string; Icon: typeof Store; label: string }
   active: boolean
 }) {
   const { Icon } = item

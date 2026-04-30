@@ -45,7 +45,7 @@ export default async function OwnerPetPage({ params }: { params: Promise<{ id: s
     .eq('pet_id', id).order('visit_date', { ascending: false })
 
   const { data: petFiles } = await admin.from('pet_files')
-    .select('id, file_name, file_type, file_size, mime_type, notes, created_at, file_path')
+    .select('id, file_name, file_type, file_size, mime_type, notes, category, created_at, file_path')
     .eq('pet_id', id).order('created_at', { ascending: false })
 
   // Citas de la mascota (próximas y recientes)

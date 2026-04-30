@@ -15,6 +15,7 @@ export async function POST(req: NextRequest) {
   const petId     = formData.get('pet_id') as string
   const fileType  = (formData.get('file_type') as string) || 'other'
   const notes     = (formData.get('notes') as string) || ''
+  const category  = (formData.get('category') as string) || 'other'
 
   if (!file || !petId) return NextResponse.json({ error: 'Faltan datos: file=' + !!file + ' petId=' + !!petId }, { status: 400 })
 
@@ -66,6 +67,7 @@ export async function POST(req: NextRequest) {
     file_size:   file.size,
     mime_type:   file.type,
     notes,
+    category,
   }).select().single()
 
   if (dbErr) {

@@ -1,0 +1,1 @@
+# eliminado — ver prompts/owner-dashboard-fix.md
