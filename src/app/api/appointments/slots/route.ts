@@ -15,14 +15,8 @@ export async function GET(req: NextRequest) {
 
   const admin = createAdminClient()
 
-  // BUG-008: verify caller is linked to the requested clinic
-  const { data: link } = await admin.from('profile_clinics')
-    .select('clinic_id').eq('user_id', user.id).eq('clinic_id', clinic_id).maybeSingle()
-  if (!link) return NextResponse.json({ error: 'Sin acceso a esta clínica' }, { status: 403 })
-
   const dayOfWeek = new Date(date + 'T12:00:00').getDay()
 
-  // Horario configurado para ese día
   const { data: schedules } = await admin.from('clinic_schedules')
     .select('*').eq('clinic_id', clinic_id).eq('day_of_week', dayOfWeek).eq('is_active', true)
 

@@ -106,6 +106,7 @@ export interface PetFile {
   mime_type: string
   file_path?: string
   notes: string | null
+  category: string
   created_at: string
 }
 
@@ -169,6 +170,8 @@ export interface ClinicPublicProfile {
   specialties?: string[]
   species?: PetSpecies[]
   hours?: string
+  allows_virtual?: boolean
+  allows_presential?: boolean
 }
 
 export interface MarketplaceClinic {

@@ -17,7 +17,7 @@ export default async function HomePage() {
     superadmin:   '/admin',
     vet_admin:    '/vet/dashboard',
     veterinarian: '/vet/dashboard',
-    pet_owner:    '/owner/perfil',
+    pet_owner:    '/owner/dashboard',
   }
 
   redirect(redirects[profile?.role ?? ''] ?? '/auth/login')

@@ -23,20 +23,15 @@ export async function POST(req: NextRequest) {
   const { data: profile } = await supabase.from('profiles').select('id, role, full_name, email').eq('user_id', user.id).single()
   if (!profile) return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 403 })
 
-  const activeClinicId = req.headers.get('x-active-clinic-id')
-  if (!activeClinicId) return NextResponse.json({ error: 'Sin clínica activa' }, { status: 403 })
+  const { data: pet } = await admin.from('pets')
+    .select('name, species, clinic_id, owner_id, clinics(name, slug)').eq('id', pet_id).single()
+  if (!pet) return NextResponse.json({ error: 'Mascota no encontrada' }, { status: 404 })
 
-  // C-2: verificar que el pet pertenece a la clínica activa
-  const { data: pet } = await admin.from('pets').select('name, species, clinic_id, clinics(name, slug)').eq('id', pet_id).single()
-
-  if (!pet || pet.clinic_id !== activeClinicId)
-    return NextResponse.json({ error: 'Mascota no encontrada' }, { status: 403 })
-
-  // Pet owners must have explicit pet_access to book appointments for this pet
   if (profile.role === 'pet_owner') {
     const { data: petAccess } = await admin.from('pet_access')
       .select('pet_id').eq('owner_id', profile.id).eq('pet_id', pet_id).maybeSingle()
-    if (!petAccess) return NextResponse.json({ error: 'Sin acceso a esta mascota' }, { status: 403 })
+    if (!petAccess && pet.owner_id !== profile.id)
+      return NextResponse.json({ error: 'Sin acceso a esta mascota' }, { status: 403 })
   }
 
   // Verificar que el slot no esté ocupado
